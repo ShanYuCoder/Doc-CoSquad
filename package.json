@@ -1,0 +1,60 @@
+{
+  "name": "@shanyucoder/cosquad-docs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Public CoSquad docs (VitePress): team SDLC, T-shaped skills, DSL specs, ssot-docs, MCP toolkit, AI agents.",
+  "author": "shanyucoder <tvvu.150591@gmail.com>",
+  "keywords": [
+    "coSquad",
+    "cosquad",
+    "mcp",
+    "model-context-protocol",
+    "cli",
+    "ai",
+    "ai-agent",
+    "toolkit",
+    "team",
+    "t-shaped",
+    "skill",
+    "skills",
+    "dsl",
+    "sdlc",
+    "dev-workflow",
+    "software-development",
+    "requirements",
+    "specification",
+    "user-story",
+    "docs-as-code",
+    "ssot",
+    "testcase",
+    "e2e",
+    "playwright",
+    "qa",
+    "codegen",
+    "audit",
+    "developer-tools",
+    "vitepress"
+  ],
+  "type": "module",
+  "scripts": {
+    "catalog": "node ../engines/docs/publish.mjs",
+    "dev": "vitepress dev .",
+    "build": "pnpm run catalog && vitepress build .",
+    "preview": "vitepress preview ."
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@braintree/sanitize-url": "^7.1.2",
+    "cytoscape": "^3.34.0",
+    "cytoscape-cose-bilkent": "^4.1.0",
+    "dayjs": "^1.11.21",
+    "debug": "^4.4.3",
+    "mermaid": "^11.16.0",
+    "vitepress": "latest",
+    "vitepress-mermaid-renderer": "^1.1.28",
+    "vitepress-plugin-mermaid": "^2.0.17",
+    "vue": "^3.4.21"
+  }
+}
