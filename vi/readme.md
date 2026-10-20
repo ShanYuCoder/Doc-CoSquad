@@ -1,62 +1,13 @@
-> [!IMPORTANT]
-> 📚 **TÀI LIỆU THAM KHẢO:**
-> 
-> - 📖 **[Tài liệu dự án (GitHub)](https://github.com/ShanYuCoder/Doc-CoSquad)** — Đọc tài liệu và tra cứu trực tiếp trên GitHub repository.
-> - ⚙️ **Thư mục [workflows/](https://github.com/ShanYuCoder/Doc-CoSquad/tree/main/workflows/)** — Chi tiết các phase phát triển và quy trình vận hành.
+# CoSquad 🚀
 
-# CoSquad
-
-**CoSquad** là nền tảng **CLI + AI Harness** chuẩn hóa quy trình phát triển phần mềm theo mô hình **SSOT (Single Source of Truth)** dành cho team làm việc cùng **Agent AI** (Cursor, Gemini/Antigravity, Claude Code, Codex, OpenCode,...).
-
-**AI phục vụ con người** — không bắt member viết YAML phức tạp từ đầu:
-
-```text
-Requirement thô (bullet / ảnh / legacy code)
-  → AI chuẩn hóa bundle + IR + render MD
-  → Khử trùng lặp qua Anti-Copy-Paste Guard (Common Catalog CMN-*)
-  → Prototype + review BA/QA/Dev
-  → Codegen E2E / BE / wire + safety net
-```
-
-### 1. Tư duy AI hỗ trợ mở rộng năng lực T-Shaped Team
-AI không thay thế con người mà đóng vai trò đòn bẩy mở rộng lane chuyên môn (*T-shaped*), giúp san phẳng rào cản và giảm điểm nghẽn giao tiếp nội bộ:
-- **Dev (mở rộng kỹ năng BA):** Dùng AI phân tích nghiệp vụ và phản biện (*grill*) để tự nâng chuẩn spec/requirement đạt **70–80%** năng lực BA, chủ động làm rõ luồng mà không phải chờ đợi.
-- **BA (mở rộng kỹ năng Dev):** Tự chuyển hóa yêu cầu nghiệp vụ thành màn hình trực quan mà không cần phụ thuộc vào dev ở khâu tiền khả thi.
-- **QA (mở rộng kỹ năng Automation):** Từ kịch bản kiểm thử nghiệp vụ, tận dụng AI sinh code automation để chuyển dịch từ manual tester sang QA automation.
-
-### 2. Nguyên tắc Early Feedback Prototype
-- **Thống nhất hành vi sớm nhất có thể:** Thay vì chờ thiết kế UI/UX kéo dài hoặc đợi dev code xong mới thấy sai lệch, AI hỗ trợ sinh ngay **Prototype tương tác thực tế** (HTML/Vue/React) trực tiếp từ spec.
-- **Chốt giao diện & luồng với Stakeholder:** Cho phép PO/BA và khách hàng bấm thử, trải nghiệm luồng thao tác và góp ý phản hồi ngay từ phase thiết kế.
-- **Triệt tiêu 80% nguy cơ rework:** Mọi sai sót về luồng dữ liệu, thao tác thừa hay hiểu sai nghiệp vụ đều được giải quyết trên bản prototype rẻ tiền trước khi dev bắt tay vào viết code production.
-
-### 3. Khép vòng chất lượng với Automation Test E2E
-- **Tự động hóa từ tài liệu Testcase:** Từ ma trận kịch bản kiểm thử (`TC-*.yaml`), AI hỗ trợ sinh tự động mã kiểm thử **E2E Playwright** (`*.spec.ts`).
-- **Giải phóng áp lực IT / Regression:** Triệt tiêu hoàn toàn công sức kiểm thử hồi quy lặp đi lặp lại thủ công trước mỗi đợt release, bảo đảm các tính năng đã chạy không bị vỡ khi hệ thống mở rộng.
-
-### 4. Triệt tiêu code trùng lặp với Anti-Copy-Paste Guard
-- **Chặn đứng sao chép mã rác:** Trong các dự án bảo trì hoặc hiện đại hóa, mã nguồn thường bị copy-paste tràn lan qua nhiều module (cùng một Confirm Modal, bảng phân trang, hay logic xuất file bị viết lại ở 4–5 nơi khác nhau).
-- **Quy chuẩn hóa dùng chung khép kín:** Skill `/init` tự động phát hiện và bóc tách các đoạn code lặp lại vào **Common Catalog** (`CMN-UI-*`, `CMN-API-*`, `CMN-DTO-*`). Hệ thống bắt buộc chuẩn hóa qua `/common`, tạo 1 bản duy nhất (`shared/`), và cưỡng chế qua `/spec` để tuyệt đối cấm Dev và Agent AI copy-paste code legacy sang module mới.
-
-### 5. Tool đảm bảo về <span style="color: #0284c7; font-weight: bold;">"LƯỢNG"</span> — Con người quyết định về <span style="color: #16a34a; font-weight: bold;">"CHẤT"</span> cho SSOT
-CoSquad phân định ranh giới rõ ràng giữa kiểm tra tự động của máy và kiểm soát tư duy của con người:
-- **Tool đảm bảo về <span style="color: #0284c7; font-weight: bold;">"LƯỢNG"</span> (Tính đầy đủ, cấu trúc & độ phủ):**
-  - Thông qua các script deterministic (`coSquad audit *`, `cases:gate`), toolkit tự động quét và kiểm tra xem tài liệu đã đủ lượng thông tin cần thiết hay chưa.
-  - Từ chi tiết UI (màu mè text, vị trí hiển thị, kích thước, các action/trigger ra sao...), API contracts, mã lỗi/exception, cho đến danh mục rủi ro QA (`gaps[]`, `confirms[]`), Tech Debt... Máy móc sẽ phát hiện ngay các khoảng trống bị thiếu mà không bỏ sót.
-- **Con người là chốt chặn quyết định về <span style="color: #16a34a; font-weight: bold;">"CHẤT"</span> (Độ chuẩn xác, độ sâu & tính khả thi):**
-  - **AI phân tích & gợi ý giải pháp:** AI chủ động phân tích bài toán, đề xuất phương án kiến trúc, mô hình logic và đặt câu hỏi gợi mở qua các interactive questions (`ask_question`).
-  - **Con người phân tích, phản biện & chốt hạ:** Member (BA, Dev, QA, Lead) giữ vai trò trọng tài tối cao — trực tiếp cân nhắc, phản biện lại AI (`grill`), lựa chọn phương án tối ưu nhất hoặc phản biện để đưa ra lựa chọn đúng đắn chuẩn xác cuối cùng để biến bản nháp thành SSOT hoàn thiện.
-
-### 6. Nguyên tắc vận hành: Đầy đủ khung chuẩn — Linh hoạt theo rủi ro
-CoSquad cung cấp đầy đủ các phase và tài nguyên SSOT từ đầu đến cuối, **nhưng không bắt buộc mọi tính năng phải thực hiện máy móc 100% các bước**:
-- **Tính năng đơn giản / phạm vi nhỏ / rủi ro thấp:** Team hoàn toàn có thể chủ động **cắt giảm** (viết tài liệu vắn tắt, bỏ qua prototype, không cần viết E2E test) nhằm tối ưu nhân sự và đẩy nhanh tốc độ release.
-- **Tính năng trọng yếu / phức tạp / hay phát sinh lỗi (Hotspots & High-risk):** Khi đối mặt với nghiệp vụ rủi ro cao, dễ vỡ tiến độ hoặc dễ phát sinh bug, team **nên tuân thủ nghiêm ngặt đầy đủ các bước**:
-  - Đặc tả chi tiết (`spec`) ➔ Phản biện nghiệp vụ (`grill`) ➔ Prototype sớm ➔ Chốt API contract ➔ Viết testcase ➔ Chạy kiểm thử tự động **Automation Test E2E**.
+> **AI-Powered & Deterministic SDLC Automation Toolkit**  
+> Giữ vững kỷ luật SDLC và tính toàn vẹn của Single Source of Truth (SSOT) cho các dự án phần mềm tốc độ cao mà không phải chịu chi phí viết tài liệu thủ công đắt đỏ.
 
 ---
 
-## 1. Cài đặt CLI
+## 📦 Cài đặt nhanh (Quick Start)
 
-**Yêu cầu:** Node.js **≥ 24** (Linux / macOS / WSL / Git Bash).
+Cài đặt trực tiếp công cụ vào môi trường của bạn thông qua script phát hành tự động bằng Git Personal Access Token (PAT):
 
 ```bash
 export COSQUAD_GITHUB_TOKEN=github_pat_XXXXX
@@ -67,96 +18,144 @@ curl -fsSL \
   | bash -s -- "$COSQUAD_GITHUB_TOKEN"
 ```
 
-*Ghim phiên bản cụ thể (tùy chọn):*
-```bash
-export COSQUAD_REF=v0.2.3
+---
+
+## 🔄 Quy trình chuẩn hóa (Workflow Pipeline)
+
+AI phục vụ con người — AI không thay thế con người:
+
+- **AI chịu trách nhiệm về ***Lượng***:**
+  - AI Agent chịu trách nhiệm đảm bảo **đủ lượng** thông tin theo chuẩn cấu trúc.
+  - Tự động audit kiểm tra xem thông tin đã đủ chưa; nếu chưa, AI sẽ chủ động đề xuất các phương án lựa chọn *(Ví dụ: Kiểm tra trang đã có thông tin tiêu đề, breadcrumb chưa? Các phần tử form element đã có đủ type, validate, trạng thái lỗi chưa?... Nếu chưa đủ thì đề xuất cho người dùng lựa chọn hoặc bổ sung)*.
+- **Con người chịu trách nhiệm về ***Chất***:**
+  - Con người chịu trách nhiệm về **độ chính xác và tính chỉn chu** của thông tin cung cấp cho AI.
+  - Chịu trách nhiệm trực tiếp cho các **lựa chọn và quyết định** của mình khi AI đưa ra đề xuất.
+  - Chất lượng của sản phẩm có chính xác và liên kết chặt chẽ hay không hoàn toàn do thông tin con người cung cấp cho AI và do các lựa chọn quyết định của con người.
+
+```text
+Requirement thô (bullet / ảnh / legacy code)
+  │
+  ▼
+AI chuẩn hóa bundle + IR + render MD
+  │
+  ▼
+Khử trùng lặp qua Anti-Copy-Paste Guard (Common Catalog CMN-*)
+  │
+  ▼
+Prototype + review BA/QA/Dev
+  │
+  ▼
+Codegen E2E / BE / wire + safety net
 ```
 
-*Gỡ cài đặt:*
-```bash
-coSquad uninstall
-```
+![Các lớp artifact song song với mã nguồn](../assets/overview-artifact-layers.png)
 
 ---
 
-## 2. Khởi tạo Workspace (`coSquad setup`)
+## 🎯 Mục tiêu: Mô hình Agile T-Shaped
 
-Chạy lệnh setup để tạo mới hoặc thiết lập workspace:
+```text
+                                 COSQUAD CO-PILOT PLATFORM
+                                 (Mô hình Agile T-Shaped)
+                                             │
+             ┌───────────────────────────────┴───────────────────────────────┐
+             ▼                                                               ▼
+   ĐỐI VỚI NON-TECH (BA / QA / PO)                                ĐỐI VỚI DÂN TECH (DEV / CODER)
+   ───────────────────────────────                                ──────────────────────────────
+1. TRUY VẾT & ĐẶC TẢ:                                          1. TRỢ LÝ CODEGEN ĐẮC LỰC:
+   Lặn sâu 5 tầng code, bóc tách                                  Sinh scaffolding, boilerplate, mock API,
+   nghiệp vụ sạch sẽ, dẫn chứng số dòng.                          sync IR, format Swagger chuẩn chỉ.
 
-```bash
-# Tạo thư mục workspace mới và khởi tạo khung dự án (chế độ base mặc định)
-coSquad setup my-workspace
-
-# Hoặc khởi tạo chế độ custom (giữ workspace sạch, không nạp seed common/templates mẫu)
-coSquad setup my-workspace --mode=custom
-
-# Hoặc khởi tạo ngay trong thư mục hiện tại
-coSquad setup
+2. LÀM MỚI & THAY ĐỔI (CR/New Feature):                        2. PHẢN BIỆN NGHIỆP VỤ (VAI TRÒ BA):
+   Không chỉ đặc tả — CoSquad hỗ trợ                              - Chủ động hỏi vặn edge cases, concurrency,
+   sinh mã và đấu nối từ spec đã duyệt                            anti-goals để hoàn thiện logic trước khi code.
+   để ra sản phẩm chạy được!                                      - Chuyển hóa lỗi kỹ thuật khô khan thành
+                                                                  ngôn ngữ product/user thân thiện, gần gũi.
+3. RA QUYẾT ĐỊNH DỄ DÀNG:
+   Đề xuất (Recommended) + Alternative                            3. BẢO ĐẢM CHẤT LƯỢNG (VAI TRÒ QA):
+   + Tech Debt để tự tin bấm duyệt 80%                            - Tự động bổ sung toàn bộ case Unhappy,
+   công việc mà không phụ thuộc Dev.                              biên đặc biệt, rò rỉ dữ liệu, bão lỗi...
+                                                                  - Tự động sinh mã E2E Playwright từ spec.
 ```
 
-CLI sẽ tự động tạo khung cấu trúc SSOT chuẩn:
-- **`source-code/`**: Thư mục / chứa các Submodule repository mã nguồn chính đang phát triển.
-- **`source-legacy/`**: Thư mục / chứa các Submodule repository chứa mã nguồn cũ khảo cổ (**Strictly READ-ONLY**).
-- **`registries/`**: Danh mục Components, Capabilities và Design Tokens chuẩn.
-- **`architecture/`**, **`overview/`**, **`surfaces/`**, **`qa/`**: Cấu trúc tài liệu SSOT theo chuẩn Arc42.
-- **Harness & MCP config**: Đồng bộ skills và cấu hình MCP server cho Agent AI đã chọn.
+- **Đối với Non-Tech (BA / QA / PO):**
+  - **Truy vết & Đặc tả:** Khám phá mã nguồn 5 tầng, bóc tách nghiệp vụ chính xác với dẫn chứng số dòng cụ thể.
+  - **Tự động hóa tính năng mới:** Khi làm CR hay tính năng mới, CoSquad hỗ trợ sinh mã nguồn và đấu nối trọn gói (`/api`, `/prototype`, `/wire`) trực tiếp từ spec đã duyệt để ra sản phẩm chạy được.
+  - **Tự chủ ra quyết định:** Nhận đề xuất đa chiều `(Recommended) + Alternative + Tech Debt` để tự tin phê duyệt 80% công việc mà không bị nghẽn phụ thuộc vào Dev.
 
-### Base code tham khảo theo Adapter
+- **Đối với Developer (Coder / Tech Lead):**
+  - **Giải phóng khỏi việc tẻ nhạt:** Tự động hóa hoàn toàn scaffolding, boilerplate, mock API, sync IR và format Swagger chuẩn chỉ, giúp Dev tập trung 100% vào core business logic và kiến trúc.
+  - **Phản biện nghiệp vụ (như một BA chuyên sâu):** Chủ động đặt câu hỏi làm rõ các trường hợp biên (edge cases), xử lý đồng thời (concurrency), anti-goals; đồng thời chuyển hóa lỗi kỹ thuật khô khan (*500 Internal Error*, *Unique constraint failed*) thành thông điệp thân thiện với người dùng.
+  - **Bảo đảm chất lượng (như một QA kỹ tính):** Chủ động rà soát và bổ sung toàn diện các kịch bản Unhappy, bão lỗi (error storming), chặn đứng rủi ro từ điểm mù tư duy trước khi release, và tự động sinh mã kiểm thử E2E Playwright.
 
-Khi đưa các repository vào `source-code/`, bạn có thể tham khảo hoặc fork từ các base mẫu chuẩn đã tích hợp sẵn quy cách CoSquad:
-
-| Vai trò | Adapter / Stack | Base tham khảo |
-| --- | --- | --- |
-| Frontend | `nuxt4` | [base-nuxt4](https://github.com/ShanYuCoder/base-nuxt4) |
-| Frontend | `nextjs` | [base-nextjs](https://github.com/ShanYuCoder/base-nextjs) |
-| Frontend | `dotnet-line` | [base-line](https://github.com/ShanYuCoder/base-line) |
-| Backend | `nestjs` | *(monorepo fullstack)* [base-nextjs-nestjs](https://github.com/ShanYuCoder/base-nextjs-nestjs) hoặc [base-nuxt4-nestjs](https://github.com/ShanYuCoder/base-nuxt4-nestjs) — API trong `server/` / `apps/api` |
-| Backend | `fastapi` | [base-fast-api](https://github.com/ShanYuCoder/base-fast-api) |
-| Backend | `laravel` | [base-laravel](https://github.com/ShanYuCoder/base-laravel) |
-| Backend | `dotnet-integration` | [base-donet](https://github.com/ShanYuCoder/base-donet) |
-| Fullstack | `nextjs` + `nestjs` | [base-nextjs-nestjs](https://github.com/ShanYuCoder/base-nextjs-nestjs) |
-| Fullstack | `nuxt4` + `nestjs` | [base-nuxt4-nestjs](https://github.com/ShanYuCoder/base-nuxt4-nestjs) |
-
-Tất cả base code ở bảng trên **public trên GitHub** (org `ShanYuCoder`) — có thể xem README từng repo để biết lệnh dev/test và pilot feature (vd. Auth) trước khi setup dự án thật.
+![SSOT Hub — Nền tảng điều phối đa vai trò Agile T-Shaped](../assets/overview-ssot-hub.png)
 
 ---
 
-## 3. End-to-End Workflow với Agent AI
+## ⚡ 6 Thế mạnh Kiến trúc & Vận hành
 
-Sau khi setup, mở workspace trên Agent AI (Cursor, Antigravity, Claude Code,...) và thực hiện quy trình:
+| # | Slogan Định Hướng | Ý Nghĩa Cốt Lõi |
+| :-: | :--- | :--- |
+| **1** | **Mở rộng năng lực T-Shaped** | San phẳng rào cản chuyên môn: Dev hiểu sâu nghiệp vụ, BA tự làm prototype, QA chủ động sinh automation test. |
+| **2** | **Early Feedback Prototype** | Chốt giao diện, luồng thao tác và triệt tiêu 80% nguy cơ rework từ bản prototype tương tác thực tế sớm. |
+| **3** | **Khép vòng Automation Test** | Tự động sinh mã E2E Playwright (`*.spec.ts`) từ ma trận testcase, giải phóng áp lực kiểm thử hồi quy. |
+| **4** | **Anti-Copy-Paste Guard** | Quét sạch mã rác, cưỡng chế chuẩn hóa dùng chung qua Common Catalog (`CMN-UI-*`, `CMN-API-*`, `CMN-DTO-*`). |
+| **5** | **Máy lo "Lượng", Người chốt "Chất"** | `coSquad audit` quét đủ cấu trúc/schema — Con người (BA/Dev/QA) phản biện (*grill*) và bấm quyết định SSOT cuối cùng. |
+| **6** | **Khung chuẩn - Linh hoạt rủi ro** | Dự án nhỏ tối ưu cắt giảm bước; dự án trọng yếu (Hotspots) tuân thủ nghiêm ngặt từ spec đến E2E test. |
 
-```mermaid
-flowchart LR
-  A["coSquad setup<br/>(Dựng workspace)"] --> B["/init<br/>(Map surfaces & repo)"]
-  B --> C{"Loại dự án?"}
-  C -->|Maintain| D["/trace<br/>(Khảo cổ source-code)"]
-  C -->|Rebase / Modernize| E["/legacy<br/>(Trích xuất từ source-legacy)"]
-  C -->|Greenfield| F["/spec<br/>(Đặc tả tính năng mới)"]
-  D --> F
-  E --> F
-  F --> G["/prototype & /api-spec"]
-  G --> H["/testcase & codegen"]
-  H --> I["/wire<br/>(Tích hợp & đóng gói)"]
+![Hiệu chỉnh các Phase phát triển với Prototype và Spec tương tác sớm](../assets/overview-phase-recalibration.png)
+
+---
+
+## 🔄 End-to-End Workflow với Agent AI
+
+Sau khi setup, mở workspace trên Agent AI (Cursor, Antigravity, Claude Code,...) để vận hành theo sơ đồ luồng:
+
+```text
+                        coSquad setup
+                      (Dựng workspace)
+                              │
+                            /init
+                    (Map surfaces & repo)
+                              │
+                         Loại dự án?
+                              │
+         ┌────────────────────┼────────────────────┐
+         ▼                    ▼                    ▼
+     (Maintain)           (Rebase)           (Greenfield)
+         │                    │                    │
+      /trace               /legacy               /spec
+(Khảo cổ code)       (Trích xuất legacy)   (Đặc tả tính năng)
+         │                    │                    │
+         └────────────────────┼────────────────────┘
+                              │
+                    /prototype & /api-spec
+                              │
+                    /testcase & codegen
+                              │
+                            /wire
+                    (Tích hợp & đóng gói)
 ```
 
-| Bước | Lệnh / Skill | Mô tả |
+### Bảng chi tiết các bước thực thi
+
+| Bước | Lệnh / Skill | Mô tả cốt lõi |
 | :--- | :--- | :--- |
-| **1. Setup** | `coSquad setup [name]` | Khởi tạo skeleton, cấu hình MCP và harness cho agent. |
-| **2. Discover** | `/init` | Agent quét workspace, map surfaces, bóc tách **Common Catalog** (`CMN-*`) và kích hoạt **Anti-Copy-Paste Guard** (ngăn chặn copy code trùng lặp từ legacy). |
-| **2.1. Lập Plan** | `/help-plan` | Phân tích `inition-inventory.md`, config và hiện trạng để lên Action Plan chi tiết từng bước cho yêu cầu mới, rà soát toàn diện các User Flow liên đới. |
-| **2.2. Huấn luyện Template** | `build-template-code` | Tự động phân tích **Golden Sample** (module mẫu sạch nhất) để sinh custom codegen templates theo đúng kiến trúc dự án. |
+| **1. Setup** | `coSquad setup [name]` | Khởi tạo skeleton, cấu hình MCP và harness cho AI agent. |
+| **2. Discover** | `/init` | Agent quét workspace, map surfaces, bóc tách Common Catalog (`CMN-*`) và kích hoạt Anti-Copy-Paste Guard. |
+| **2.1. Lập Plan** | `/help-plan` | Phân tích `inition-inventory.md`, config và hiện trạng để lên Action Plan chi tiết từng bước, rà soát toàn diện User Flow liên đới. |
+| **2.2. Huấn luyện Template** | `build-template-code` | Tự động phân tích Golden Sample (module mẫu sạch nhất) để sinh custom codegen templates theo đúng kiến trúc dự án. |
 | **3. Khảo cổ** | `/trace` *(Maintain)*<br>`/legacy` *(Rebase)* | • `/trace`: Quét mã nguồn trong `source-code` để đối chiếu & sinh spec.<br>• `/legacy`: Đọc Read-Only từ `source-legacy`, trích xuất spec/template sang `source-code`. |
 | **4. Đặc tả** | `/spec`, `/grill-bqa` | Viết Leaf Bundle spec cho từng màn hình/tính năng, phản biện logic nghiệp vụ. |
 | **5. Thiết kế & API** | `/prototype`, `/api-spec` | Sinh HTML prototype tương tác & định nghĩa API contract (`01-backend-spec.yaml`). |
 | **6. Kiểm thử** | `/testcase`, `testcase:gen` | Xây dựng ma trận `TC-*.yaml` và sinh code kiểm thử tự động E2E Playwright. |
 | **7. Tích hợp** | `/wire` | Đấu nối FE với API thật, chạy audit đối chiếu spec ↔ code và hoàn tất. |
 
+![Khép vòng kiểm thử tự động từ Testcase Spec sang E2E Playwright](../assets/overview-testing-e2e.png)
+
 ---
 
-## 4. Kiểm tra hệ thống
+## 📚 Tài liệu tham khảo
 
-Kiểm tra tính toàn vẹn của harness và cấu hình trong workspace:
-
-```bash
-coSquad doctor
-```
+- 📖 **[Tài liệu dự án (GitHub)](https://github.com/ShanYuCoder/Doc-CoSquad)** — Đọc tài liệu và tra cứu trực tiếp trên GitHub repository.
+- ⚙️ **Thư mục [workflows/](https://github.com/ShanYuCoder/Doc-CoSquad/tree/main/workflows/)** — Chi tiết các phase phát triển, quy trình vận hành và bộ protocol chuẩn (`SSOT_AGENT_PROTOCOL.md`, trace, legacy, help-plan, grill-bqa, testcase).

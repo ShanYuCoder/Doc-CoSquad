@@ -151,15 +151,12 @@ export default withMermaid(
         themeConfig: {
           nav: [
             { text: 'Home', link: '/' },
-            { text: 'Goal & Vision', link: '/goal' },
-            { text: 'Overview', link: '/overview/' },
-            { text: 'Strengths', link: '/overview/strengths' },
+            { text: 'README & Overview', link: '/readme' },
+            { text: 'Workflows', link: '/workflows/' },
+            { text: 'References', link: '/references/cli-and-commands' },
           ],
           sidebar: [
-            { text: 'North Star Goal & Vision', link: '/goal' },
-            { text: 'README', link: '/readme' },
-            { text: 'Overview', link: '/overview/' },
-            { text: 'Architectural Strengths', link: '/overview/strengths' },
+            { text: 'Quick Start & Overview', link: '/readme' },
             {
               text: 'Workspace Structure',
               link: '/artifacts/',
@@ -204,15 +201,12 @@ export default withMermaid(
         themeConfig: {
           nav: [
             { text: 'Trang chủ', link: '/vi/' },
-            { text: 'Mục tiêu & Tầm nhìn', link: '/vi/goal' },
-            { text: 'Tổng quan', link: '/vi/overview/' },
-            { text: 'Điểm mạnh', link: '/vi/overview/strengths' },
+            { text: 'README & Tổng quan', link: '/vi/readme' },
+            { text: 'Quy trình (Workflows)', link: '/vi/workflows/' },
+            { text: 'Tra cứu (References)', link: '/vi/references/cli-and-commands' },
           ],
           sidebar: [
-            { text: 'Bức tranh Mục tiêu (North Star)', link: '/vi/goal' },
-            { text: 'README', link: '/vi/readme' },
-            { text: 'Tổng quan', link: '/vi/overview/' },
-            { text: 'Điểm mạnh Kiến trúc', link: '/vi/overview/strengths' },
+            { text: 'Bắt đầu nhanh & Tổng quan', link: '/vi/readme' },
             {
               text: 'Cấu trúc Workspace',
               link: '/vi/artifacts/',
@@ -257,13 +251,12 @@ export default withMermaid(
         themeConfig: {
           nav: [
             { text: '首页', link: '/zh/' },
-            { text: '概览', link: '/zh/overview/' },
-            { text: '核心优势', link: '/zh/overview/strengths' },
+            { text: 'README 说明', link: '/zh/readme' },
+            { text: '工作流 (Workflows)', link: '/zh/workflows/' },
+            { text: '参考手册', link: '/zh/references/cli-and-commands' },
           ],
           sidebar: [
-            { text: 'README 说明', link: '/zh/readme' },
-            { text: '概览', link: '/zh/overview/' },
-            { text: '架构核心优势', link: '/zh/overview/strengths' },
+            { text: '快速开始与概览', link: '/zh/readme' },
             {
               text: '工作区结构',
               link: '/zh/artifacts/',
@@ -308,13 +301,12 @@ export default withMermaid(
         themeConfig: {
           nav: [
             { text: 'ホーム', link: '/ja/' },
-            { text: '概要', link: '/ja/overview/' },
-            { text: '強み・優位性', link: '/ja/overview/strengths' },
+            { text: 'README 説明書', link: '/ja/readme' },
+            { text: 'ワークフロー (Workflows)', link: '/ja/workflows/' },
+            { text: 'リファレンス', link: '/ja/references/cli-and-commands' },
           ],
           sidebar: [
-            { text: 'README 説明書', link: '/ja/readme' },
-            { text: '概要 (Overview)', link: '/ja/overview/' },
-            { text: 'アーキテクチャの強み', link: '/ja/overview/strengths' },
+            { text: 'クイックスタートと概要', link: '/ja/readme' },
             {
               text: 'ワークスペース構造',
               link: '/ja/artifacts/',

@@ -4,6 +4,10 @@ Khi chạy lệnh `coSquad setup [workspace]` và khởi chạy `pnpm docs:dev` 
 
 Giao diện web VitePress sẽ đọc trực tiếp các thư mục và file Markdown này trên máy local để toàn bộ team (BA, Dev, QA, Lead) cùng tra cứu và làm việc trên một nguồn thông tin duy nhất.
 
+> [!NOTE]
+> **Phân biệt phạm vi tài liệu:**
+> Cấu trúc thư mục dưới đây (`overview/`, `architecture/`, `surfaces/`,...) là khung **SSOT của dự án phần mềm mục tiêu** do lệnh `coSquad setup` khởi tạo cho team của bạn để phát triển sản phẩm. Khung này hoàn toàn độc lập với trang tài liệu hướng dẫn sử dụng của bản thân bộ công cụ CoSquad (đã được tinh gọn thành 1 file README duy nhất).
+
 ---
 
 ## Tổng quan cấu trúc thư mục trên Disk

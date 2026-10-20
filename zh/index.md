@@ -7,21 +7,18 @@ hero:
   tagline: "企业级高纪律性 AI 工程化研发平台 (Graph, DNA, Docs, Test, Codegen)"
   actions:
     - theme: brand
-      text: 快速入门 — 概览
-      link: /zh/overview/
-    - theme: alt
-      text: README 说明
+      text: 快速开始 (README)
       link: /zh/readme
+    - theme: alt
+      text: 工作流 (Workflows)
+      link: /zh/workflows/
 
 features:
   - title: 'README 说明'
     details: 工具箱介绍、CLI 安装指南、研发阶段与角色定位。
     link: /zh/readme
-  - title: '概览 (Overview)'
-    details: CoSquad 核心理念、适用范围、Arc42 SSOT 体系。
-    link: /zh/overview/
   - title: '工作区结构'
-    details: 磁盘 SSOT 骨架规范（overview, architecture, surfaces, registries, qa）。
+    details: 磁盘 SSOT 骨架规范（architecture, surfaces, registries, qa）。
     link: /zh/artifacts/
   - title: '工作流 (Workflows)'
     details: 全局阶段、设计 / 后端 / 测试 / 联调、对抗性质询与门禁审计。
@@ -35,5 +32,5 @@ features:
 
 <div class="tip custom-block">
   <p class="custom-block-title">SSOT 架构文档体系</p>
-  <p>本文档站点涵盖<strong>全局概览</strong>、<strong>工作区结构</strong>、<strong>完整工作流</strong>以及<strong>参考手册</strong>（CLI 命令与 Agent 技能）。在执行 <code>coSquad setup</code> 后，全套 Agent 技能将自动同步至项目工作区中；在线参考可在 <strong>参考手册 → Skills 技能库</strong> 中查阅。</p>
+  <p>本站点包含 <strong>README 说明</strong>、<strong>工作区结构</strong>、<strong>工作流</strong> 与 <strong>参考手册</strong>（CLI + Skills）。通过 <code>coSquad setup</code> 初始化后，完整的 Slash 技能将同步至项目工作区；在线查阅可浏览 <strong>参考手册 → 技能库</strong>。</p>
 </div>

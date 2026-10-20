@@ -9,65 +9,16 @@
   <a href="./README.ja.md"><b>日本語</b></a>
 </p>
 
-> [!IMPORTANT]
-> 📚 **REFERENCE DOCUMENTATION:**
-> 
-> - 📖 **[Project Docs (GitHub)](https://github.com/ShanYuCoder/Doc-CoSquad)** — Read and explore documentation directly on GitHub.
-> - ⚙️ **Directory [workflows/](https://github.com/ShanYuCoder/Doc-CoSquad/tree/main/workflows/)** — Detailed SDLC development phases and operational workflows.
+# CoSquad 🚀
 
-# CoSquad
-
-**CoSquad** is a **CLI + AI Harness** platform standardizing software development processes under the **SSOT (Single Source of Truth)** paradigm, designed for teams collaborating with **AI Agents** (Cursor, Gemini/Antigravity, Claude Code, Codex, OpenCode, etc.).
-
-**AI serves humans** — never forcing developers or stakeholders to write raw complex YAML from scratch:
-
-```text
-Raw Requirements (bullet points / screenshots / legacy code)
-  → AI standardizes bundle + IR + renders Markdown
-  → Eliminates duplicate code via Anti-Copy-Paste Guard (Common Catalog CMN-*)
-  → Interactive Prototype + BA / QA / Dev review
-  → Automated Codegen: E2E Playwright / BE / Wire + safety net
-```
-
-### 1. Expanding T-Shaped Team Capabilities with AI
-AI does not replace human developers; it serves as a force multiplier to broaden cross-functional expertise (*T-shaped*), breaking silos and communication bottlenecks:
-- **Dev (Expanding BA skills):** Leverage AI to perform domain analysis and adversarial grilling (`/grill-bqa`), elevating requirement clarity to **70–80%** of a seasoned BA without blocking on meetings.
-- **BA (Expanding Dev skills):** Transform business requirements into interactive visual prototypes without relying on frontend engineers during feasibility phases.
-- **QA (Expanding Automation skills):** From structured test scenarios (`TC-*.yaml`), leverage AI to generate production-ready **E2E Playwright** code, transitioning manual testers to test automation engineers.
-
-### 2. Early Feedback Prototype Principle
-- **Align behavior as early as possible:** Instead of waiting weeks for UI/UX wireframes or discovering misalignment only after code completion, AI generates **Interactive Living Prototypes** (HTML/Vue/React) directly from specs.
-- **Lock UI & Flow with Stakeholders:** Enable POs, BAs, and clients to click through real interactions, testing usability and providing immediate feedback during the design phase.
-- **Eliminate 80% of rework risks:** Logic flaws, redundant steps, and misunderstood business rules are resolved on disposable prototypes before writing production code.
-
-### 3. Closing the Quality Loop with Automated E2E Testing
-- **Automated tests from Testcase Specs:** From the testcase scenario matrix (`TC-*.yaml`), AI automatically scaffolds complete **E2E Playwright** suites (`*.spec.ts`).
-- **Eliminating Regression Fatigue:** Fully removes repetitive manual regression cycles before every release, guaranteeing existing features remain robust as the codebase scales.
-
-### 4. Eradicating Duplicated Code with Anti-Copy-Paste Guard
-- **Stop legacy copy-paste sprawl:** In brownfield maintenance and modernization projects, code is frequently copy-pasted across dozens of modules (e.g., identical Confirm Modals, paginators, export handlers rewritten in 4–5 different places).
-- **Enforced Common Sharing:** Skill `/init` automatically detects code duplicates into a unified **Common Catalog** (`CMN-UI-*`, `CMN-API-*`, `CMN-DTO-*`). The platform enforces consolidation into `shared/`, forbidding both Developers and AI Agents from copy-pasting legacy code into new modules.
-
-### 5. Tool Enforces <span style="color: #0284c7; font-weight: bold;">"QUANTITY"</span> — Humans Decide <span style="color: #16a34a; font-weight: bold;">"QUALITY"</span> for SSOT
-CoSquad draws a clear line between automated machine verification and human critical thinking:
-- **Tool ensures "QUANTITY" (Completeness, structure & coverage):**
-  - Deterministic scripts (`coSquad audit *`, `cases:gate`) audit whether documentation contains all required fields, schemas, and traces.
-  - From UI parameters (styling, positions, triggers), API contracts, error codes, to QA risk registers (`gaps[]`, `confirms[]`), tooling detects structural omissions without exception.
-- **Humans determine "QUALITY" (Accuracy, depth & viability):**
-  - **AI analyzes & proposes:** AI explores options, suggests architectures, and raises interactive clarifying questions.
-  - **Humans critique & arbitrate:** Team members (BA, Dev, QA, Lead) act as the final decision-makers — grilling AI proposals (`grill`), selecting optimal approaches, and formalizing the final SSOT.
-
-### 6. Operational Principle: Standardized Framework — Risk-Adaptive Execution
-CoSquad provides a complete end-to-end SSOT lifecycle, **without forcing teams into rigid bureaucratic dogmatism**:
-- **Simple features / Small scope / Low risk:** Teams can proactively streamline steps (concise specs, skip prototype, skip E2E test) to accelerate release velocity.
-- **Critical features / High complexity / High-risk hotspots:** For complex or high-risk business logic, teams **must strictly adhere to the full cycle**:
-  - Detailed Leaf Spec (`/spec`) ➔ Adversarial Review (`/grill`) ➔ Interactive Prototype ➔ API Contract ➔ Testcase Matrix ➔ **Automated E2E Test Suite**.
+> **AI-Powered & Deterministic SDLC Automation Toolkit**  
+> Maintain SDLC discipline and Single Source of Truth (SSOT) integrity for high-velocity software engineering without the prohibitive overhead of manual documentation.
 
 ---
 
-## 1. CLI Installation
+## 📦 Quick Start
 
-**Requirements:** Node.js **≥ 24** (Linux / macOS / WSL / Git Bash).
+Install CoSquad directly into your environment using the automated release script with a Git Personal Access Token (PAT):
 
 ```bash
 export COSQUAD_GITHUB_TOKEN=github_pat_XXXXX
@@ -78,93 +29,144 @@ curl -fsSL \
   | bash -s -- "$COSQUAD_GITHUB_TOKEN"
 ```
 
-*Pin a specific version (optional):*
-```bash
-export COSQUAD_REF=v0.2.3
+---
+
+## 🔄 Workflow Pipeline
+
+AI serves humans — AI does not replace humans:
+
+- **AI is responsible for ***Quantity***:**
+  - The AI Agent ensures **sufficient quantity and completeness** of structured information.
+  - Automatically audits whether data and specs are exhaustive; if gaps exist, it proactively proposes options *(e.g., verifying whether a page has title and breadcrumbs; whether form elements define types, validation rules, error states... and prompting users with choices to approve or complete)*.
+- **Humans are responsible for ***Quality***:**
+  - Humans take full responsibility for the **accuracy and rigor** of the domain requirements provided to AI.
+  - Humans hold direct ownership over the **choices and approvals** when AI presents recommendations.
+  - Whether product quality is correct, cohesive, and business-sound depends entirely on the information provided and final decisions made by human stakeholders.
+
+```text
+Raw Requirements (bullet points / screenshots / legacy code)
+  │
+  ▼
+AI standardizes bundle + IR + renders Markdown
+  │
+  ▼
+Duplicate elimination via Anti-Copy-Paste Guard (Common Catalog CMN-*)
+  │
+  ▼
+Interactive Prototype + review by BA / QA / Dev
+  │
+  ▼
+Codegen: E2E Playwright / BE / Wire + safety net
 ```
 
-*Uninstall:*
-```bash
-coSquad uninstall
-```
+![Parallel artifact layers with source code](./assets/overview-artifact-layers.png)
 
 ---
 
-## 2. Initialize Workspace (`coSquad setup`)
+## 🎯 Goal: Agile T-Shaped Team Model
 
-Run the setup command to initialize a new or existing workspace:
+```text
+                                 COSQUAD CO-PILOT PLATFORM
+                                 (Agile T-Shaped Team Model)
+                                             │
+             ┌───────────────────────────────┴───────────────────────────────┐
+             ▼                                                               ▼
+       FOR NON-TECH (BA / QA / PO)                                    FOR TECH (DEV / CODER)
+   ─────────────────────────────────                              ──────────────────────────────
+1. TRACE & SPECIFICATION:                                      1. CAPABLE CODEGEN ASSISTANT:
+   Dive deep across 5 code layers, extract clean                  Scaffolding, boilerplate, mock APIs,
+   business rules with exact line references.                     sync IR, format Swagger cleanly.
 
-```bash
-# Create a new workspace directory and scaffold structure
-coSquad setup my-workspace
-
-# Or initialize inside the current directory
-coSquad setup
+2. NEW FEATURES & CHANGES (CR):                                2. ADVERSARIAL BUSINESS REVIEW (BA ROLE):
+   Not just specs — CoSquad autonomously                          - Grill edge cases, concurrency, anti-goals
+   scaffolds and wires code from approved specs                   to lock logic before implementation.
+   to deliver runnable software!                                  - Transform dry technical errors into
+                                                                  refined, user-friendly language.
+3. CONFIDENT DECISION-MAKING:
+   Provides (Recommended) + Alternative                           3. RIGOROUS QUALITY GATE (QA ROLE):
+   + Tech Debt options so stakeholders approve                    - Automatically inject Unhappy paths, boundary
+   80% of tasks without waiting on developers.                    extremes, data leaks, and error storms...
+                                                                  - Auto-generate E2E Playwright suites from specs.
 ```
 
-The CLI automatically establishes the standardized Arc42 SSOT hierarchy:
-- **`source-code/`**: Submodule repositories for active application source code.
-- **`source-legacy/`**: Submodule repositories for legacy archeology code (**Strictly READ-ONLY**).
-- **`registries/`**: Shared catalogs for Components, Capabilities, and Design Tokens.
-- **`architecture/`**, **`overview/`**, **`surfaces/`**, **`qa/`**: Arc42-compliant SSOT documentation.
-- **Harness & MCP config**: Synchronizes AI Agent skills and MCP server configuration.
+- **For Non-Tech (BA / QA / PO):**
+  - **Trace & Specification:** Autonomously inspect 5 code layers, extracting business rules with exact source line citations.
+  - **Autonomous Feature Delivery:** When handling CRs or new features, CoSquad generates source code and full wiring (`/api`, `/prototype`, `/wire`) directly from approved specs into runnable deliverables.
+  - **Confident Decision-Making:** Receive structured choices `(Recommended) + Alternative + Tech Debt` to autonomously sign off on 80% of tasks without blocking on engineering.
 
-### Reference Starter Templates by Adapter
+- **For Developers (Coder / Tech Lead):**
+  - **Eliminating Tedium:** Automates boilerplate, scaffolding, mock APIs, IR sync, and Swagger formatting, freeing engineers to focus 100% on core business logic and architecture.
+  - **Adversarial Business Co-Pilot (BA Role):** Proactively challenges assumptions, tests concurrency limits and anti-goals, while translating technical errors (*500 Internal Error*, *Unique constraint failed*) into refined product-facing semantics.
+  - **Meticulous Quality Assurance (QA Role):** Proactively scans and injects Unhappy paths and error-storming scenarios, eliminating cognitive blind spots before release, while automatically generating production-ready E2E Playwright test suites.
 
-When adding repositories into `source-code/`, you can clone or fork from official starter templates pre-integrated with CoSquad conventions:
-
-| Role | Adapter / Stack | Reference Base |
-| --- | --- | --- |
-| Frontend | `nuxt4` | [base-nuxt4](https://github.com/ShanYuCoder/base-nuxt4) |
-| Frontend | `nextjs` | [base-nextjs](https://github.com/ShanYuCoder/base-nextjs) |
-| Frontend | `dotnet-line` | [base-line](https://github.com/ShanYuCoder/base-line) |
-| Backend | `nestjs` | *(fullstack monorepo)* [base-nextjs-nestjs](https://github.com/ShanYuCoder/base-nextjs-nestjs) or [base-nuxt4-nestjs](https://github.com/ShanYuCoder/base-nuxt4-nestjs) — API in `server/` / `apps/api` |
-| Backend | `fastapi` | [base-fast-api](https://github.com/ShanYuCoder/base-fast-api) |
-| Backend | `laravel` | [base-laravel](https://github.com/ShanYuCoder/base-laravel) |
-| Backend | `dotnet-integration` | [base-donet](https://github.com/ShanYuCoder/base-donet) |
-| Fullstack | `nextjs` + `nestjs` | [base-nextjs-nestjs](https://github.com/ShanYuCoder/base-nextjs-nestjs) |
-| Fullstack | `nuxt4` + `nestjs` | [base-nuxt4-nestjs](https://github.com/ShanYuCoder/base-nuxt4-nestjs) |
-
-All base repositories are **public on GitHub** under organization `ShanYuCoder`.
+![SSOT Hub — Multi-role Agile T-Shaped Collaboration Platform](./assets/overview-ssot-hub.png)
 
 ---
 
-## 3. End-to-End Workflow with AI Agents
+## ⚡ 6 Architectural & Operational Strengths
 
-Open your workspace in your AI Agent (Cursor, Antigravity, Claude Code, etc.) and follow the guided workflow:
+| # | Guiding Slogan | Core Significance |
+| :-: | :--- | :--- |
+| **1** | **Expanding T-Shaped Capabilities** | Flattens specialty silos: Devs master business domain, BAs build prototypes, QAs generate automation tests. |
+| **2** | **Early Feedback Prototype** | Finalize UI and interactive flows early, eliminating 80% of rework risks with working prototypes. |
+| **3** | **Closing the Loop with Automation Testing** | Auto-generate E2E Playwright test suites (`*.spec.ts`) from testcase matrices, lifting regression fatigue. |
+| **4** | **Anti-Copy-Paste Guard** | Sweep out code duplication, enforcing shared reuse via Common Catalog (`CMN-UI-*`, `CMN-API-*`, `CMN-DTO-*`). |
+| **5** | **Machine Handles "Quantity", Humans Decide "Quality"** | `coSquad audit` checks structure and schemas — Humans (BA/Dev/QA) challenge (*grill*) and make final SSOT decisions. |
+| **6** | **Standard Framework - Risk-Proportional Rigor** | Streamline steps for low-risk projects; enforce rigorous spec-to-E2E compliance for mission-critical hotspots. |
 
-```mermaid
-flowchart LR
-  A["coSquad setup<br/>(Scaffold workspace)"] --> B["/init<br/>(Map surfaces & repos)"]
-  B --> C{"Project Type?"}
-  C -->|Maintain| D["/trace<br/>(Archaeology source-code)"]
-  C -->|Rebase / Modernize| E["/legacy<br/>(Extract from source-legacy)"]
-  C -->|Greenfield| F["/spec<br/>(Author new feature spec)"]
-  D --> F
-  E --> F
-  F --> G["/prototype & /api-spec"]
-  G --> H["/testcase & codegen"]
-  H --> I["/wire<br/>(Integrate & audit)"]
+![Phase Recalibration with Early Interactive Prototype and Spec](./assets/overview-phase-recalibration.png)
+
+---
+
+## 🔄 End-to-End Workflow with AI Agents
+
+After setup, open your workspace in an AI Agent (Cursor, Antigravity, Claude Code, etc.) to execute according to the workflow:
+
+```text
+                        coSquad setup
+                     (Workspace Scaffold)
+                              │
+                            /init
+                    (Map surfaces & repo)
+                              │
+                         Project Type?
+                              │
+         ┌────────────────────┼────────────────────┐
+         ▼                    ▼                    ▼
+     (Maintain)           (Rebase)           (Greenfield)
+         │                    │                    │
+      /trace               /legacy               /spec
+  (Code Archaeo)     (Legacy Extraction)    (Feature Spec)
+         │                    │                    │
+         └────────────────────┼────────────────────┘
+                              │
+                    /prototype & /api-spec
+                              │
+                    /testcase & codegen
+                              │
+                            /wire
+                  (Integration & Packaging)
 ```
 
-| Step | Command / Skill | Description |
+### Execution Steps Breakdown
+
+| Step | Command / Skill | Core Description |
 | :--- | :--- | :--- |
-| **1. Setup** | `coSquad setup [name]` | Initializes skeleton, configures MCP and harness for AI agent. |
-| **2. Discover** | `/init` | Scans workspace, maps surfaces, isolates **Common Catalog** (`CMN-*`) and enables **Anti-Copy-Paste Guard**. |
-| **2.1. Action Plan** | `/help-plan` | Analyzes `inition-inventory.md` and current status to generate phased Action Plans for new requirements. |
-| **2.2. Train Templates** | `build-template-code` | Analyzes **Golden Sample** (cleanest existing module) to generate custom codegen templates adhering to project architecture. |
-| **3. Archaeology** | `/trace` *(Maintain)*<br>`/legacy` *(Rebase)* | • `/trace`: Scans `source-code` to reverse-engineer specs.<br>• `/legacy`: Reads `source-legacy` (Read-Only) to extract specs and templates into `source-code`. |
-| **4. Specification** | `/spec`, `/grill-bqa` | Authors Leaf Bundle specs per feature/screen with business logic grilling. |
-| **5. Design & API** | `/prototype`, `/api-spec` | Generates interactive HTML prototypes and formalizes API contracts (`01-backend-spec.yaml`). |
-| **6. Testing** | `/testcase`, `testcase:gen` | Builds test matrix (`TC-*.yaml`) and automatically generates E2E Playwright suites. |
-| **7. Integration** | `/wire` | Wires frontend to real backend APIs, audits spec ↔ code alignment, and verifies gates. |
+| **1. Setup** | `coSquad setup [name]` | Initialize skeleton, configure MCP server, and set up AI agent harness. |
+| **2. Discover** | `/init` | Agent scans workspace, maps surfaces, extracts Common Catalog (`CMN-*`), and activates Anti-Copy-Paste Guard. |
+| **2.1. Action Planning** | `/help-plan` | Analyzes `inition-inventory.md`, configs, and state to produce a step-by-step Action Plan, reviewing linked User Flows. |
+| **2.2. Template Training** | `build-template-code` | Analyzes Golden Samples (cleanest architectural modules) to produce project-aligned custom codegen templates. |
+| **3. Archaeology** | `/trace` *(Maintain)*<br>`/legacy` *(Rebase)* | • `/trace`: Scans source code in `source-code` to correlate and generate specs.<br>• `/legacy`: Reads read-only from `source-legacy`, extracting specs/templates into `source-code`. |
+| **4. Specification** | `/spec`, `/grill-bqa` | Drafts Leaf Bundle specs for screens/features, challenging business logic. |
+| **5. Design & API** | `/prototype`, `/api-spec` | Generates interactive HTML prototypes and defines API contracts (`01-backend-spec.yaml`). |
+| **6. Testing** | `/testcase`, `testcase:gen` | Builds `TC-*.yaml` matrix and generates automated E2E Playwright test suites. |
+| **7. Integration** | `/wire` | Connects frontend to real APIs, runs spec ↔ code audit checks, and completes the feature. |
+
+![Closing the Automated Testing Loop from Testcase Specs to E2E Playwright](./assets/overview-testing-e2e.png)
 
 ---
 
-## 4. Diagnostics & Health Check
+## 📚 References
 
-Verify the integrity of harness skills and workspace configuration:
-
-```bash
-coSquad doctor
-```
+- 📖 **[Project Docs (GitHub)](https://github.com/ShanYuCoder/Doc-CoSquad)** — Read and explore documentation directly on GitHub.
+- ⚙️ **Directory [workflows/](https://github.com/ShanYuCoder/Doc-CoSquad/tree/main/workflows/)** — Detailed SDLC development phases, operational workflows, and standard protocols (`SSOT_AGENT_PROTOCOL.md`, trace, legacy, help-plan, grill-bqa, testcase).

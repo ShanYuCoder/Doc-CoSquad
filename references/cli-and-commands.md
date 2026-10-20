@@ -151,6 +151,14 @@ Generates idiomatic frontend components, backend APIs, and unit test suites acro
 
 *(All code generation commands support `:dry` preview mode without touching the disk, e.g., `coSquad api-unit-gen:dry`)*
 
+#### Stacks & Adapters Compatibility Matrix
+
+| Category | Out-of-the-Box (OOTB) Adapters | Custom Stacks (via Golden Sample) |
+| --- | --- | --- |
+| **Frontend** | `nuxt4` (Nuxt 4), `nextjs` (Next.js), `dotnet-line` (DotNet Line Client) | Use `coSquad build-template-code --sample=<dir>` or skill `/adopt` to extract architectural DNA and generate templates for Vue 3, React, Angular, Svelte, etc. |
+| **Backend** | `nestjs` (NestJS), `fastapi` (FastAPI), `laravel` (Laravel), `dotnet-integration` (DotNet) | Point to any clean golden sample module; CoSquad extracts project patterns and generates templates (`.hbs`, `.stub`, `.j2`, `.scriban`) automatically. |
+
+
 ---
 
 ## 🛠 Model Context Protocol (MCP) Tools

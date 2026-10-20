@@ -84,3 +84,11 @@ CoSquad は、開発プロセスを**ドキュメントエンジン (Docs Engine
 | `coSquad contract-gen` | 共通 TypeScript 型定義および DTO 契約コードを生成。 |
 | `coSquad build-template-code --sample=<dir>` | 既存のゴールデンサンプルモジュールの AST とコーディングスタイルを学習。 |
 | `coSquad build-template-code --yes` | 学習済みテンプレートを `.coSquad/adapters/` 配下に書き出し。 |
+
+#### スタックとアダプターの互換性マトリクス (Stacks & Adapters)
+
+| 分類 | ビルトインアダプター (OOTB) | カスタムスタック (Custom via Golden Sample) |
+| --- | --- | --- |
+| **フロントエンド (Frontend)** | `nuxt4` (Nuxt 4), `nextjs` (Next.js), `dotnet-line` (DotNet Line クライアント) | `coSquad build-template-code --sample=<dir>` または `/adopt` スキルを活用して既存コードの設計 DNA を抽出し、Vue 3、React、Angular、Svelte などのテンプレートを自動生成可能。 |
+| **バックエンド (Backend)** | `nestjs` (NestJS), `fastapi` (FastAPI), `laravel` (Laravel), `dotnet-integration` (DotNet) | 任意のクリーンなモジュール（Golden Sample）を指定するだけで、CoSquad が設計パターンを学習しテンプレート（`.hbs`、`.stub`、`.j2`、`.scriban`）を自動生成。 |
+

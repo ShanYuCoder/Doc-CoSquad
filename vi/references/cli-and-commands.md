@@ -158,6 +158,14 @@ CoSquad kế thừa trọn vẹn sức mạnh sinh mã nguồn và Unit Test đa
 
 *(Tất cả lệnh trên đều có thể truyền thêm `:dry` để xem trước thay vì ghi file, ví dụ: `coSquad api-unit-gen:dry`)*
 
+#### Bảng Tương thích Stacks & Adapters
+
+| Phân hệ | Adapter dựng sẵn (OOTB) | Stacks tùy chỉnh (Custom via Golden Sample) |
+| --- | --- | --- |
+| **Frontend** | `nuxt4` (Nuxt 4), `nextjs` (Next.js), `dotnet-line` (DotNet Line Client) | Dùng lệnh `coSquad build-template-code --sample=<dir>` hoặc skill `/adopt` để bóc tách DNA và sinh template cho Vue 3, React, Angular, Svelte,... |
+| **Backend** | `nestjs` (NestJS), `fastapi` (FastAPI), `laravel` (Laravel), `dotnet-integration` (DotNet) | Tương tự, chỉ cần trỏ vào module mẫu sạch (Golden Sample), CoSquad sẽ học kiến trúc dự án và sinh template (`.hbs`, `.stub`, `.j2`, `.scriban`) tự động. |
+
+
 ---
 
 ## 🛠 Danh sách Kỹ năng (Skills) của Agent

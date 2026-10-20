@@ -4,6 +4,10 @@ When executing `coSquad setup [workspace]` and launching `pnpm docs:dev` (or `co
 
 The VitePress web interface directly reads these directories and Markdown files on the local machine so the entire cross-functional team (BA, Dev, QA, Lead) collaborates and aligns on a unified source of truth.
 
+> [!NOTE]
+> **Scope Distinction:**
+> The directory structure below (`overview/`, `architecture/`, `surfaces/`, etc.) represents the **SSOT architecture for your target software product** scaffolded by `coSquad setup`. This is independent of CoSquad's own documentation site (which is streamlined into a single unified README).
+
 ---
 
 ## On-Disk Directory Overview

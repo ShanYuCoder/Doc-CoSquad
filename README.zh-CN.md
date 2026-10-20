@@ -9,65 +9,16 @@
 **[文档目录](CATALOG.md)**
 <!-- /cosquad-catalog -->
 
-> [!IMPORTANT]
-> 📚 **参考文档：**
-> 
-> - 📖 **[项目文档 (GitHub)](https://github.com/ShanYuCoder/Doc-CoSquad)** — 直接在 GitHub 仓库中查阅详细文档。
-> - ⚙️ **工作流目录 [workflows/](https://github.com/ShanYuCoder/Doc-CoSquad/tree/main/workflows/)** — 研发各阶段及规范化运作流程。
+# CoSquad 🚀
 
-# CoSquad
-
-**CoSquad** 是一个面向人机协同开发、基于 **SSOT（Single Source of Truth，单一真实数据源）** 理念构建的 **CLI + AI Harness** 研发平台，专为与 **AI Agent**（Cursor、Gemini/Antigravity、Claude Code、Codex、OpenCode 等）协作的高效敏捷团队设计。
-
-**AI 赋能人类，而非让人类陷入繁重的手工文档编写**：
-
-```text
-原始业务需求（要点笔记 / 设计截图 / 遗留系统代码）
-  → AI 规范化生成需求包 (Bundle) + 中间表示 (IR) + 渲染 Markdown
-  → 反复制粘贴防护机制（Anti-Copy-Paste Guard）沉淀通用目录 (CMN-*)
-  → 交互式原型 (Prototype) + 业务(BA)/测试(QA)/开发(Dev) 多方评审
-  → 自动化代码生成：E2E Playwright 测试 / 后端 API / 联调脚手架
-```
-
-### 1. AI 驱动的跨职能 T 型团队（T-Shaped Team）
-AI 并不是替代开发者，而是作为专业领域的杠杆，拓宽各角色的能力边界（*T-shaped*），消除部门间壁垒与沟通摩擦：
-- **开发者（扩展需求分析 BA 能力）：** 利用 AI 进行业务逻辑推演与对抗性质询（`/grill-bqa`），在无需等待产品经理开会的情况下，自主将需求梳理至资深 BA 的 **70–80%** 严谨度。
-- **产品/业务人员（扩展前端原型开发能力）：** 在可行性分析初期，直接将业务叙述转化为可交互的前端界面，无需等待研发排期。
-- **QA 测试人员（扩展自动化测试能力）：** 从结构化测试用例（`TC-*.yaml`）出发，借助 AI 自动生成工业级 **E2E Playwright** 自动化测试代码，实现从手工测试到自动化专家的平滑转型。
-
-### 2. 早期反馈原型原则 (Early Feedback Prototype)
-- **尽早统一交互认知：** 告别漫长低效的静态 UI/UX 评审或在研发完工后才发现理解偏差。AI 直接根据规范生成**真实可点击的交互式原型**（HTML/Vue/React）。
-- **与业务干系人锁定界面与流转：** 产品经理与客户可在设计阶段真实点击操作、体验交互流程并即时提供反馈。
-- **规避 80% 的返工风险：** 所有逻辑盲点、多余操作与理解误区都在低成本原型阶段彻底解决，杜绝在生产代码编写后推倒重来。
-
-### 3. 闭环质量保证：E2E 自动化测试
-- **用例文档直通代码：** 基于测试矩阵文档（`TC-*.yaml`），AI 自动生成对应的 **Playwright E2E** 端到端测试脚本（`*.spec.ts`）。
-- **释放回归测试压力：** 彻底终结每次发版前繁琐耗时的人工重复回归，确保系统持续演进时不破坏已有功能。
-
-### 4. 彻底消除重复代码：反复制粘贴守卫 (Anti-Copy-Paste Guard)
-- **遏制垃圾代码蔓延：** 在遗留系统维护与重构项目中，代码往往被跨模块大量复制（例如同一个确认弹窗、分页器或导出逻辑在 4–5 个不同地方重复编写）。
-- **强制沉淀通用资产：** `/init` 技能自动识别重复逻辑并归集至**通用资产目录**（`CMN-UI-*`, `CMN-API-*`, `CMN-DTO-*`），强制规范收口于 `shared/` 模块，严禁开发人员与 AI 盲目复制粘贴遗留代码。
-
-### 5. 工具保障<span style="color: #0284c7; font-weight: bold;">“数量与完整度”</span> — 人类掌控<span style="color: #16a34a; font-weight: bold;">“质量与深度”</span>
-CoSquad 清晰界定了机器自动化与人类思维的边界：
-- **工具保障“数量”（完备性、格式结构与覆盖率）：**
-  - 确定性检查脚本（`coSquad audit *`, `cases:gate`）自动审计文档要素是否齐全、格式是否合规。
-  - 从 UI 属性、API 契约、错误码，到 QA 风险台账（`gaps[]`, `confirms[]`），工具精准捕捉所有遗漏项。
-- **人类裁定“质量”（准确性、深度与业务合理性）：**
-  - **AI 分析并提出建议：** AI 提供架构选型、逻辑方案并主动提问引导。
-  - **团队主导质询与终审：** 研发团队（BA、Dev、QA、架构师）拥有最高决策权——通过质询（`grill`）推敲 AI 提案，拍板最佳方案并沉淀为 SSOT。
-
-### 6. 运行准则：标准完备 — 按需裁剪
-CoSquad 提供了完整的端到端生命周期，**但不推崇教条主义的僵化流程**：
-- **简单功能 / 范围小 / 风险低：** 团队可主动精简步骤（简写规范、跳过原型、省略 E2E 测试），加快上线迭代。
-- **核心模块 / 复杂度高 / 高风险热点：** 面对核心易错业务，必须严格遵循完整生命周期：
-  - 模块细化（`/spec`） ➔ 逻辑质询（`/grill`） ➔ 交互原型 ➔ API 契约 ➔ 测试矩阵 ➔ **自动化 E2E 测试**。
+> **AI 驱动且确定性的软件工程自动化研发工具箱 (AI-Powered & Deterministic SDLC Automation Toolkit)**  
+> 为高节奏软件研发团队坚守 SDLC 工程纪律与单一可信数据源 (SSOT) 完整性，免除高昂的手工文档维护成本。
 
 ---
 
-## 1. CLI 安装
+## 📦 快速安装 (Quick Start)
 
-**环境要求：** Node.js **≥ 24**（Linux / macOS / WSL / Git Bash）。
+使用 Git Personal Access Token (PAT) 通过自动化发布脚本将工具箱直接安装到您的环境中：
 
 ```bash
 export COSQUAD_GITHUB_TOKEN=github_pat_XXXXX
@@ -78,93 +29,143 @@ curl -fsSL \
   | bash -s -- "$COSQUAD_GITHUB_TOKEN"
 ```
 
-*指定版本安装（可选）：*
-```bash
-export COSQUAD_REF=v0.2.3
+---
+
+## 🔄 规范化研发流水线 (Workflow Pipeline)
+
+AI 服务人类 — AI 不会替代人类：
+
+- **AI 负责“***量***”：**
+  - AI Agent 负责保证结构化信息的**数量充足与结构完整**。
+  - 自动审计检查信息是否齐全；若不齐全，AI 主动提出备选方案 *(例如：检查页面是否已有标题、面包屑？表单组件是否具备完整的类型、校验规则与错误状态？... 若不齐全则主动提供选项供用户选择或补充)*。
+- **人类负责“***质***”：**
+  - 人类对提供给 AI 的信息的**准确性与严谨度**承担最终责任。
+  - 对 AI 给出建议选项时的**决策与选择**直接负责。
+  - 最终交付的软件产品是否准确、各环节是否紧密关联，根本上完全取决于人类输入的信息质量以及人类作出的决策选择。
+
+```text
+原始业务需求（要点 / 截图 / 遗留代码）
+  │
+  ▼
+AI 规范化生成需求包 (Bundle) + 中间表示 (IR) + 渲染 Markdown
+  │
+  ▼
+通过反复制代码守卫 (Anti-Copy-Paste Guard) 消除冗余并沉淀通用目录 (CMN-*)
+  │
+  ▼
+交互式原型 + BA / QA / Dev 协同评审
+  │
+  ▼
+自动化代码生成：E2E Playwright / 后端 / 联调脚手架 + 安全防护网
 ```
 
-*卸载工具：*
-```bash
-coSquad uninstall
-```
+![与源码并行的多层 Artifact 规范体系](./assets/overview-artifact-layers.png)
 
 ---
 
-## 2. 初始化工作区 (`coSquad setup`)
+## 🎯 目标：敏捷 T 型跨职能团队模型 (Agile T-Shaped Team)
 
-运行初始化命令创建新工作区或为当前项目注入规范：
+```text
+                                 COSQUAD 智能协同研发平台
+                               (敏捷 T 型跨职能团队模型)
+                                             │
+             ┌───────────────────────────────┴───────────────────────────────┐
+             ▼                                                               ▼
+       面向非技术人员 (BA / QA / PO)                                   面向技术研发人员 (DEV / CODER)
+   ─────────────────────────────────                              ──────────────────────────────
+1. 代码考古与业务提取：                                          1. 强大的代码生成助手：
+   深入剖析 5 层代码，干净剥离业务逻辑，                            自动化生成脚手架、样板代码、Mock API、
+   并精准标注源码行号。                                            同步 IR、规范格式化 Swagger。
 
-```bash
-# 创建新工作区目录并初始化脚手架
-coSquad setup my-workspace
-
-# 或在当前目录直接初始化
-coSquad setup
+2. 需求变更与新特性 (CR/New Feature)：                         2. 对抗性业务质询 (BA 职能)：
+   不仅是撰写规范 — CoSquad 直接从已审核                           - 深度质询边界条件、并发竞争与反向目标，
+   规范自动生成代码并完成连线，交付可运行产品！                    在编码前彻底锁定严谨逻辑。
+                                                                  - 将生硬的技术术语转化为优雅贴近用户的语言。
+3. 自信高效决策：
+   主动提供推荐方案 (Recommended) + 备选方案                       3. 严密的质量门禁 (QA 职能)：
+   + 技术债务评估，助力业务人员无需依赖开发                        - 自动补齐异常路径 (Unhappy Paths)、极端场景、
+   即可自信完成 80% 的审批决策。                                  数据泄露及风暴异常...
+                                                                  - 基于规范自动生成 E2E Playwright 测试代码。
 ```
 
-CLI 将自动创建标准 Arc42 SSOT 结构：
-- **`source-code/`**：主开发源码子模块仓库目录。
-- **`source-legacy/`**：遗留考古典籍源码仓库目录（**严格只读 READ-ONLY**）。
-- **`registries/`**：组件库、系统能力及设计规范字典（Design Tokens）。
-- **`architecture/`**, **`overview/`**, **`surfaces/`**, **`qa/`**：符合 Arc42 标准的 SSOT 文档体系。
-- **Harness & MCP config**：同步 AI Agent 技能库与 MCP Server 配置文件。
+- **面向非技术人员 (BA / QA / PO)：**
+  - **代码考古与业务提取：** 自主探索 5 层源码架构，精准抽离业务规则并附带行号出处。
+  - **特性自动化落地：** 面对需求变更 (CR) 或新模块时，CoSquad 直接基于规范通过 `/api`、`/prototype`、`/wire` 生成代码并完成端到端打通，交付真实运行产品。
+  - **自主掌控决策：** 获得多维度的 `(Recommended) + Alternative + Tech Debt` 决策建议，自信拍板 80% 的日常业务方案而无需依赖研发排期。
 
-### 官方基础适配模板
+- **面向技术研发人员 (DEV / CODER / LEAD)：**
+  - **摆脱繁琐事务：** 彻底自动化脚手架、样板代码、Mock API、IR 同步与 Swagger 格式化，释放 100% 精力聚焦核心架构与深层逻辑。
+  - **业务对抗协同 (BA 职能)：** 系统主动质询高并发、边界场景与反向约束，同时将技术层级报错（*500 Internal Error*, *Unique constraint failed*）转译为精致的产品化表达。
+  - **严密质量保障 (QA 职能)：** 全面挖掘异常分支与错误风暴场景，扫除思维盲区并自动输出工业级 E2E Playwright 测试脚本。
 
-当把代码仓库引入 `source-code/` 时，可参考或 Fork 官方预集成了 CoSquad 规范的基础模版：
-
-| 角色 | 适配栈 | 参考模版仓库 |
-| --- | --- | --- |
-| 前端 | `nuxt4` | [base-nuxt4](https://github.com/ShanYuCoder/base-nuxt4) |
-| 前端 | `nextjs` | [base-nextjs](https://github.com/ShanYuCoder/base-nextjs) |
-| 前端 | `dotnet-line` | [base-line](https://github.com/ShanYuCoder/base-line) |
-| 后端 | `nestjs` | *(全栈 Monorepo)* [base-nextjs-nestjs](https://github.com/ShanYuCoder/base-nextjs-nestjs) 或 [base-nuxt4-nestjs](https://github.com/ShanYuCoder/base-nuxt4-nestjs) — API 位于 `server/` / `apps/api` |
-| 后端 | `fastapi` | [base-fast-api](https://github.com/ShanYuCoder/base-fast-api) |
-| 后端 | `laravel` | [base-laravel](https://github.com/ShanYuCoder/base-laravel) |
-| 后端 | `dotnet-integration` | [base-donet](https://github.com/ShanYuCoder/base-donet) |
-| 全栈 | `nextjs` + `nestjs` | [base-nextjs-nestjs](https://github.com/ShanYuCoder/base-nextjs-nestjs) |
-| 全栈 | `nuxt4` + `nestjs` | [base-nuxt4-nestjs](https://github.com/ShanYuCoder/base-nuxt4-nestjs) |
-
-所有基础模板均开源托管于 GitHub 组织 `ShanYuCoder`。
+![SSOT Hub — 敏捷 T 型跨职能协同平台](./assets/overview-ssot-hub.png)
 
 ---
 
-## 3. 与 AI Agent 协同的全流程工作流
+## ⚡ 6 大架构与工程化核心优势
 
-在 AI Agent（Cursor, Antigravity, Claude Code 等）中打开工作区，按流程协同：
+| # | 核心导向标语 | 核心价值与意义 |
+| :-: | :--- | :--- |
+| **1** | **拓展 T 型人才边界** | 消除专业技能孤岛：Dev 深度理解业务，BA 自主制作原型，QA 主动生成自动化测试。 |
+| **2** | **早期反馈交互原型** | 早期锁定界面与交互流转，凭借高保真真实交互原型彻底消除 80% 的后期返工风险。 |
+| **3** | **闭环自动化测试** | 基于测试用例文档矩阵直接自动生成 E2E Playwright 代码 (`*.spec.ts`)，告别繁重的人工回归测试。 |
+| **4** | **反复制粘贴守卫** | 彻底扫除冗余代码，通过通用资产目录 (`CMN-UI-*`, `CMN-API-*`, `CMN-DTO-*`) 强制规范统一复用。 |
+| **5** | **机器控“量”，人类把“质”** | `coSquad audit` 机械核验结构与 Schema 完整性 — 团队（BA/Dev/QA）负责对抗质询 (*grill*) 并做出终审决策。 |
+| **6** | **标准框架 - 按需权衡** | 轻量项目可灵活缩减流程，对于关键核心业务 (Hotspots) 则严格恪守从规范到 E2E 测试的全套严谨治理。 |
 
-```mermaid
-flowchart LR
-  A["coSquad setup<br/>(搭建工作区)"] --> B["/init<br/>(扫描端面与仓库)"]
-  B --> C{"项目类型?"}
-  C -->|维护已有项目| D["/trace<br/>(考古 source-code)"]
-  C -->|现代化重构| E["/legacy<br/>(提取 source-legacy)"]
-  C -->|纯新项目| F["/spec<br/>(编写全新特性规范)"]
-  D --> F
-  E --> F
-  F --> G["/prototype 与 /api-spec"]
-  G --> H["/testcase 与 codegen"]
-  H --> I["/wire<br/>(集成联调与门禁审计)"]
+![结合早期交互式原型与规范校准研发阶段](./assets/overview-phase-recalibration.png)
+
+---
+
+## 🔄 与 AI Agent 协同的全流程研发工作流
+
+环境配置就绪后，在 AI Agent（Cursor、Antigravity、Claude Code 等）中打开工作区，依照如下流水线协作推进：
+
+```text
+                        coSquad setup
+                        (搭建工作区)
+                              │
+                            /init
+                    (扫描并映射代码仓库)
+                              │
+                          项目类型？
+                              │
+         ┌────────────────────┼────────────────────┐
+         ▼                    ▼                    ▼
+     (维护型 Maintain)    (重构型 Rebase)       (全新 Greenfield)
+         │                    │                    │
+      /trace               /legacy               /spec
+    (代码考古)           (提取遗留资产)         (特性需求规范)
+         │                    │                    │
+         └────────────────────┼────────────────────┘
+                              │
+                    /prototype & /api-spec
+                              │
+                    /testcase & codegen
+                              │
+                            /wire
+                        (联调集成与打包)
 ```
 
-| 步骤 | 命令 / 技能 | 说明 |
+### 关键执行步骤详解
+
+| 步骤 | 命令 / Skill | 核心职责与说明 |
 | :--- | :--- | :--- |
-| **1. Setup** | `coSquad setup [name]` | 初始化骨架，配置 MCP 与 Agent 技能。 |
-| **2. Discover** | `/init` | 扫描工作区，映射端面，抽取通用组件库（`CMN-*`）并开启反复制代码守卫。 |
-| **2.1. 制定计划** | `/help-plan` | 分析 `inition-inventory.md` 与当前现状，为新需求生成分步可落地的执行计划。 |
-| **2.2. 训练模版** | `build-template-code` | 学习**黄金样例**（代码最整洁的模块），自动生成符合项目专属架构的代码生成模版。 |
-| **3. 代码考古** | `/trace` *(维护)*<br>`/legacy` *(重构)* | • `/trace`：扫描 `source-code` 提炼逆向规范。<br>• `/legacy`：以只读方式阅读 `source-legacy`，提取业务规则与模版迁移至新代码库。 |
-| **4. 需求细化** | `/spec`, `/grill-bqa` | 编写细粒度功能规范，对抗性推敲业务逻辑。 |
-| **5. 原型与接口** | `/prototype`, `/api-spec` | 生成高保真 HTML 交互原型，敲定 API 契约文档（`01-backend-spec.yaml`）。 |
-| **6. 测试保障** | `/testcase`, `testcase:gen` | 构建测试用例矩阵（`TC-*.yaml`），自动生成 E2E Playwright 测试脚本。 |
-| **7. 联调集成** | `/wire` | 前端对接真实后端 API，执行规范与代码一致性审计，完成质量门禁。 |
+| **1. Setup 初始化** | `coSquad setup [name]` | 初始化工程骨架，配置 MCP 服务并就绪 AI agent harness 环境。 |
+| **2. Discover 探测** | `/init` | Agent 扫描工作区，映射 surface 边界，提炼通用资产 (`CMN-*`) 并激活反复制粘贴守卫。 |
+| **2.1. 制定计划** | `/help-plan` | 深度分析 `inition-inventory.md`、配置与现存状态，输出步骤明确的 Action Plan 并全面审查关联 User Flow。 |
+| **2.2. 训练模版** | `build-template-code` | 自动剖析 Golden Sample（规范度最高的范例模块），生成与当前项目架构完全吻合的定制化代码生成模版。 |
+| **3. 代码考古** | `/trace` *(Maintain)*<br>`/legacy` *(Rebase)* | • `/trace`：扫描 `source-code` 代码库进行逻辑溯源与规范对齐。<br>• `/legacy`：以只读模式读取 `source-legacy`，将规格与模版提取迁移至 `source-code`。 |
+| **4. 需求规范** | `/spec`, `/grill-bqa` | 编写各画面/特性的 Leaf Bundle 规范，发起对抗性质询澄清业务逻辑。 |
+| **5. 设计与 API** | `/prototype`, `/api-spec` | 生成高保真交互式 HTML 原型，严格定义 API 契约文档 (`01-backend-spec.yaml`)。 |
+| **6. 测试保障** | `/testcase`, `testcase:gen` | 构建 `TC-*.yaml` 测试矩阵并自动生成端到端 Playwright 自动化测试套件。 |
+| **7. 联调集成** | `/wire` | 将前端与后端真实 API 连通，运行规范 ↔ 代码核验审计并完成交付闭环。 |
+
+![用例文档直接转化为 E2E Playwright 自动化测试脚本](./assets/overview-testing-e2e.png)
 
 ---
 
-## 4. 系统自检
+## 📚 参考资源
 
-诊断工作区配置与技能运行环境健康状态：
-
-```bash
-coSquad doctor
-```
+- 📖 **[项目文档 (GitHub)](https://github.com/ShanYuCoder/Doc-CoSquad)** — 在 GitHub 仓库中查阅完整项目文档。
+- ⚙️ **工作流目录 [workflows/](https://github.com/ShanYuCoder/Doc-CoSquad/tree/main/workflows/)** — 研发各阶段、操作指引与核心规范协议 (`SSOT_AGENT_PROTOCOL.md`、trace、legacy、help-plan、grill-bqa、testcase)。

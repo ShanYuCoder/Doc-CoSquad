@@ -6,67 +6,19 @@
 </p>
 
 <!-- cosquad-catalog -->
-**[ドキュメント目次 (CATALOG.md)](CATALOG.md)**
+**[ドキュメント目次](CATALOG.md)**
 <!-- /cosquad-catalog -->
 
-> [!IMPORTANT]
-> 📚 **参考ドキュメント:**
-> 
-> - 📖 **[プロジェクト公式ドキュメント (GitHub)](https://github.com/ShanYuCoder/Doc-CoSquad)** — GitHub リポジトリで直接閲覧可能な詳細ドキュメント。
-> - ⚙️ **ワークフロー [workflows/](https://github.com/ShanYuCoder/Doc-CoSquad/tree/main/workflows/)** — 各開発フェーズおよび運用ガイドライン。
+# CoSquad 🚀
 
-# CoSquad
-
-**CoSquad** は、**SSOT（Single Source of Truth：信頼できる唯一の情報源）** モデルに基づいてソフトウェア開発プロセスを標準化する **CLI + AI ハーネス（Harness）** プラットフォームです。**AI エージェント**（Cursor、Gemini/Antigravity、Claude Code、Codex、OpenCode など）と協調して作業するチーム向けに設計されています。
-
-**「AI は人間を支援するためにある」** — 開発者や担当者に複雑な YAML の手動作成を強要することはありません。
-
-```text
-生の要件（箇条書き / 画面キャプチャ / レガシーコード）
-  → AI が仕様バンドル + 中間表現 (IR) を標準化し Markdown を生成
-  → コピペ防止ガード (Anti-Copy-Paste Guard) により共通カタログ (CMN-*) を集約
-  → インタラクティブ・プロトタイプ作成 + BA / QA / Dev によるレビュー
-  → 自動コード生成: E2E Playwright テスト / バックエンド API / 結合連携
-```
-
-### 1. AI による T 型チーム（T-Shaped Team）の能力拡張
-AI は人間のエンジニアを置き換えるのではなく、専門領域を横断して拡張するテコ（*T 型人材*）として機能し、部門間の壁やコミュニケーションのボトルネックを解消します:
-- **エンジニア（要件定義 BA 能力の拡張）:** AI によるドメイン分析と対話型レビュー（`/grill-bqa`）を活用し、会議を待たずに仕様の精度をシニア BA の **70〜80%** 水準まで自律的に引き上げます。
-- **ビジネス担当 / BA（プロトタイプ実装能力の拡張）:** 実現可能性の検討段階で、エンジニアの手を借りずに業務要件を直接クリック可能な動的画面へ落とし込みます。
-- **QA テスター（自動化エンジニアへの拡張）:** 構造化されたテスト仕様書（`TC-*.yaml`）から AI が実動する **E2E Playwright** コードを自動生成し、手動テスターから自動化エンジニアへのシフトを支援します。
-
-### 2. 早期フィードバック・プロトタイプ原則 (Early Feedback Prototype)
-- **手戻りを防ぐ早期の認識一致:** 静的なモックアップ作成や実装後の仕様ズレ発覚を待つことなく、AI が仕様書から直接**実際に操作可能な動的プロトタイプ**（HTML/Vue/React）を即座に生成します。
-- **ステークホルダーとの仕様確定:** 設計段階で PO、BA、顧客が実際の操作感を体験し、即座にフィードバックを反映できます。
-- **手戻りリスクの 80% を削減:** 業務理解の齟齬や不要な操作ステップを、低コストなプロトタイプ段階で事前に解消します。
-
-### 3. 品質ループの完結：E2E 自動テスト
-- **テスト仕様書からコードを自動生成:** テストケース・マトリクス（`TC-*.yaml`）に基づき、AI が **Playwright による E2E テスト**（`*.spec.ts`）を自動生成します。
-- **リグレッション検証の負担をゼロへ:** リリースごとの反復的な手動回帰テストを排除し、システム拡張時にも既存機能の健全性を保証します。
-
-### 4. コピペ重複コードの根絶：反コピペガード (Anti-Copy-Paste Guard)
-- **重複コードの蔓延を防止:** 既存システムの改修やリプレイスにおいて、類似コードのコピー＆ペースト（確認モーダル、ページング、エクスポート処理が各所に乱立）を根絶します。
-- **共通モジュール化の徹底:** `/init` スキルが重複コードを自動検出して**共通カタログ**（`CMN-UI-*`, `CMN-API-*`, `CMN-DTO-*`）へ集約。`shared/` 配下での一元管理を強制し、エンジニアや AI によるレガシーコードの安易なコピペを禁止します。
-
-### 5. ツールが担保する「量」 — 人間が決定する「質」
-CoSquad は、ツールの自動検証と人間の意思決定の境界を明確に定義しています:
-- **ツールが「量」（網羅性・構造・カバレッジ）を担保:**
-  - 決定論的スクリプト（`coSquad audit *`, `cases:gate`）が、仕様書の記載項目、スキーマ、未確定事項（`gaps[]`, `confirms[]`）の漏れを網羅的に検出します。
-- **人間が「質」（正確性・深さ・妥当性）を最終決定:**
-  - **AI が提案:** AI がアーキテクチャの選択肢を提示し、論点を提起します。
-  - **チームが審議して確定:** エンジニアやリードが AI の提案を批判的にレビュー（`grill`）し、最適なアプローチを確定させて完成版 SSOT とします。
-
-### 6. 運用指針: 完全な標準フレームワーク — リスクに応じた柔軟な運用
-CoSquad はエンドツーエンドの標準工程を提供しますが、**形骸化した官僚的プロセスを強制しません**:
-- **簡易機能 / 小規模 / 低リスク:** チーム判断で工程を適宜短縮（仕様書の簡略化、プロトタイプや E2E のスキップ）し、リリース速度を最優先できます。
-- **基幹機能 / 複雑 / 高リスク領域:** バグの発生しやすい重要機能では、全工程を厳格に適用します:
-  - 詳細仕様（`/spec`） ➔ 論理レビュー（`/grill`） ➔ プロトタイプ ➔ API 規約 ➔ テスト仕様 ➔ **E2E 自動テスト**。
+> **AI 駆動・決定論的 SDLC 自動化ツールキット (AI-Powered & Deterministic SDLC Automation Toolkit)**  
+> 膨大でコストのかかる手動ドキュメント作成に頼ることなく、高速なソフトウェア開発において SDLC の規律と Single Source of Truth (SSOT) の整合性を維持します。
 
 ---
 
-## 1. CLI のインストール
+## 📦 クイックインストール (Quick Start)
 
-**必要環境:** Node.js **≥ 24**（Linux / macOS / WSL / Git Bash）。
+Git Personal Access Token (PAT) を使用した自動リリーススクリプトにより、環境へツールを直接セットアップします：
 
 ```bash
 export COSQUAD_GITHUB_TOKEN=github_pat_XXXXX
@@ -77,93 +29,143 @@ curl -fsSL \
   | bash -s -- "$COSQUAD_GITHUB_TOKEN"
 ```
 
-*バージョン固定（任意）:*
-```bash
-export COSQUAD_REF=v0.2.3
+---
+
+## 🔄 標準化ワークフローパイプライン (Workflow Pipeline)
+
+AI は人間のために — AI は人間に取って代わるものではありません：
+
+- **AI は「***量***」に責任を持つ：**
+  - AI Agent は、構造化情報が**十分な量と完全性**を満たしているかを担保します。
+  - 情報の網羅性を自動監査し、不足があれば選択肢を能動的に提示します *(例：画面にタイトルやパンくずリストが存在するか？フォーム要素に型・バリデーション・エラー状態が定義されているか？... 不足時はユーザーに選択や追記を促す)*。
+- **人間は「***質***」に責任を持つ：**
+  - 人間は、AI へ提供する情報の**正確性と緻密さ**に全責任を負います。
+  - AI が提案を提示した際の**選択と承認**に対して直接責任を持ちます。
+  - プロダクトの品質が正確で緊密に連携しているかどうかは、人間が提供した情報と下した意思決定に完全に依存します。
+
+```text
+粗い要件（箇条書き / 画面キャプチャ / 既存コード）
+  │
+  ▼
+AI による標準化 Bundle + IR 生成 + Markdown レンダリング
+  │
+  ▼
+Anti-Copy-Paste Guard による重複排除と共通カタログ (CMN-*) への集約
+  │
+  ▼
+インタラクティブプロトタイプ + BA / QA / Dev レビュー
+  │
+  ▼
+自動コード生成：E2E Playwright / バックエンド / 結合連携 + セーフティネット
 ```
 
-*アンインストール:*
-```bash
-coSquad uninstall
-```
+![ソースコードと並行する多層 Artifact 仕様体系](./assets/overview-artifact-layers.png)
 
 ---
 
-## 2. ワークスペースの初期化 (`coSquad setup`)
+## 🎯 目標：アジャイル T 型チームモデル (Agile T-Shaped Team)
 
-セットアップコマンドを実行してワークスペースを作成・初期化します:
+```text
+                                 COSQUAD 協調型開発プラットフォーム
+                                     (アジャイル T 型チームモデル)
+                                             │
+             ┌───────────────────────────────┴───────────────────────────────┐
+             ▼                                                               ▼
+        非エンジニア向け (BA / QA / PO)                                   エンジニア向け (DEV / CODER)
+   ─────────────────────────────────                              ──────────────────────────────
+1. コード考古学と業務ロジック抽出：                                1. 強力なコード生成アシスタント：
+   5 層のコードを深掘りし、行番号の根拠付きで                       スキャフォールディング、ボイラープレート、Mock API、
+   クリーンに業務仕様を抽出。                                     IR 同期、Swagger の正確なフォーマットを自動化。
 
-```bash
-# 新規ワークスペースを作成してスケルトンを展開
-coSquad setup my-workspace
+2. 仕様変更と新規開発 (CR/New Feature)：                         2. 対抗的業務レビュー (BA 機能)：
+   単なるドキュメント作成にとどまらず — CoSquad が                  - エッジケース、並行性、Anti-goals を深く質疑し、
+   承認済み仕様から直接コード生成と結線を実施し、                    実装前にロジックを確実に確定。
+   動作するプロダクトを直接納品！                                 - 無機質な技術エラーを親しみやすい表現へ変換。
 
-# またはカレントディレクトリを初期化
-coSquad setup
+3. 自律的でスムーズな意思決定：                                   3. 厳格な品質ゲート (QA 機能)：
+   (推奨案) + (代替案) + (技術的負債) の選択肢を                    - 異常系 (Unhappy)、境界値、データ漏洩、
+   提示し、エンジニアを待たずに 80% の承認判断を                   エラー急増ケースを能動的に補完。
+   自信を持って下せるよう支援。                                   - 仕様から E2E Playwright 自動テストを生成。
 ```
 
-CLI が Arc42 準拠の標準 SSOT 構造を自動生成します:
-- **`source-code/`**: 開発中のアクティブなソースコード・リポジトリ（Submodule）。
-- **`source-legacy/`**: 調査・考古学用の既存システムコード（**完全読み取り専用 READ-ONLY**）。
-- **`registries/`**: 共通コンポーネント、システム機能、デザイン定義（Design Tokens）のカタログ。
-- **`architecture/`**, **`overview/`**, **`surfaces/`**, **`qa/`**: Arc42 準拠のドキュメント群。
-- **Harness & MCP config**: AI エージェント用スキルおよび MCP サーバー設定の同期。
+- **非エンジニア向け (BA / QA / PO)：**
+  - **コード考古学と仕様抽出：** 5 層のソースコードを自律探索し、行番号の根拠付きで正確に業務仕様を抽出。
+  - **新規機能の自動コード生成：** 仕様変更 (CR) や新モジュール開発時、CoSquad が承認済み仕様から直接 `/api`、`/prototype`、`/wire` スキルを活用してコード生成と結線を一括代行し、動作する成果物を納品。
+  - **自律的な意思決定：** `(推奨案) + (代替案) + (技術的負債)` の多面的提案を受け取り、開発者のスケジュールを待つことなく 80% の意思決定を自信を持って完了。
 
-### アダプター別スターターテンプレート
+- **エンジニア向け (DEV / CODER / LEAD)：**
+  - **定型作業からの解放：** スキャフォールディング、ボイラープレート、Mock API、IR 同期、Swagger 整備を完全自動化し、リソースの 100% をコアロジックとアーキテクチャ設計に集中。
+  - **業務対抗型コパイロット (BA 機能)：** 高並行処理や境界条件、Anti-goals を能動的に質疑し、難解なシステムエラー（*500 Internal Error*, *Unique constraint failed*）を洗練されたユーザー表現へと昇華。
+  - **緻密な品質保証 (QA 機能)：** 思考の死角となる異常系やエラー急増パターンを網羅的に洗い出し、高品質な E2E Playwright 自動テストコードを出力。
 
-`source-code/` にリポジトリを配置する際、CoSquad 規約があらかじめ組み込まれた公式テンプレートを活用できます:
-
-| 役割 | スタック | 参考テンプレート |
-| --- | --- | --- |
-| フロントエンド | `nuxt4` | [base-nuxt4](https://github.com/ShanYuCoder/base-nuxt4) |
-| フロントエンド | `nextjs` | [base-nextjs](https://github.com/ShanYuCoder/base-nextjs) |
-| フロントエンド | `dotnet-line` | [base-line](https://github.com/ShanYuCoder/base-line) |
-| バックエンド | `nestjs` | *(フルスタック Monorepo)* [base-nextjs-nestjs](https://github.com/ShanYuCoder/base-nextjs-nestjs) または [base-nuxt4-nestjs](https://github.com/ShanYuCoder/base-nuxt4-nestjs) — API は `server/` / `apps/api` |
-| バックエンド | `fastapi` | [base-fast-api](https://github.com/ShanYuCoder/base-fast-api) |
-| バックエンド | `laravel` | [base-laravel](https://github.com/ShanYuCoder/base-laravel) |
-| バックエンド | `dotnet-integration` | [base-donet](https://github.com/ShanYuCoder/base-donet) |
-| フルスタック | `nextjs` + `nestjs` | [base-nextjs-nestjs](https://github.com/ShanYuCoder/base-nextjs-nestjs) |
-| フルスタック | `nuxt4` + `nestjs` | [base-nuxt4-nestjs](https://github.com/ShanYuCoder/base-nuxt4-nestjs) |
-
-すべてのベースリポジトリは GitHub の `ShanYuCoder` オーガナイゼーションで公開されています。
+![SSOT Hub — アジャイル T 型協調プラットフォーム](./assets/overview-ssot-hub.png)
 
 ---
 
-## 3. AI エージェントとのエンドツーエンド開発フロー
+## ⚡ 6 つのアーキテクチャ ＆ 運用の強み
 
-AI エージェント（Cursor, Antigravity, Claude Code 等）でワークスペースを開き、以下のワークフローを実行します:
+| # | スローガン | 核心的意義 |
+| :-: | :--- | :--- |
+| **1** | **T 型人材スキルの拡張** | 専門分野の壁を解消：Dev は業務を深く理解し、BA は自らプロトタイプを作り、QA は自動テストを能動生成。 |
+| **2** | **早期フィードバックプロトタイプ** | 実際に操作可能なプロトタイプで画面と動線を早期確定し、手戻りリスクの 80% を事前に排除。 |
+| **3** | **自動テストによる品質ループの完結** | テスト仕様マトリクスから E2E Playwright コード (`*.spec.ts`) を自動生成し、リグレッションテストの負担から解放。 |
+| **4** | **Anti-Copy-Paste Guard** | 重複コードを一掃し、共通資産カタログ (`CMN-UI-*`, `CMN-API-*`, `CMN-DTO-*`) を通じて一元的な再利用を強制。 |
+| **5** | **機械が「量」を検証し、人間が「質」を決める** | `coSquad audit` が構造やスキーマを機械検証し、人間（BA/Dev/QA）が対抗質疑 (*grill*) を経て最終的な SSOT を決定。 |
+| **6** | **標準フレームワークと柔軟なリスク対応** | 小規模開発ではステップを合理的に短縮し、最重要領域 (Hotspots) では仕様から E2E テストまで厳格に規律を遵守。 |
 
-```mermaid
-flowchart LR
-  A["coSquad setup<br/>(環境構築)"] --> B["/init<br/>(構成スキャン)"]
-  B --> C{"プロジェクト種別?"}
-  C -->|既存保守| D["/trace<br/>(既存コード考古学)"]
-  C -->|リプレイス| E["/legacy<br/>(レガシー抽出)"]
-  C -->|新規開発| F["/spec<br/>(新機能仕様策定)"]
-  D --> F
-  E --> F
-  F --> G["/prototype ＆ /api-spec"]
-  G --> H["/testcase ＆ コード生成"]
-  H --> I["/wire<br/>(結合テスト・ゲート検証)"]
+![早期インタラクティブプロトタイプと仕様によるフェーズ再調整](./assets/overview-phase-recalibration.png)
+
+---
+
+## 🔄 AI Agent との End-to-End 開発ワークフロー
+
+環境設定完了後、AI Agent（Cursor、Antigravity、Claude Code 等）でワークスペースを開き、以下のフローに沿って開発を進めます：
+
+```text
+                        coSquad setup
+                     (ワークスペース構築)
+                              │
+                            /init
+                    (リポジトリ・境界マップ)
+                              │
+                         プロジェクト種別？
+                              │
+         ┌────────────────────┼────────────────────┐
+         ▼                    ▼                    ▼
+     (保守 Maintain)      (刷新 Rebase)       (新規 Greenfield)
+         │                    │                    │
+      /trace               /legacy               /spec
+    (コード考古学)         (既存資産抽出)          (機能仕様記述)
+         │                    │                    │
+         └────────────────────┼────────────────────┘
+                              │
+                    /prototype & /api-spec
+                              │
+                    /testcase & codegen
+                              │
+                            /wire
+                      (結合連携・パッケージ)
 ```
 
-| ステップ | コマンド / スキル | 説明 |
+### 実行ステップ詳細
+
+| ステップ | コマンド / Skill | 核心的役割 |
 | :--- | :--- | :--- |
-| **1. セットアップ** | `coSquad setup [name]` | スケルトン初期化、MCP およびエージェントハーネス設定。 |
-| **2. 構成分析** | `/init` | ワークスペースをスキャンし、共通モジュール（`CMN-*`）を抽出、反コピペガードを起動。 |
-| **2.1. 計画策定** | `/help-plan` | `inition-inventory.md` と現状を分析し、新要件に対する段階的なアクションプランを策定。 |
-| **2.2. テンプレート学習** | `build-template-code` | 最もクリーンなモジュール（Golden Sample）を分析し、プロジェクト専用のコード生成テンプレートを構築。 |
-| **3. コード考古学** | `/trace` *(保守)*<br>`/legacy` *(リプレイス)* | • `/trace`: `source-code` をスキャンし仕様を逆引き生成。<br>• `/legacy`: `source-legacy` を読み取り専用で解析し、仕様・ルールを抽出。 |
-| **4. 仕様詳細化** | `/spec`, `/grill-bqa` | 機能単位で詳細仕様（Leaf Bundle）を作成し、業務ロジックを批判的レビュー。 |
-| **5. プロトタイプ＆API** | `/prototype`, `/api-spec` | 動的 HTML プロトタイプを生成し、API 規約（`01-backend-spec.yaml`）を確定。 |
-| **6. テスト自動化** | `/testcase`, `testcase:gen` | テストケース表（`TC-*.yaml`）を作成し、E2E Playwright テストを自動生成。 |
-| **7. 結合・監査** | `/wire` | フロントエンドと実 API を接続し、仕様 ↔ 実装の整合性監査をパスして完了。 |
+| **1. Setup 初期化** | `coSquad setup [name]` | スケルトンの初期化、MCP サーバーの設定、AI エージェントハーネスの準備。 |
+| **2. Discover 検出** | `/init` | ワークスペースをスキャン、サーフェス境界をマッピング、共通カタログ (`CMN-*`) を抽出して Anti-Copy-Paste Guard を起動。 |
+| **2.1. Plan 計画策定** | `/help-plan` | `inition-inventory.md`、設定、現状を分析して段階的な Action Plan を策定し、関連 User Flow を網羅的に検証。 |
+| **2.2. Template 学習** | `build-template-code` | Golden Sample（最もクリーンな模範モジュール）を自動分析し、プロジェクト設計に即したカスタムコード生成テンプレートを作成。 |
+| **3. コード考古学** | `/trace` *(Maintain)*<br>`/legacy` *(Rebase)* | • `/trace`: `source-code` をスキャンしてロジックを照合し仕様書を生成。<br>• `/legacy`: `source-legacy` を読み取り専用で参照し、仕様・テンプレートを `source-code` へ抽出移行。 |
+| **4. 仕様策定** | `/spec`, `/grill-bqa` | 画面/機能ごとの Leaf Bundle 仕様を作成し、業務ロジックを対抗質疑。 |
+| **5. 設計 ＆ API** | `/prototype`, `/api-spec` | インタラクティブな HTML プロトタイプを生成し、API 契約書 (`01-backend-spec.yaml`) を厳格定義。 |
+| **6. テスト自動化** | `/testcase`, `testcase:gen` | `TC-*.yaml` マトリクスを構築し、E2E Playwright 自動テストスイートを生成。 |
+| **7. 結合連携** | `/wire` | フロントエンドと実 API を接続し、仕様 ↔ コード間の監査を実行して完了。 |
+
+![テスト仕様マトリクスから E2E Playwright 自動テストへの変換](./assets/overview-testing-e2e.png)
 
 ---
 
-## 4. システム診断
+## 📚 参考資料
 
-ハーネススキルおよびワークスペース設定の整合性をチェックします:
-
-```bash
-coSquad doctor
-```
+- 📖 **[プロジェクトドキュメント (GitHub)](https://github.com/ShanYuCoder/Doc-CoSquad)** — GitHub リポジトリ上で詳細なドキュメントを参照。
+- ⚙️ **ワークフローディレクトリ [workflows/](https://github.com/ShanYuCoder/Doc-CoSquad/tree/main/workflows/)** — 各開発フェーズ、運用ガイドライン、標準プロトコル (`SSOT_AGENT_PROTOCOL.md`、trace、legacy、help-plan、grill-bqa、testcase)。

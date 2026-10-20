@@ -2,7 +2,6 @@
 
 - [readme](readme.md)
 - [Home (VitePress)](index.md)
-- [overview](overview/index.md)
 - [artifacts](artifacts/index.md)
 - [workflows](workflows/index.md)
   - [Phase 0 — Data model & ERD](workflows/architecture-data.md)

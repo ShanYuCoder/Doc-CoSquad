@@ -7,21 +7,18 @@ hero:
   tagline: "Enterprise Disciplined AI Engineering Platform (Graph, DNA, Docs, Test, Codegen)"
   actions:
     - theme: brand
-      text: Getting Started — Overview
-      link: /overview/
-    - theme: alt
-      text: README
+      text: Get Started (README)
       link: /readme
+    - theme: alt
+      text: Workflows
+      link: /workflows/
 
 features:
-  - title: 'README'
-    details: Toolkit overview, CLI installation, SDLC phases & roles.
+  - title: 'README & Overview'
+    details: Toolkit pitch, quick start, Agile T-shaped model, 6 strengths & E2E workflow.
     link: /readme
-  - title: 'Overview'
-    details: What is CoSquad, scope, Arc42 SSOT hierarchy.
-    link: /overview/
   - title: 'Workspace Structure'
-    details: SSOT disk skeleton (overview, architecture, surfaces, registries, qa).
+    details: SSOT disk skeleton (architecture, surfaces, registries, qa).
     link: /artifacts/
   - title: 'Workflows'
     details: Macro lifecycle, design / backend / test / wire, adversarial review & gates.

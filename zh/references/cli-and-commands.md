@@ -84,3 +84,11 @@ CoSquad 组织了三大底层处理引擎：**文档引擎 (Docs Engine)**、**�
 | `coSquad contract-gen` | 自动生成共享 TypeScript 接口类型与 DTO 契约。 |
 | `coSquad build-template-code --sample=<dir>` | 深度学习既有黄金样例（Golden Sample）模块的 AST 结构与代码习惯。 |
 | `coSquad build-template-code --yes` | 将训练好的自定义模板写入 `.coSquad/adapters/` 适配器中。 |
+
+#### 技术栈与适配器兼性矩阵 (Stacks & Adapters)
+
+| 类别 | 开箱即用适配器 (OOTB) | 自定义技术栈 (Custom via Golden Sample) |
+| --- | --- | --- |
+| **前端 (Frontend)** | `nuxt4` (Nuxt 4), `nextjs` (Next.js), `dotnet-line` (DotNet Line 客户端) | 支持通过 `coSquad build-template-code --sample=<dir>` 或 `/adopt` 提取既有代码基因，自动生成针对 Vue 3、React、Angular、Svelte 等任意技术栈的代码模板。 |
+| **后端 (Backend)** | `nestjs` (NestJS), `fastapi` (FastAPI), `laravel` (Laravel), `dotnet-integration` (DotNet) | 仅需指定任意标准模块目录（Golden Sample），CoSquad 即可提炼项目模式并自动生成模板（`.hbs`、`.stub`、`.j2`、`.scriban`）。 |
+

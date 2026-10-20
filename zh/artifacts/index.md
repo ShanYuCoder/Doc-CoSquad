@@ -4,6 +4,10 @@
 
 VitePress 文档中心直接读取本地磁盘上的这些目录与 Markdown 文件，使整个跨职能团队（产品经理/BA、前端/后端开发、QA、架构师）能够在统一的事实标准下无缝协同。
 
+> [!NOTE]
+> **文档范围界定：**
+> 以下目录结构（`overview/`、`architecture/`、`surfaces/` 等）是 `coSquad setup` 为您的**目标软件研发项目**所搭建的 SSOT 资产结构。这与 CoSquad 工具本身的说明文档（已精简为单一 README）相互独立。
+
 ---
 
 ## 本地磁盘目录全局概览
