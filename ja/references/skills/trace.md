@@ -20,7 +20,7 @@
 - 既存コードベースを自律解析し、未文書化の仕様、暗黙のルール、実稼働 API を逆コンパイルして標準 CoSquad 仕様書へ昇華。
 ## 関連スキル (Related Skills)
 - **Preceding:** `/init` (Repository discovery).
-- **Combined with:** `/spec` or `/update-spec` to draft/update specs grounded in existing code.
+- **Combined with:** `/spec` or `/spec` to draft/update specs grounded in existing code.
 - **Workflow Orchestration:** `/help-plan` (Phase 1 baseline archaeology).
 
 ## 注意事項 (Important Notes)

@@ -145,7 +145,7 @@ Anti-Copy-Paste Guard による重複排除と共通カタログ (CMN-*) への�
 | **2.1. Plan 計画策定** | `/help-plan` | `inition-inventory.md`、設定、現状を分析して段階的な Action Plan を策定し、関連 User Flow を網羅的に検証。 |
 | **2.2. Template 学習** | `build-template-code` | Golden Sample（最もクリーンな模範モジュール）を自動分析し、プロジェクト設計に即したカスタムコード生成テンプレートを作成。 |
 | **3. コード考古学** | `/trace` *(Maintain)*<br>`/legacy` *(Rebase)* | • `/trace`: `source-code` をスキャンしてロジックを照合し仕様書を生成。<br>• `/legacy`: `source-legacy` を読み取り専用で参照し、仕様・テンプレートを `source-code` へ抽出移行。 |
-| **4. 仕様策定** | `/spec`, `/grill-bqa` | 画面/機能ごとの Leaf Bundle 仕様を作成し、業務ロジックを対抗質疑。 |
+| **4. 仕様策定** | `/spec`, `/grill` | 画面/機能ごとの Leaf Bundle 仕様を作成し、業務ロジックを対抗質疑。 |
 | **5. 設計 ＆ API** | `/prototype`, `/api-spec` | インタラクティブな HTML プロトタイプを生成し、API 契約書 (`01-backend-spec.yaml`) を厳格定義。 |
 | **6. テスト自動化** | `/testcase`, `testcase:gen` | `TC-*.yaml` マトリクスを構築し、E2E Playwright 自動テストスイートを生成。 |
 | **7. 結合連携** | `/wire` | フロントエンドと実 API を接続し、仕様 ↔ コード間の監査を実行して完了。 |

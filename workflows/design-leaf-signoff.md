@@ -1,6 +1,6 @@
 # Design Leaf — Sign-off Rubric (Voluntary)
 
-**Scope:** A function leaf (`surfaces/<surface>/CMP-*/<NN…>/<slug>.bundle.yaml`) **prior to** Test lane / production codegen.
+**Scope:** A function leaf (`surfaces/<surface>/<module>/<slug>/feature.bundle.yaml`) **prior to** Test lane / production codegen.
 
 **Not an engine gate** — Lead/BA signs off once the engineer has followed [design.md](./design.md) and grill skills. Chat-only "done" does not replace this checklist.
 
@@ -10,7 +10,7 @@
 
 ## When to Use
 
-- Closing Design for a `W-*` / leaf bundle.
+- Closing Design for a `S-*` (legacy `W-*` accepted) / leaf bundle.
 - Handoff to `/testcase`, BE `/api-spec`, FE `/prototype` (per team policy).
 - Internal review aiming for SSOT quality score **~9** (sufficient tracing, ready for codegen, human-readable by BAs).
 
@@ -21,7 +21,7 @@
 | # | Item | Verification |
 |---|------|--------------|
 | 1 | **Structural audit** | `coSquad audit spec <bundle> --type <profile>` — no unhandled `gaps[]`; `confirms[]` resolved or deliberately routed to `qa`. |
-| 2 | **Business readable** | **VitePress** `ir/generated/spec.md` (+ `data-model.md` if DB exists): stories, **list columns**, scenarios, AC — meaningful content, not placeholders. |
+| 2 | **Business readable** | **VitePress** `ir/generated/spec.md` (+ `data-wire.md` if DB exists): stories, **list columns**, scenarios, AC — meaningful content, not placeholders. |
 | 3 | **Trace UI ↔ story** | Spot-check 2–3 scenarios: user interactions map cleanly to `design.actions` / `design.sections` (handoff, validation messages). |
 | 4 | **API contract** | `api/<seq>/01-backend-spec.yaml` matches `ir/design.yaml` `apiRef`; if BE is in scope: `coSquad audit fe-be` has no blockers. |
 | 5 | **Codegen readiness** | `grillStatus.dev: done` (per workflow); `coSquad gen:dry` (FE policy) passes; `gen.codegen` + grill-dev tags are recorded. |
@@ -33,7 +33,7 @@
 |---|------|--------------|
 | 7 | **Data model** | LCA `db-erd.md` is readable; persisted controls define `db.schema`/`db.field`; `spec.entities` is non-empty when form/list includes multiple DB fields; computed list columns → `#derived-data`. See [architecture-data.md](./architecture-data.md). |
 
-- `/grill-prototype` has no remaining **SSOT** discrepancies (copy, state, mock) before entering the test lane.
+- `/grill` has no remaining **SSOT** discrepancies (copy, state, mock) before entering the test lane.
 - `registry:sync` on FE base has completed; DSL tags match `design.registry.json`.
 - Review `ir/generated` dictionary/matrix together with non-technical BAs.
 

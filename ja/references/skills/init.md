@@ -152,7 +152,7 @@ When an overlap is detected between existing project code (e.g. `src/components/
 > - **すべての Common はワークスペース SSOT DSL Registry**（FE: `.coSquad/registries/design.registry.json`, BE: `.coSquad/registries/be-capabilities.registry.json`）に登録されなければならない。
 > - **既存 Common (`status: "implemented"`)**: 実装コードパス (`path`)、DSL タグ（`#ui: <Name>`, `#pattern: <ID>`, `#reuse-api: <ID>`）、Docs 仕様パスを登録。
 > - **重複候補 / 計画中 Common (`status: "planned"`)**: **`/init` 時に `status: "planned"` として事前登録**。`shared/` 配下の予定コードパス、DSL タグ（`#pattern: <ID>`, `#ui: <Name>`）、予定 Docs パスを保持。
-> - **DSL 相乗効果**: `/spec`, `/update-spec`, DSL コード解析エンジンが計画された共通コンポーネント（`#pattern: <ID>`, `#ui: <Name>`）を即座に認識・参照可能となり、アドホックな `#needs-component` や重複コピペの発生を未然に防止。`/common <CMN-ID>` 実行時に共有コードが生成されると、レジストリステータスが `planned` ➔ `implemented` に自動昇格。
+> - **DSL 相乗効果**: `/spec`, `/spec`, DSL コード解析エンジンが計画された共通コンポーネント（`#pattern: <ID>`, `#ui: <Name>`）を即座に認識・参照可能となり、アドホックな `#needs-component` や重複コピペの発生を未然に防止。`/common <CMN-ID>` 実行時に共有コードが生成されると、レジストリステータスが `planned` ➔ `implemented` に自動昇格。
 
 #### `common-plan.md` の標準構造とスキーマ
 
@@ -302,13 +302,13 @@ The Agent MUST systematically trace user flows across routers, state stores, for
 | :--- | :--- | :--- | :--- |
 | **A** | Cross-surface / Org Catalog | `### A — Cross-surface (org catalog)` | `architecture/03-user-flows/FLOW-*.md` |
 | **B** | Surface-shared | `### B — Shared on one surface` | `surfaces/<surface>/<module>/user-flows/FLOW-*.md` |
-| **C** | Module / Cluster scope | `### C — Module or cluster scope` | `surfaces/.../CMP-*/user-flows/` |
+| **C** | Module / Cluster scope | `### C — Module or cluster scope` | `surfaces/.../<module>/user-flows/` |
 
 Each flow entry MUST include:
 - **ID & Title:** `FLOW-{SURF}-{DOMAIN}-{NN}` (Standardized ID + Descriptive Title)
 - **Tier:** A / B / C
 - **Trigger & Entry Point:** Button click, URL route, webhook event, state change
-- **Surfaces & Modules involved:** e.g., `admin` (`CMP-ADM-ORD-01`), `customer-web` (`CMP-CUS-CART-01`)
+- **Surfaces & Modules involved:** e.g., `admin` (`ADM-01`), `customer-web` (`CUS-01`)
 - **Step Sequence:** Ordered sequence connecting UI screens (`W-*`), API calls (`API-*`), and dialog actions
 - **Branches & Fallbacks:** Error handling, validation failures, role branching
 - **Code Evidence:** Specific files and methods implementing the flow
@@ -338,24 +338,24 @@ The Agent MUST generate `inition-inventory.md` directly at the workspace root us
 - **Customer Web** (`surfaces/customer-web`) — `[Role: End-Customer | Channel: Web SSR]` → Repo: `customer-fe`
 - **Core Backend API** (`projects/backend-api`) — `[Role: Central API | Channel: REST API]` → Repo: `backend-api`
 
-## 2. Modules Catalog (`CMP-*`)
-- **CMP-ADM-AUTH-01**: Authentication & Identity Management → Legacy: `admin-fe/src/modules/auth/`
-- **CMP-ADM-ORD-01**: Order Processing & Fulfillment → Legacy: `admin-fe/src/modules/orders/`
+## 2. Modules Catalog (`{surfaceCode}-{id}`)
+- **ADM-01**: Authentication & Identity Management → Legacy: `admin-fe/src/modules/auth/`
+- **ADM-02**: Order Processing & Fulfillment → Legacy: `admin-fe/src/modules/orders/`
 
-## 3. Screens & API Function Inventory (`W-*`, `API-*`)
-### Admin Portal (`surfaces/admin/CMP-ADM-AUTH-01`)
-- **W-ADM-AUTH-01**: Admin Login Screen → `admin-fe/src/pages/Login.tsx`
-- **API-ADM-AUTH-01**: Admin Login & Token Endpoint → `backend-api/src/controllers/AuthController.ts:login`
+## 3. Screens & API Function Inventory (`S-*`, `C-API-*`)
+### Admin Portal (`surfaces/admin/ADM-01`)
+- **S-ADM-01-01**: Admin Login Screen → `admin-fe/src/pages/Login.tsx`
+- **C-API-ADM-01-01**: Admin Login & Token Endpoint → `backend-api/src/controllers/AuthController.ts:login`
 
 ## 4. User Flows (`FLOW-*`)
 ### A — Cross-surface (org catalog) → `architecture/03-user-flows/`
-- **FLOW-CUS-CHECKOUT-01**: Multi-channel Order & Checkout Flow — Surfaces: `customer-web`, `admin-portal` — CMPs: `CMP-CUS-CART-01`, `CMP-ADM-ORD-01` — Tier: **A**
+- **FLOW-CUS-CHECKOUT-01**: Multi-channel Order & Checkout Flow — Surfaces: `customer-web`, `admin-portal` — Modules: `CUS-01`, `ADM-02` — Tier: **A**
 
 ### B — Shared on one surface → `surfaces/<surface>/user-flows/`
-- **FLOW-ADM-DELETE-01**: Entity Safe Delete & Cascade Confirmation Flow — Surface: `admin-portal` — CMPs: `CMP-ADM-ORD-01` — Tier: **B**
+- **FLOW-ADM-DELETE-01**: Entity Safe Delete & Cascade Confirmation Flow — Surface: `admin-portal` — Modules: `ADM-02` — Tier: **B**
 
-### C — Module / cluster scope → `…/CMP-*/user-flows/`
-- **FLOW-ADM-AUTH-RESET-01**: Password Reset with OTP Flow — Surface: `admin-portal` — CMP: `CMP-ADM-AUTH-01` — Tier: **C**
+### C — Module / cluster scope → `…/<module>/user-flows/`
+- **FLOW-ADM-AUTH-RESET-01**: Password Reset with OTP Flow — Surface: `admin-portal` — Module: `ADM-01` — Tier: **C**
 
 ## 5. Common Catalog & Reconciliation
 ### 5.1 Native Project Commons (Code-First Priority — 仕様のみ)
@@ -374,7 +374,7 @@ The Agent MUST generate `inition-inventory.md` directly at the workspace root us
   - *Safety Boundary*: 新規コードの事前準備のみ。すべての旧エビデンスファイルは 100% 保持。
 
 ### 5.3 Whole Page Duplication Warnings
-- **W-ADM-USR-01 (Create User)** & **W-ADM-USR-02 (Edit User)**: 90% identical → *Recommendation: Consolidate into single Polymorphic Spec `CMP-ADM-USR-FORM`*
+- **S-ADM-USR-01 (Create User)** & **S-ADM-USR-02 (Edit User)**: 90% identical → *Recommendation: Consolidate into single Polymorphic Spec `S-ADM-USR-FORM`*
 
 ### 5.4 Common Recommendations & Gaps
 > Standard enterprise capabilities not found in the codebase.
@@ -414,6 +414,6 @@ The Agent MUST generate `inition-inventory.md` directly at the workspace root us
 - [ ] `common-plan.md` が生成され詳細計画が含まれていること；すべての Common（既存は `status: implemented`、重複候補は `status: planned`）が DSL Registry (`design.registry.json` / `be-capabilities.registry.json`) に登録されていること。
 - [ ] init 完了時に連続対話型 GUI モーダルチェーン（`AskQuestion` で `build-env` を確認後、`AskQuestion` で `common-plan` を確認）が実行されること。
 - [ ] Missing common capabilities flagged with recommendation to use `coSquad add base-common`.
-- [ ] All IDs follow standard format: `CMP-*`, `W-*`, `API-*`, `FLOW-*`, `CMN-UI-*`, `CMN-API-*`, `CMN-DTO-*`.
+- [ ] All IDs follow standard format: `{surfaceCode}-{id}`, `S-*`, `C-API-*`, `FLOW-*`, `G-*`, `C-*`.
 - [ ] Output prose written in `docsProseLocale` and headings in `structureLocale` (per `config.json`).
 

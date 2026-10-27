@@ -1,6 +1,6 @@
 # Phase 0 — Data model & ERD
 
-**Phạm vi:** mô hình dữ liệu **trước** `/spec` leaf — cùng nhóm Phase 0 với `/overview`, `/surfaces`, `/module`, `/user-flow`.
+**Phạm vi:** mô hình dữ liệu **trước** `/spec` leaf — cùng nhóm Phase 0 với `/spec` (Product & Surface), `/module`, `/user-flow`.
 
 **Không viết ở đây:** field/column từng màn (Design) · contract BE đầy đủ (lane 2c `01`) · migration SQL.
 
@@ -8,32 +8,31 @@
 
 ---
 
-## Hai tầng (không gộp một file)
+## Ba tầng (không gộp một file)
 
 | Tầng | Khi | Skill / artifact | Độ chi tiết |
 |------|-----|------------------|-------------|
-| **1 — ERD tổng** | Module mới, entity/bảng mới, đổi ownership, cross-module | `/db-erd` → `<LCA>/common/db-erd.md` | Entity, quan hệ, trường **chính**, owner `CMP-*` / surface |
-| **2 — Screen binding** | Từng `W-*` / leaf bundle | `/spec` → `spec.entities` + `design.sections[].db` | Cột/form ↔ **table.column**; list `columns[].key` ↔ DB hoặc `#derived-data` |
+| **1 — ERD tổng** | Module mới, entity/bảng mới, đổi ownership, cross-module | `/db-erd` → `<LCA>/common/db-erd.md` | Entity, quan hệ, trường **chính**, owner module / surface |
+| **2 — Screen binding** | Từng `S-*` / leaf bundle | `/spec` → `spec.entities` + `design.sections[].db` | Cột/form ↔ **table.column**; list `columns[].key` ↔ DB hoặc `#derived-data` |
 | **3 — Contract BE** | Sau design inventory ổn | `/api-spec` → `01-backend-spec.yaml` | `modules[].entities[]`, `fields[]`, endpoint — SSOT codegen BE |
 
-Tầng 1 = **Phase 0**. Tầng 2 = **Phase 1 Design**. Tầng 3 = **2c** (có thể draft sớm trong grill-dev).
+Tầng 1 = **Phase 0**. Tầng 2 = **Phase 1 Design**. Tầng 3 = **2c** (có thể draft sớm trong `/grill`).
 
-Prose bổ trợ (không thay ERD): [`model-derived-data.md`](../../templates/project-skeleton/surfaces/common/model-derived-data.md).
+Prose bổ trợ (không thay ERD): [`model-derived-data.md`](../../../templates/project-skeleton/surfaces/common/model-derived-data.md).
 
 ---
 
 ## Thứ tự Phase 0 (gợi ý)
 
 ```text
-/overview (+ operational areas)
-    → /surfaces (nếu cần)
-    → /module (CMP-* boundary, Depends on)
+/spec (+ operational areas & surfaces)
+    → /module (module boundary, Depends on)
     → /user-flow (FLOW-* touch data)
-    → /db-erd (ERD tại LCA — xem common-scope)
-    → (optional) /cross-service khi gọi service/aggregate khác module
+    → /db-erd (ERD tại LCA — xem /common)
+    → (optional) /architecture khi gọi service/aggregate khác module
 ```
 
-**LCA** cho `db-erd.md`: [common-scope.md](../../harness/docs/extracts/common-scope.md) — cùng quy tắc với `common/`.
+**LCA** cho `db-erd.md`: [Skill: /common](../references/skills/common.md) — cùng quy tắc với `common/`.
 
 ---
 
@@ -43,7 +42,7 @@ Prose bổ trợ (không thay ERD): [`model-derived-data.md`](../../templates/pr
 - Đổi **quan hệ** (1-n, n-n) hoặc **ownership** (tenant, aggregate).
 - Legacy adopt: map schema cũ → entity nghiệp vụ (`/legacy /db-erd`).
 
-**Có thể skip** (nhảy thẳng Design): sửa màn trong CMP đã có `db-erd.md` ổn định, **không** thêm bảng/cột persisted mới — chỉ UI/validation/copy.
+**Có thể skip** (nhảy thẳng Design): sửa màn trong module đã có `db-erd.md` ổn định, **không** thêm bảng/cột persisted mới — chỉ UI/validation/copy.
 
 ---
 
@@ -52,7 +51,7 @@ Prose bổ trợ (không thay ERD): [`model-derived-data.md`](../../templates/pr
 - Mermaid `erDiagram`.
 - Mỗi entity: tên nghiệp vụ, **owner** (module/surface), PK logic, vài attribute chính.
 - Cardinality + ghi chú delete/soft-delete nếu product quan tâm.
-- Link tới `FLOW-*` / `CMP-*` tiêu thụ entity — **không** paste ER vào từng bundle.
+- Link tới `FLOW-*` / module tiêu thụ entity — **không** paste ER vào từng bundle.
 
 ---
 
@@ -71,7 +70,7 @@ Chi tiết authoring: [bundle-authoring.md § Data model](../../templates/shared
 
 Sau split: `entities` + layout `db` → **`ir/design.yaml`** (không vào `ir/spec.yaml` business MD).
 
-**Review member:** `ir/generated/data-model.md` (gom theo bảng, hỗ trợ multi-table) + optional `design.dataModel.tables[]` trên bundle — [tpl-screen-data-model.md](../../templates/shared/tpl-screen-data-model.md). Audit: `coSquad audit spec` → `warnings` `category: db`.
+**Review member:** `ir/generated/data-wire.md` (gom theo bảng, hỗ trợ multi-table) + optional `design.dataModel.tables[]` trên bundle — [tpl-screen-data-wire.md](../../templates/shared/tpl-screen-data-wire.md). Audit: `coSquad audit spec` → `warnings` `category: db`.
 
 ---
 
@@ -90,7 +89,7 @@ Giữ map trong `01` hoặc comment ngắn trên bundle — không engine enforc
 ## Gap đã biết (process, không gate)
 
 - `audit spec` chưa verify ERD ↔ `db:` (có thể thêm **warnings** sau).
-- **Team review (VitePress):** `spec.md` (gồm **bảng cột list**) + sibling `data-model.md` — không bắt BA mở `ir/design.yaml`. Dev implement vẫn dùng `ir/design` + `01`.
+- **Team review (VitePress):** `spec.md` (gồm **bảng cột list**) + sibling `data-wire.md` — không bắt BA mở `ir/design.yaml`. Dev implement vẫn dùng `ir/design` + `01`.
 
 ---
 

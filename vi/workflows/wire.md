@@ -2,7 +2,7 @@
 
 **Phạm vi (SSOT):** macro **Wire** (phase **3**) — thay mock/stub production bằng API thật, restore auth/RBAC, E2E post-wire, audit hội tụ trước Ship.
 
-**Không viết ở đây:** chi tiết 4 tầng Portal trong repo FE → [artifacts/code.md](../artifacts/code.md) · skill slash → [references/skills/wire.md](../references/skills/wire.md).
+**Không viết ở đây:** chi tiết 4 tầng Portal trong repo FE → [artifacts/index.md](../artifacts/index.md) · skill slash → [references/skills/wire.md](../references/skills/wire.md).
 
 **Thuộc macro:** [index.md#full-cycle](./index.md#full-cycle) · Prerequisite lanes: [design.md](./design.md) · [backend.md](./backend.md) · [test.md](./test.md).
 
@@ -14,7 +14,7 @@
 flowchart TD
   subgraph IN["Prerequisites"]
     D["Design: grill-prototype pass"]
-    B["Backend: /audit-api · 01 approved"]
+    B["Backend: /api · 01 approved"]
     T["Test: cases:gate strict\npre-wire E2E green"]
   end
 
@@ -27,7 +27,7 @@ flowchart TD
 
   subgraph OUT["Verify"]
     E2E["test:e2e post-wire scoped"]
-    GT["/grill-test"]
+    GT["/grill"]
     AUD["audit e2e · fe-be · scenario"]
     SHIP["→ Ship / UAT"]
   end
@@ -37,7 +37,7 @@ flowchart TD
   T --> WIRE
   WIRE --> E2E --> GT --> AUD --> SHIP
 
-  US["/update-spec · /api-update"]
+  US["/spec · /api-spec"]
   WIRE -.->|contract drift| US
 
   classDef in fill:#D1FAE5,stroke:#059669,color:#064E3B
@@ -57,7 +57,7 @@ flowchart TD
 
 | Luồng | Pre-wire | Wire làm gì | Post-wire verify |
 |-------|----------|-------------|------------------|
-| **Portal UI** | Prototype mock, `#wire-only` trên design/HANDOFF | `/wire` — services thật, gỡ mock | `test:e2e` scoped · `/grill-test` |
+| **Portal UI** | Prototype mock, `#wire-only` trên design/HANDOFF | `/wire` — services thật, gỡ mock | `test:e2e` scoped · `/grill` |
 | **Contract** | `01` + grill API; FE `apiRef` trên design | Align models/DTO; CORS/env | `audit fe-be` trên bundle leaf |
 | **Cross-flow `SC-*`** | TC pre-wire mocks | Wire từng màn trong journey | `audit scenario` + E2E ordered/CI env |
 
@@ -70,15 +70,15 @@ flowchart TD
 | Vai trò | Đọc | Không dùng làm SSOT sửa |
 |---------|-----|-------------------------|
 | Dev FE | `ir/design.yaml`, HANDOFF, `#wire-only` / `#update:*` | Generated `ir/generated/*.md` |
-| Dev FE | `01` / OpenAPI preview khi map DTO | Sửa `01` từ FE repo — qua `/api-update` |
+| Dev FE | `01` / OpenAPI preview khi map DTO | Sửa `01` từ FE repo — qua `/api-spec` |
 | QA | `TC-*.md` post-wire scenarios | Sửa plan YAML trong session wire |
 | Lead | [gates § bước 9](./gates.md#close-one-function) | Skip audit vì “đã chạy tay” |
 
 **Env:** `COSQUAD_DOCS_ROOT`, `COSQUAD_TESTS_DOC`, e2e-root — `coSquad doctor`.
 
-Extract agent (FE harness): [wire-phase.md](../../harness/fe/extracts/wire-phase.md) · [wire-audit-loop.md](../../harness/fe/extracts/wire-audit-loop.md) · skill `/grill-wire` ([grill-wire.md](../references/skills/grill-wire.md)).
+Extract agent (FE harness): [wire-phase.md](../../../harness/fe/extracts/wire-phase.md) · [wire-audit-loop.md](../../../harness/fe/extracts/wire-audit-loop.md) · skill `/grill wire` ([grill.md](../references/skills/grill.md)).
 
-Tests hub khi wire báo plan gap: [wire-test-handoff.md](../../harness/tests/extracts/wire-test-handoff.md). Docs hub: [wire-spec-feedback.md](../../harness/docs/extracts/wire-spec-feedback.md).
+Tests hub khi wire báo plan gap: [wire-test-handoff.md](../../../harness/tests/extracts/wire-test-handoff.md). Docs hub: [wire-spec-feedback.md](../../../harness/docs/extracts/wire-spec-feedback.md).
 
 ---
 
@@ -86,11 +86,11 @@ Tests hub khi wire báo plan gap: [wire-test-handoff.md](../../harness/tests/ext
 
 | Mốc | Tối thiểu |
 |-----|-----------|
-| Design | `/grill-prototype` không còn gap SSOT (copy, state, mock boundary) — [design.md](./design.md) |
-| Backend | API deployable/staging; `/audit-api` hoặc open issues có owner; `approval` trên `01` theo policy |
+| Design | `/grill` không còn gap SSOT (copy, state, mock boundary) — [design.md](./design.md) |
+| Backend | API deployable/staging; `/api` hoặc open issues có owner; `approval` trên `01` theo policy |
 | Test plan | `cases:gate --strict` cho `W-*` scope (khi team bật gate) |
 | Test automation | Pre-wire E2E scoped **green** hoặc gap documented — [test.md](./test.md#test-e2e-lane) |
-| Tags | `#wire-only` / `#manual-composable` liệt kê rõ trong HANDOFF — [dsl.md § wire defer](../artifacts/dsl.md#vòng-đời-wire-defer) |
+| Tags | `#wire-only` / `#manual-composable` liệt kê rõ trong HANDOFF — [SSOT Artifacts](../artifacts/index.md) |
 
 **Chưa đủ:** quay lại prototype/test/backend — **không** wire nửa chừng rồi “fix spec sau”.
 
@@ -104,7 +104,7 @@ Cùng `TC-*.yaml` trên tests-docs — đổi **runtime**, không bắt buộc �
 |--|----------|-----------|
 | API | Mock / `setup.mocks` trong Playwright | Base URL thật, session auth thật |
 | Auth | Bypass middleware (grill-prototype) | Restore guest/RBAC theo bundle |
-| Lifecycle route | `prototype` / `test` | Promote `wire` — [code.md § Page lifecycle](../artifacts/code.md#page-lifecycle) |
+| Lifecycle route | `prototype` / `test` | Promote `wire` — [SSOT § Workspace Code Repositories](../artifacts/index.md#workspace-code-repositories) |
 | Audit | `audit e2e` (optional pre) | **`audit e2e` bắt buộc** scoped `--screen W-*` |
 
 Chi tiết grill test: [test.md § Grill kỹ](./test.md#grill-modes).
@@ -120,9 +120,9 @@ Chi tiết grill test: [test.md § Grill kỹ](./test.md#grill-modes).
 | 3 | Gỡ mock production; giữ mock chỉ test/fallback explicit | Dev FE | HANDOFF grill-prototype |
 | 4 | Restore auth / RBAC / route meta | Dev FE | Không ship bypass wire |
 | 5 | E2E post-wire scoped | Dev + QA | `test:e2e`, `/test` nếu gap |
-| 6 | Grill automation | Dev + QA | `/grill-test` |
-| 7 | Audit hội tụ | Dev + QA | `/grill-wire` hoặc lệnh `audit e2e`, `audit fe-be`, `audit scenario` (nếu SC) |
-| 8 | UAT / stakeholder | PM | Acceptance đã grill; behaviour mới → `/update-spec` **trước** đóng |
+| 6 | Grill automation | Dev + QA | `/grill` |
+| 7 | Audit hội tụ | Dev + QA | `/grill wire` hoặc lệnh `audit e2e`, `audit fe-be`, `audit scenario` (nếu SC) |
+| 8 | UAT / stakeholder | PM | Acceptance đã grill; behaviour mới → `/spec` **trước** đóng |
 
 ### Thứ tự Portal (gợi ý)
 
@@ -151,8 +151,8 @@ coSquad audit scenario <SC.yaml> --tests-docs "$COSQUAD_TESTS_DOC"   # nếu SC
 | Gap audit | Hành động |
 |-----------|-----------|
 | `missingInPlaywright` / PO | `/test` |
-| Plan vs bundle | `/grill-testcase` hoặc `/update-spec` |
-| `apiRef` ↔ `01` | `/api-update` + re-grill API |
+| Plan vs bundle | `/grill` hoặc `/spec` |
+| `apiRef` ↔ `01` | `/api-spec` + re-grill API |
 | Defer có chủ đích | `qa` + tag policy team |
 
 ---
@@ -181,10 +181,10 @@ Wire sign-off: <W-*> | reviewer | date | audit e2e OK
 
 | Khi | Hành động |
 |-----|-----------|
-| Contract BE sai | `/api-update` → BE redeploy → re-wire |
-| UX/spec sai | `/update-spec` → split → re-test pre-wire nếu cần |
-| E2E thiếu coverage | `/test` → `/grill-test` — không skip `audit e2e` |
-| SC thiếu màn | Thêm `TC` hoặc `QA-*` — `audit scenario` |
+| Contract BE sai | `/api-spec` → BE redeploy → re-wire |
+| UX/spec sai | `/spec` → split → re-test pre-wire nếu cần |
+| E2E thiếu coverage | `/test` → `/grill` — không skip `audit e2e` |
+| SC thiếu màn | Thêm `TC` hoặc `Q-*` (legacy `QA-*`) — `audit scenario` |
 
 **Một session = một command** — `/wire` không gộp full regression product + `/api` BE codegen.
 
@@ -203,6 +203,6 @@ Wire sign-off: <W-*> | reviewer | date | audit e2e OK
 | Chủ đề | Trang |
 |--------|--------|
 | Đóng leaf bước 9 | [gates.md § Đóng một function](./gates.md#close-one-function) |
-| `#wire-only` DSL | [artifacts/dsl.md](../artifacts/dsl.md) |
+| `#wire-only` DSL | [artifacts/index.md](../artifacts/index.md) |
 | Skill `/wire` | [references/skills/wire.md](../references/skills/wire.md) |
-| Page lifecycle | [artifacts/code.md#page-lifecycle](../artifacts/code.md#page-lifecycle) |
+| Page lifecycle | [artifacts/index.md#workspace-code-repositories](../artifacts/index.md#workspace-code-repositories) |

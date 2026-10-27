@@ -25,11 +25,20 @@
   - `11-risks/risk-register.md`
 
 ## Description
-- Documents the system's structural blueprint following international Arc42 standards.
-- Defines technology choices, communication protocols, caching strategies, and resilience patterns.
+- **Unified Technical Blueprint & Architecture Skill across all arc42 layers.**
+- Consolidates and covers:
+  - **Solution Strategy & Building Blocks (§04, §05):** Mermaid `graph TB` & C4 component diagrams.
+  - **Deployment & Topology (§07):** Physical node mapping (`DEP-*`).
+  - **Cross-Cutting Concerns (§08):** Security, Logging, Observability, Caching, Messaging, Auth.
+  - **Inter-Service & Integrations:** Sync/async RPC, event-driven handoffs, message queues (`sequenceDiagram`).
+  - **Background Processing & Workers:** Async jobs, cron triggers, worker retry policies, idempotency rules.
+  - **Architectural Decision Records (§09 ADR):** Formal decisions, options evaluated, tradeoffs (`ADR-{NNN}-{slug}.md`).
+- Enforces strict diagram triage: Surface Use-Case vs Technical Sequence vs Structural Block diagrams.
 
 ## Related Skills
-- **Paired with:** `/architecture-grill` for technical critique and validation.
+- **Preceding:** `/spec`, `/spec`, `/module`.
+- **Flows:** Routes end-to-end user journeys to `/user-flow`.
+- **Consolidated:** Fully consolidates and eliminates `/architecture`, `/architecture`, `/architecture`, `/architecture`, `/spec`, and `/grill`.
 
 ---
 

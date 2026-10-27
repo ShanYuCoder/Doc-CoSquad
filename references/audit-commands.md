@@ -25,14 +25,14 @@ Or `pnpm run coSquad:audit:<kind>` after `coSquad init` (when npm scripts are in
 | Kind | Command | Engine Script | Primary Input | Flags & Environment |
 | --- | --- | --- | --- | --- |
 | **spec** | `coSquad audit spec` | `engines/spec/lib/audit-bundle-gaps.mjs` | `*.bundle.yaml` (UI/spec) | `--type list \| create \| detail \| admin-crud \| auth \| change-password \| public` |
-| **hub-prd** | `coSquad audit hub-prd` | `engines/docs/lib/audit-hub-prd.mjs` | `overview/index.md`, surface/CMP `index.md` | — |
+| **hub-prd** | `coSquad audit hub-prd` | `engines/docs/lib/audit-hub-prd.mjs` | `overview/index.md`, surface/module `index.md` | — |
 | **risks** | `coSquad audit risks` | `engines/docs/lib/audit-risks-catalog.mjs` | **`architecture/11-risks/risk-register.md`** (primary) or `index.md` | Risk register columns (threshold / demand / delta) |
 | **flow** | `coSquad audit flow` | `audit-flow-gaps.mjs` | `FLOW-*.md` | — |
 | **api** | `coSquad audit api` | `audit-api-gaps.mjs` | API / integration `*.bundle.yaml` | — |
 | **testcase** | `coSquad audit testcase` | `audit-testcase-gaps.mjs` | `TC-*.yaml` (v2) or legacy plan | `--bundle <foo.bundle.yaml>` cross-ref bundle |
 | **fe-be** | `coSquad audit fe-be` | `audit-fe-be-alignment.mjs` | UI `*.bundle.yaml` | `--backend-spec …/01-backend-spec.yaml` (defaults to adjacent surface resolution) |
 | **scenario** | `coSquad audit scenario` | `audit-scenario-coverage.mjs` | `SC-*.yaml` / scenario md | `--tests-docs <hub>` or `COSQUAD_TESTS_DOC` |
-| **e2e** | `coSquad audit e2e` | `audit-e2e-coverage.mjs` | Playwright (`e2eRoot` config/MCP or `--e2e-root`) + TC plan | `--id TC-*` / screen / suite, `--tests-docs`, `--screen W-*`, `--strict`; or `TC-*.yaml` paths |
+| **e2e** | `coSquad audit e2e` | `audit-e2e-coverage.mjs` | Playwright (`e2eRoot` config/MCP or `--e2e-root`) + TC plan | `--id TC-*` / screen / suite, `--tests-docs`, `--screen S-*`, `--strict`; or `TC-*.yaml` paths |
 | **legacy** | `coSquad audit legacy` | `audit-legacy-gaps.mjs` | `adoption-inventory.md` + optional target id | `<target-id>` |
 
 ---
@@ -43,7 +43,7 @@ Or `pnpm run coSquad:audit:<kind>` after `coSquad init` (when npm scripts are in
 - Engines may set `criticalGaps` / `warningGaps`; CI quality gates typically run **`cases:gate`** for test hubs, rather than combining all audits into one step.
 - UX spec gap codes: `UX_*`, `CONFIRM_UX_*`, `uxAffordanceGaps` in the `audit spec` report.
 - FE↔BE alignment: codes prefixed with `FEBE_*` in `audit fe-be`.
-- Scenario coverage: `SC_SCREEN_NO_TC` when `screens[]` lacks a matching `TC-*.yaml` (or deferred with `QA-*`).
+- Scenario coverage: `SC_SCREEN_NO_TC` when `screens[]` lacks a matching `TC-*.yaml` (or deferred with `Q-*`, legacy `QA-*`).
 
 ---
 
@@ -52,25 +52,20 @@ Or `pnpm run coSquad:audit:<kind>` after `coSquad init` (when npm scripts are in
 ### Frontend / Fullstack (Portal Bundle)
 
 ```bash
-export COSQUAD_DOCS_ROOT="$(pwd)/docs"
-export COSQUAD_TESTS_DOC="$(pwd)/tests"
-
-coSquad audit spec surfaces/foo/W-001.bundle.yaml --type list
+coSquad audit spec surfaces/admin/ADM-01/01/S-ADM-01-01.bundle.yaml --type list
 coSquad audit testcase cases/foo/TC-W-001.yaml --bundle surfaces/foo/W-001.bundle.yaml
 coSquad audit fe-be surfaces/foo/W-001.bundle.yaml
-coSquad audit scenario scenarios/admin/SC-login.yaml --tests-docs "$COSQUAD_TESTS_DOC"
+coSquad audit scenario scenarios/admin/SC-login.yaml
 coSquad audit e2e --id TC-DEMO-001
-coSquad audit e2e --tests-docs "$COSQUAD_TESTS_DOC" --screen W-001
+coSquad audit e2e --screen W-001
 ```
 
-### Backend-Only (API Spec on Docs Hub)
+### Backend-Only (API Spec)
 
 ```bash
-export COSQUAD_DOCS_ROOT="$(pwd)/docs"
-
 coSquad audit api surfaces/partner-gateway/acme/export/api/01/01-backend-spec.yaml
-coSquad audit spec surfaces/admin/CMP-ADM-ORD-01/02/01/list.bundle.yaml --type list   # if portal UI exists
-coSquad audit fe-be surfaces/admin/CMP-ADM-ORD-01/02/01/list.bundle.yaml            # when both FE bundle + 01 exist
+coSquad audit spec surfaces/admin/ADM-01/list/feature.bundle.yaml --type list   # if portal UI exists
+coSquad audit fe-be surfaces/admin/ADM-01/list/feature.bundle.yaml            # when both FE bundle + 01 exist
 coSquad audit testcase cases/partner/TC-partner-export.yaml \
   --bundle surfaces/partner-gateway/acme/export/api/01/01-backend-spec.yaml
 ```
@@ -80,9 +75,7 @@ coSquad audit testcase cases/partner/TC-partner-export.yaml \
 Does not replace `audit *` — consolidates schema v2, TC audit, bundle traceability, matrix facets, and coverage:
 
 ```bash
-coSquad cases:gate --strict --docs-root "$COSQUAD_DOCS_ROOT"
-# or run from tests-docs repo (cwd = hub):
-cd tests && coSquad cases:gate --strict --docs-root ../docs
+coSquad cases:gate --strict
 ```
 
 ### Legacy Migration Inventory
@@ -108,13 +101,13 @@ coSquad audit legacy my-legacy-target
 
 | Skill | Mandatory / Recommended Audit |
 | --- | --- |
-| `/update-spec`, `/grill-dev` | `audit spec` |
+| `/spec`, `/grill` | `audit spec` |
 | `/api-spec` | `audit api` |
 | `/user-flow` | `audit flow` |
 | `/grill-hub-prd` | `audit hub-prd` |
 | `/risk-register` | `audit risks` → `risk-register.md` |
-| `/testcase`, `/grill-testcase` | `cases:gate`, `audit testcase --bundle`, `audit scenario` |
-| `/scenario` | `audit scenario` |
+| `/testcase`, `/grill` | `cases:gate`, `audit testcase --bundle`, `audit scenario` |
+| `/testcase` | `audit scenario` |
 | `/wire` | `audit e2e`, `audit fe-be`, `audit scenario` (when SC exists) |
-| `/grill-wire` | Verification chain — verify-only following `/wire`; gap → `/update-spec`, `/api-update`, `/grill-testcase`, `/test` |
+| `/grill wire` | Verification chain — verify-only following `/wire`; gap → `/spec`, `/api-spec`, `/grill`, `/test` |
 | `/init`, `/legacy` | `audit legacy` |

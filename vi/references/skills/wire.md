@@ -5,7 +5,7 @@
 
 ## Cách dùng (Command/Trigger)
 - Gọi qua slash command: `/wire`
-- Chạy ở Phase Wire, sau prototype + contract grill + **`/audit-api`** (BE) khi có API thật.
+- Chạy ở Phase Wire, sau prototype + contract grill + **`/api`** (BE) khi có API thật.
 
 ## Input (Dữ liệu đầu vào)
 - Đọc lại đặc tả giao diện (`ir/design.yaml`) và API Spec.
@@ -16,14 +16,14 @@
 - Tháo bỏ mock/stub production trên FE; đấu nối API Backend thật.
 - Khắc phục CORS / lệch contract (nếu có) giữa FE và BE.
 - Xóa tag `#update:*` và `#wire-only:*` khi chốt scope wire.
-- Sau wire: E2E scoped, **`/grill-wire`** (chuỗi audit) hoặc **`/grill-test`** (matrix chi tiết), `audit fe-be` / `audit scenario` (xem [workflows/wire.md](../../workflows/wire.md)).
+- Sau wire: E2E scoped, **`/grill wire`** (chuỗi audit) hoặc **`/grill`** (matrix chi tiết), `audit fe-be` / `audit scenario` (xem [workflows/wire.md](../../workflows/wire.md)).
 
 ## Description / Ý nghĩa
 - Phase **Wire — hội tụ** FE ↔ BE ([workflows/wire.md](../../workflows/wire.md#wire-cycle)).
-- Pre: grill-prototype, audit-api, `cases:gate`, pre-wire E2E. Post: `audit e2e`, `audit fe-be`, `/grill-test`.
-- Mâu thuẫn spec lớn → `/api-update` hoặc `/update-spec` trên docs hub — không vá ngầm trên code.
+- Pre: grill-prototype, audit-api, `cases:gate`, pre-wire E2E. Post: `audit e2e`, `audit fe-be`, `/grill`.
+- Mâu thuẫn spec lớn → `/api-spec` hoặc `/spec` trên docs hub — không vá ngầm trên code.
 - Agent extract: `wire-phase.md`, `wire-audit-loop.md` (sync `.cursor/extracts/` trên FE repo).
-- Gap spec/plan: docs `/update-spec` · tests `/grill-testcase` — xem `wire-audit-loop.md`.
+- Gap spec/plan: docs `/spec` · tests `/grill` — xem `wire-audit-loop.md`.
 
 ---
 
@@ -53,6 +53,6 @@ Rules: 4 tầng Portal; không rename field; mock chỉ test/fallback explicit
 
 Verify: lint/typecheck + scoped E2E — báo exit code (verify-gate)
 
-Verify: /grill-wire (audit chain) hoặc /grill-test (matrix)
-Handoff: gap code → /test; gap plan → /grill-testcase; gap spec → /update-spec; gap 01 → /api-update
+Verify: /grill wire (audit chain) hoặc /grill (matrix)
+Handoff: gap code → /test; gap plan → /grill; gap spec → /spec; gap 01 → /api-spec
 ```

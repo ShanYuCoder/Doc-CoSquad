@@ -12,14 +12,14 @@
 
 | Milestone | Recommended Command / Skill | Who Reviews Results |
 |---|---|---|
-| Post `/spec`, `/update-spec` | `coSquad audit spec` (`--type`) | BA / Dev grill reviewer |
-| Contract grilling (docs) | `/grill-api-spec` · `audit api` | Backend Dev + BA |
-| Backend prior to wiring | `/audit-api` · `audit api` | Backend Dev |
+| Post `/spec`, `/spec` | `coSquad audit spec` (`--type`) | BA / Dev grill reviewer |
+| Contract grilling (docs) | `/grill` · `audit api` | Backend Dev + BA |
+| Backend prior to wiring | `/api` · `audit api` | Backend Dev |
 | Prior to closing testcases | `cases:check`, `audit testcase` (+ `--bundle`) | Quality Engineer (QA) |
-| Test hub release gate | `cases:gate` (`--strict`, `--docs-root`) | QA + `/grill-testcase` |
+| Test hub release gate | `cases:gate` (`--strict`, `--docs-root`) | QA + `/grill` |
 | Pre-wire E2E verification | Scoped `test:e2e` · `audit e2e` | Frontend Dev + QA |
-| **Post `/wire`** | **`/grill-wire`** or `audit e2e` + `audit fe-be` + `audit scenario` | Frontend Dev + QA |
-| Detailed TC matrix vs PO | `/grill-test` following green `/test` run | QA / Frontend Dev |
+| **Post `/wire`** | **`/grill wire`** or `audit e2e` + `audit fe-be` + `audit scenario` | Frontend Dev + QA |
+| Detailed TC matrix vs PO | `/grill` following green `/test` run | QA / Frontend Dev |
 | Legacy adoption audit | `audit legacy` | Technical Lead |
 | **Prior to leaf merge/UAT** | Steps 1–10 [§ Closing a Function](#close-one-function) · human sign-off [grill § sign-off](./grill-and-human-review.md#human-signoff) | Lead / PM / QA |
 
@@ -42,22 +42,22 @@ Tooling **does not** execute automatically — team members invoke the CLI/skill
 ### Change Requests (CR)
 
 ```text
-/update-spec → audit spec (mandatory in skill) → split
+/spec → audit spec (mandatory in skill) → split
 → re-grill-bqa / grill-dev if UX affordances or bundle.gen change
 → patch TC alongside affected W-* / bundle impact
 → cases:gate --strict
-→ /grill-testcase (reads gate output)
+→ /grill (reads gate output)
 → gen + IT + manual E2E (team policy)
-→ if already wired: re-run `/grill-wire` following TC/spec patch
+→ if already wired: re-run `/grill wire` following TC/spec patch
 ```
 
 ### Post-Wire Behavior Drift
 
 ```text
 UAT / Staging identifies acceptance criteria deviation
-→ docs /update-spec (or /api-update) — NEVER patch silently in FE code alone
-→ split/render → tests /grill-testcase if scenario matrix changes
-→ FE /wire or /test → /grill-wire
+→ docs /spec (or /api-spec) — NEVER patch silently in FE code alone
+→ split/render → tests /grill if scenario matrix changes
+→ FE /wire or /test → /grill wire
 → Human leaf sign-off (Step 10)
 ```
 
@@ -73,10 +73,10 @@ Testcase policy: `/testcase` reads **`*.bundle.yaml`** directly. If the bundle i
 |---|---|---|
 | **A** | `audit testcase --bundle` | Trace scenario/AC/actions ↔ TC |
 | **B** | `audit fe-be` + grill-dev | Validate `apiRef` ↔ `01-backend-spec` |
-| **C** | `audit scenario` + `/scenario` | Validate `FLOW` / SC `screens[]` ↔ `cases/**` |
-| **D** | `/update-spec` rules | Verify delta design ↔ `userStories` / AC |
+| **C** | `audit scenario` + `/testcase` | Validate `FLOW` / SC `screens[]` ↔ `cases/**` |
+| **D** | `/spec` rules | Verify delta design ↔ `userStories` / AC |
 | **F** | `cases:gate`, TC schema v2 | Tests-docs release gate |
-| **G** | `/wire` + `/grill-wire` | Post-wire `audit e2e` + `fe-be` + `scenario`; plan ↔ live API |
+| **G** | `/wire` + `/grill wire` | Post-wire `audit e2e` + `fe-be` + `scenario`; plan ↔ live API |
 | **E** | *(DevOps, optional)* | CI automation: `check`, `cases:gate`, `doctor`, scoped `audit e2e` |
 
 ```mermaid
@@ -100,7 +100,7 @@ flowchart TD
   S5 --> S7["7–8 E2E · audit e2e"]
   S7 --> S9["9 Wire · grill-wire"]
   S9 --> S10["10 Ship/UAT human"]
-  CR["/update-spec"] -.-> S1
+  CR["/spec"] -.-> S1
   CR -.-> S3
 ```
 
@@ -114,16 +114,16 @@ Recommended checklist before considering a single **leaf** (screen / API sequenc
 
 | # | Milestone | Command / Skill | Verification / Review |
 | --- | --- | --- | --- |
-| 1 | Spec & Grill | `coSquad audit spec` (`--type`) · `/grill-bqa` · `/grill-dev` | Review `gaps[]` / confirms; stakeholder agreement |
+| 1 | Spec & Grill | `coSquad audit spec` (`--type`) · `/grill` · `/grill` | Review `gaps[]` / confirms; stakeholder agreement |
 | 2 | IR Synchronization | `coSquad split` · `coSquad check` | Bundle ↔ `ir/*` aligned before testcases or codegen |
-| 3 | Tests-Docs Plan | `/testcase` · `/grill-testcase` | `cases:check` · `audit testcase --bundle` |
+| 3 | Tests-Docs Plan | `/testcase` · `/grill` | `cases:check` · `audit testcase --bundle` |
 | 4 | Plan Quality Gate | `cases:gate --strict` + `COSQUAD_DOCS_ROOT` | Schema v2 compliance, traceability, facet matrix |
 | 5 | Backend Contract | `audit api` · `audit fe-be` | `apiRef` ↔ `01-backend-spec.yaml` parity |
-| 6 | Cross-Flow (if SC) | `audit scenario` | `screens[]` covered by `TC-*.yaml` or deferred with `QA-*` |
-| 7 | E2E (e2e-root) | `testcase:gen` · `/test` · `/grill-test` | TC matrix ↔ PO acceptance ↔ `*.spec.ts` |
+| 6 | Cross-Flow (if SC) | `audit scenario` | `screens[]` covered by `TC-*.yaml` or deferred with `Q-*` (legacy `QA-*`) |
+| 7 | E2E (e2e-root) | `testcase:gen` · `/test` · `/grill` | TC matrix ↔ PO acceptance ↔ `*.spec.ts` |
 | 8 | Plan ↔ Execution | `coSquad audit e2e` (`--e2e-root`, `--tests-docs`) | Plan hub matches scoped Playwright test spec |
-| 9 | Wire (Live API) | `/wire` · post-wire scoped E2E — [wire.md](./wire.md#wire-gates) | `/grill-wire` or `audit e2e` · `audit fe-be` · `audit scenario` |
-| 10 | Ship / UAT (Leaf) | Manual acceptance per bundle AC (team policy) · product merge checklist | **Human** confirms scope sufficiency; new behavior → `/update-spec` **before** step 10 |
+| 9 | Wire (Live API) | `/wire` · post-wire scoped E2E — [wire.md](./wire.md#wire-gates) | `/grill wire` or `audit e2e` · `audit fe-be` · `audit scenario` |
+| 10 | Ship / UAT (Leaf) | Manual acceptance per bundle AC (team policy) · product merge checklist | **Human** confirms scope sufficiency; new behavior → `/spec` **before** step 10 |
 
 > **Audit Pass ≠ Ship:** Clean JSON with 0 critical gaps does not replace formal PM/QA UAT sign-off — [grill-and-human-review § sign-off](./grill-and-human-review.md#human-signoff).
 
@@ -153,7 +153,7 @@ Recommended checklist before considering a single **leaf** (screen / API sequenc
 | `cases:gate` | Schema errors, matrix facet voids, bundle trace gaps | QA / grill-testcase |
 | `audit testcase --bundle` | Unmapped scenario / AC / actions | Testcase author |
 | `audit scenario` | `screens[]` lacking matching TC | Cross-flow owner |
-| `audit e2e` | `missingInPlaywright`, `matrixRowsUncovered` | `/test` · `/grill-test` · `/grill-wire` |
-| `audit fe-be` | `FEBE_*` alignment mismatches | `/api-update` (docs) · re-wire |
+| `audit e2e` | `missingInPlaywright`, `matrixRowsUncovered` | `/test` · `/grill` · `/grill wire` |
+| `audit fe-be` | `FEBE_*` alignment mismatches | `/api-spec` (docs) · re-wire |
 
 JSON output is intended for **review and informed decision-making**, never replacing human judgment regarding release readiness.

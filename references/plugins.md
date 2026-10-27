@@ -27,7 +27,7 @@ Install CoSquad as an official plugin directly from the repository:
 ```bash
 agy plugin install https://github.com/ShanYuCoder/CoSquad
 ```
-Antigravity automatically discovers all skills (`/help-plan`, `/spec`, `/update-spec`, `/grill`, `/trace`, etc.) and exposes suggested prompts.
+Antigravity automatically discovers all skills (`/help-plan`, `/spec`, `/module`, `/grill`, `/trace`, etc.) and exposes suggested prompts.
 
 ### Claude Code
 Add the CoSquad marketplace and install the plugin:

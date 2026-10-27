@@ -23,8 +23,8 @@
 - Restores route authentication guards and RBAC permission checks per specification.
 
 ## Related Skills
-- **Preceding:** Prototype passed `/grill-prototype`, Backend passed `/audit-api`, Tests passed `cases:gate --strict`.
-- **Subsequent:** Scoped E2E tests → `/grill-wire`.
+- **Preceding:** Prototype passed `/grill`, Backend passed `/api`, Tests passed `cases:gate --strict`.
+- **Subsequent:** Scoped E2E tests → `/grill wire`.
 
 ---
 

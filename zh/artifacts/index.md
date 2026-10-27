@@ -1,6 +1,6 @@
 # 工作区结构与 SSOT 核心资产 (Artifacts)
 
-当运行 `coSquad setup [workspace]` 并启动 `pnpm docs:dev`（或 `coSquad dev`）时，CoSquad 会在本地生成标准化的 **SSOT（单一事实源）** 架构骨架。
+当运行 `coSquad setup [workspace]` 并启动 `pnpm docs:build`（或 `coSquad build`）时，CoSquad 会在本地生成标准化的 **SSOT（单一事实源）** 架构骨架。
 
 VitePress 文档中心直接读取本地磁盘上的这些目录与 Markdown 文件，使整个跨职能团队（产品经理/BA、前端/后端开发、QA、架构师）能够在统一的事实标准下无缝协同。
 
@@ -20,7 +20,7 @@ my-workspace/
 │   ├── common/             # 全局 UI 模式、model-data 与通用规范（扁平单层 .md）
 │   └── <surface-name>/     # 具体业务端（admin 后台、portal 门户、mobile 移动端等）
 │       ├── common/         # （可选）该端作用域通用资产（空时自动隐藏）
-│       └── <module-name>/  # 业务功能模块 (CMP-*)
+│       └── <module-name>/  # 业务功能模块 ({surfaceCode}-{id})
 │           ├── common/     # （可选，空时自动隐藏）
 │           ├── user-flows/ # Step 1 在该模块发起的用户旅程流（空时自动隐藏）
 │           └── <feature>/  # 页面/功能（扁平单层，包含 bundle.yaml 与 spec.md）
@@ -71,7 +71,7 @@ my-workspace/
 - **主要协作角色：** 架构师、技术主管 (Tech Lead)。
 
 ### 3. `surfaces/` — 应用端、功能特性与扁平架构
-- **内容构成：** 管理所有用户交互规范，细分为不同的端（`admin`, `portal`, `mobile`）、业务功能模块（`CMP-*`）以及扁平单层页面/功能（`<feature-slug>/`）。
+- **内容构成：** 管理所有用户交互规范，细分为不同的端（`admin`, `portal`, `mobile`）、业务功能模块（`{surfaceCode}-{id}`）以及扁平单层页面/功能（`<feature-slug>/`）。
 - **精简 `common/` 架构（扁平单层 .md）：**
   - 在 `surfaces/common/`: 存放**全系统共享**规范，以扁平 `.md` 文件管理（无 `patterns/`, `yaml/`, `code/`, `data-model/` 子目录）。包含：UI Patterns, `model-data.md`, `model-derived-data.md`, `api-health.md`, `ui-empty-state.md`。
   - 在 `surfaces/<surface>/common/` 或 `<module>/common/`: （可选）存放该端或模块专属规范。**为空时在 VitePress 侧边栏自动隐藏**。
@@ -97,7 +97,7 @@ my-workspace/
 - **内容构成：** 维护 `qa/index.md`，汇总各模块待澄清问题（*Open Questions*）。
 - **职责范围：**
   - 开发或测试人员在阅读规格说明时，记录发现的业务逻辑盲区。
-  - BA 或产品负责人在此针对问题进行澄清确认，并使用 `/qa-resolve` 进行归档。
+  - BA 或产品负责人在此针对问题进行澄清确认，并使用 `/qa` 进行归档。
   - 确保每一个疑问在功能开发关闭前都有迹可循地解决。
 
 ---

@@ -27,7 +27,7 @@ flowchart TD
 
   %% 分岐 3: Rebase
   CHOICE -->|3. Rebase<br/>(システム刷新・移行)| RB_LEGACY["旧コードを source-legacy/ 配下に配置<br/>(厳格に読取専用 READ-ONLY)"]
-  RB_LEGACY --> RB_EXTRACT["/extract-legacy を実行<br/>(レガシーモジュールを抽出)"]
+  RB_LEGACY --> RB_EXTRACT["/legacy を実行<br/>(レガシーモジュールを抽出)"]
   RB_EXTRACT --> RB_NEW["source-code/ 配下に<br/>新技術スタックのリポジトリを作成"]
   RB_NEW --> RB_INIT["/init を実行<br/>(新環境を設定)"]
   RB_INIT --> RB_NEXT["設計フェーズへ進む:<br/>/legacy で仕様を復元"]
@@ -64,7 +64,7 @@ flowchart TD
 
 ### 3. Rebase シナリオ（システム刷新・リプレイス）
 - **反コピペ保護：** レガシーシステムの旧コードを `source-legacy/` 配下に配置（**厳格に読取専用**。直接の編集や無秩序なコピペは厳禁）。
-- `/extract-legacy` を実行し、旧システムの業務ロジックを抽出。
+- `/legacy` を実行し、旧システムの業務ロジックを抽出。
 - `source-code/` 配下に新しいモダンスタックの新規リポジトリを用意。
 - Phase 1 の設計時に `/legacy` スキルを活用し、安全に業務ルールを新システムへ移植・モデリング。
 ---
@@ -185,18 +185,18 @@ coSquad build-template-code --yes --force
 #### ステップ 3：カスタムテンプレートを用いた新機能開発
 これ以降、新機能開発は極めて円滑に進みます：
 1. `/spec` で仕様を作成（`CMN-*` を継承）。
-2. `/grill-bqa`、`/prototype` でドメインと UI フローを検証。
+2. `/grill`、`/prototype` でドメインと UI フローを検証。
 3. `coSquad gen` を実行すると、手作業のリファクタリング不要で、プロジェクトの独自テンプレートに 100% 準拠したコードが自動生成されます。
 
 ---
 
-## 6. ローカル SSOT ドキュメントサーバー (`pnpm docs:dev`)
+## 6. ローカル SSOT ドキュメントサーバー (`pnpm docs:build`)
 
-Phase 0 の初期構築はこれで完了です！ドキュメントサーバーを起動して、ワークスペース SSOT のインタラクティブな Web ポータルを閲覧できます：
+Phase 0 の初期構築はこれで完了です！OpenAPI のビルドとリアルタイム配信を統合したドキュメントサーバーを起動して、ワークスペース SSOT のインタラクティブな Web ポータルを閲覧できます：
 
 ```bash
-pnpm docs:dev
-# または: coSquad dev
+pnpm docs:build
+# または: coSquad build
 ```
 
 これにより、`http://localhost:5173` で VitePress 開発サーバーが起動します：

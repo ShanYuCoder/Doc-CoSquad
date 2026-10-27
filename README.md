@@ -157,7 +157,7 @@ After setup, open your workspace in an AI Agent (Cursor, Antigravity, Claude Cod
 | **2.1. Action Planning** | `/help-plan` | Analyzes `inition-inventory.md`, configs, and state to produce a step-by-step Action Plan, reviewing linked User Flows. |
 | **2.2. Template Training** | `build-template-code` | Analyzes Golden Samples (cleanest architectural modules) to produce project-aligned custom codegen templates. |
 | **3. Archaeology** | `/trace` *(Maintain)*<br>`/legacy` *(Rebase)* | • `/trace`: Scans source code in `source-code` to correlate and generate specs.<br>• `/legacy`: Reads read-only from `source-legacy`, extracting specs/templates into `source-code`. |
-| **4. Specification** | `/spec`, `/grill-bqa` | Drafts Leaf Bundle specs for screens/features, challenging business logic. |
+| **4. Specification** | `/spec`, `/grill` | Drafts Leaf Bundle specs for screens/features, challenging business logic. |
 | **5. Design & API** | `/prototype`, `/api-spec` | Generates interactive HTML prototypes and defines API contracts (`01-backend-spec.yaml`). |
 | **6. Testing** | `/testcase`, `testcase:gen` | Builds `TC-*.yaml` matrix and generates automated E2E Playwright test suites. |
 | **7. Integration** | `/wire` | Connects frontend to real APIs, runs spec ↔ code audit checks, and completes the feature. |

@@ -38,11 +38,11 @@ CoSquad は、開発プロセスを**ドキュメントエンジン (Docs Engine
 | `coSquad split` | `.bundle.yaml` を `ir/design.yaml`, `ir/spec.yaml`, `ir/generated/spec.md` に分割。 |
 | `coSquad split_all` | ワークスペース内のすべての Bundle YAML ファイルを再帰的に走査して分割。 |
 | `coSquad render` | YAML 形式の UI 仕様から Markdown（データ辞書と状態マトリクス）を再レンダリング。 |
-| `coSquad dev` | ローカルの VitePress ドキュメントハブ（ポート **5173**）およびテストハブ（ポート **5174**）を起動。 |
+| `coSquad dev` | ローカルの VitePress ドキュメントハブ（ポート **5173**）を起動。統合 SSOT アーキテクチャ（overview, architecture, surfaces, cases, scenarios）全体を提供。 |
 | `coSquad build` | 静的ドキュメントサイトをビルド。 |
 | `coSquad publish` | ドキュメント成果物を公開し、`CATALOG.md` を更新。 |
 | `coSquad openapi_gen` | `01-backend-spec.yaml` から OpenAPI の定義スニペットを自動生成・更新。 |
-| `coSquad openapi_render` | 各 OpenAPI YAML スニペットを統合し `docs/openapi/api.yaml` を生成。 |
+| `coSquad openapi_render` | 各 OpenAPI YAML スニペットを統合し `docs/api-spec/api.yaml` を生成。 |
 | `coSquad openapi_build_ui`| ドキュメントハブ用の静的 Swagger UI 画面をビルド。 |
 | `coSquad api:check` | バックエンドコード生成前に `01-backend-spec.yaml` の妥当性を検証。 |
 

@@ -11,14 +11,14 @@
 - Surface directory and functional domain breakdown.
 
 ## 输出 (Output)
-- Module-level specification: `CMP-*.module.yaml` and directory structure under `surfaces/<surface>/CMP-*/`.
+- Module-level specification: `<module>.module.yaml` and directory structure under `surfaces/<surface>/<module>/`.
 - Pre-allocation of shared Module APIs under `common/yaml/<slug>/`.
-- Screen catalog listing projected leaf screens (`W-*`).
+- Screen catalog listing projected leaf screens (`S-*`).
 
 ## 描述说明 (Description)
-- 在 Phase 0 定义业务模块 (`CMP-*`) 的职责边界、依赖关系、包含的屏幕清单与对外能力契约。
+- 在 Phase 0 定义业务模块 (`{surfaceCode}-{id}`) 的职责边界、依赖关系、包含的屏幕清单与对外能力契约。
 ## 相关技能 (Related Skills)
-- **Preceding:** `/surfaces`.
+- **Preceding:** `/spec`.
 - **Subsequent:** `/user-flow`, `/db-erd`, `/spec`.
 
 ---
@@ -29,6 +29,6 @@
 /module
 
 Surface: surfaces/admin/
-Create module CMP-ADM-HOTEL (Hotel Management) containing screens for Hotel List (W-01), Hotel Detail/Edit (W-02), and Room Allocation (W-03).
+Create module ADM-01 (Hotel Management) containing screens for Hotel List (S-01), Hotel Detail/Edit (S-02), and Room Allocation (S-03).
 ```
 

@@ -16,18 +16,18 @@
 - Registered routes and middleware configurations.
 
 ## 説明・役割 (Description)
-- Phase 3 バックエンド開発の最上位ルーターコマンド。コンテキストや引数に応じて `/api-spec`、`/api-update`、`/grill-api-spec` またはコード生成へと自動ルーティング。
+- Phase 3 バックエンド開発の最上位ルーターコマンド。コンテキストや引数に応じて `/api-spec`、`/api-spec`、`/grill` またはコード生成へと自動ルーティング。
 ## 関連スキル (Related Skills)
-- **Preceding:** `/api-spec`, `/grill-api-spec`.
-- **Subsequent:** `/unit` → `/audit-api` → `/wire`.
+- **Preceding:** `/api-spec`, `/grill`.
+- **Subsequent:** `/unit` → `/api` → `/wire`.
 
 ---
 
 ## プロンプト実行例 (Example Prompt)
 
 ```text
-/api W-ADM-ORD-01
+/api S-ADM-01-01
 
-Generate and implement backend API endpoints using approved contract at surfaces/admin/CMP-ADM-ORD/01/01/api/01/01-backend-spec.yaml.
+Generate and implement backend API endpoints using approved contract at surfaces/admin/ADM-01/orders/api/01/01-backend-spec.yaml.
 ```
 

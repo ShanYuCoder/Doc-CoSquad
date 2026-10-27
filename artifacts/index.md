@@ -1,6 +1,6 @@
 # Workspace Structure & SSOT Artifacts
 
-When executing `coSquad setup [workspace]` and launching `pnpm docs:dev` (or `coSquad dev`), CoSquad generates a standardized **SSOT (Single Source of Truth)** architecture skeleton.
+When executing `coSquad setup [workspace]` and launching `pnpm docs:build` (or `coSquad build`), CoSquad generates a standardized **SSOT (Single Source of Truth)** architecture skeleton.
 
 The VitePress web interface directly reads these directories and Markdown files on the local machine so the entire cross-functional team (BA, Dev, QA, Lead) collaborates and aligns on a unified source of truth.
 
@@ -20,10 +20,10 @@ my-workspace/
 │   ├── common/             # UI Patterns, model-data, rules across system (1-tier flat .md)
 │   └── <surface-name>/     # Specific business surface (admin, portal, mobile, etc.)
 │       ├── common/         # (Optional) Surface-scoped common (auto-hidden if empty)
-│       └── <module-name>/  # Feature module (CMP-*)
+│       └── <module-name>/  # Feature module ({surfaceCode}-{id}, e.g. ADM-01)
 │           ├── common/     # (Optional, auto-hidden if empty)
 │           ├── user-flows/ # User flows with Step 1 starting in this module (auto-hidden if empty)
-│           └── <feature>/  # Screen/feature (1-tier flat, holds bundle.yaml & spec.md)
+│           └── <feature>/  # Feature (S-*, J-*, H-* 1-tier flat, holds bundle.yaml & spec.md)
 ├── .coSquad/registries/   # Design Tokens, UI Components, and Backend Capabilities registries
 ├── qa/                     # Collaboration inbox for clarifying business open questions & risks
 ├── source-code/            # Active production codebases (Git Submodules)
@@ -71,7 +71,7 @@ my-workspace/
 - **Primary Stakeholders:** Solution Architect, Technical Lead.
 
 ### 3. `surfaces/` — Application Surfaces, Features & Flat Structure
-- **Contents:** Manages all user interface specifications and interactive workflows, partitioned into specific surfaces (`admin`, `portal`, `mobile`, etc.), feature modules (`CMP-*`), and flat 1-tier screens/features (`<feature-slug>/`).
+- **Contents:** Manages all user interface specifications and interactive workflows, partitioned into specific surfaces (`admin`, `portal`, `mobile`, etc.), feature modules (`{surfaceCode}-{id}`), and flat 1-tier screens/features (`<feature-slug>/`).
 - **Streamlined `common/` Structure (Flat 1-Tier .md):**
   - At `surfaces/common/`: Holds shared rules for the **entire system** as flat `.md` files (no subdirectories `patterns/`, `yaml/`, `code/`, `data-model/`). Includes: UI Patterns, `model-data.md`, `model-derived-data.md`, `api-health.md`, `ui-empty-state.md`.
   - At `surfaces/<surface>/common/` or `<module>/common/`: (Optional) Holds shared rules for that surface or module. **Automatically hidden from VitePress sidebar if empty**.
@@ -97,7 +97,7 @@ my-workspace/
 - **Contents:** Houses `qa/index.md` aggregating business open questions (*Open Questions*).
 - **Responsibilities:**
   - Where QAs or Devs record requirement ambiguities identified while reviewing specs.
-  - BAs or POs clarify and sign off directly here using skill `/qa-resolve`.
+  - BAs or POs clarify and sign off directly here using skill `/qa`.
   - Ensures every question has a documented resolution before feature development is closed.
 
 ---
@@ -108,3 +108,135 @@ my-workspace/
 | :--- | :--- | :--- |
 | **`source-code/`** | **Read / Write** | Contains active production repositories (Frontend, Backend, Microservices). All generated code and modifications are committed here. |
 | **`source-legacy/`** | **Strictly READ-ONLY** | Houses legacy source code for archaeological analysis during Rebase workflows. **Modifications or raw copy-pasting from this directory are strictly forbidden.** |
+
+---
+
+## Standard ID Naming Conventions & Artifact Taxonomy
+
+To ensure brevity, usability, and rapid cross-referencing across cross-functional teams (BA, Dev, QA, PO) without cumbersome names, CoSquad adopts a streamlined, unified ID naming convention for all documentation artifacts:
+
+### 1. Surface Identification
+- **Rule:** No complex numeric ID required. Use **Surface Folder Name** + **Uppercase Abbreviation (`surfaceCode`)** (1 to 4 characters).
+- **Examples:**
+  - `admin` $\rightarrow$ `ADM` (or `AD`)
+  - `tenant` $\rightarrow$ `TA`
+  - `line` $\rightarrow$ `L`
+  - `customer` $\rightarrow$ `CUS`
+  - `merchant` $\rightarrow$ `MER`
+
+### 2. Business Module Identification
+- **Pattern:** `{surfaceCode}-{id}`
+- **Rule:** Each module within a given surface receives a 2-digit sequential ID starting from `01`.
+- **Examples:**
+  - `ADM-01` (Authentication & Admin Identity Management)
+  - `ADM-02` (Order Processing & Settlement)
+  - `TA-01`, `TA-02` (Tenant Portal Modules)
+
+### 3. Module Feature Identification
+Within each module, features are differentiated by a **1-letter prefix**, sharing a **unified, non-overlapping sequential number starting from 01**:
+- **`S-*` (Screen - User Interface View):** `S-{surfaceCode}-{idModule}-{idFeature}`
+  - Examples: `S-ADM-01-01` (Order List Screen), `S-ADM-01-02` (Order Create & Edit Screen).
+- **`J-*` (Job - Background Worker / Scheduled Cron):** `J-{surfaceCode}-{idModule}-{idFeature}`
+  - Example: `J-ADM-01-03` (Order status synchronization background job).
+- **`H-*` (Hook - Webhook Integration / External API Hook):** `H-{surfaceCode}-{idModule}-{idFeature}`
+  - Example: `H-ADM-01-04` (Third-party payment callback webhook).
+- **Unified Sequence Principle (Strict Non-overlapping IDs):**
+  - The feature sequence `{idFeature}` increments consecutively from `01` across all feature types (Screens, Jobs, Hooks) within that module.
+  - *Example:* If module `ADM-01` already has screens `S-ADM-01-01` and `S-ADM-01-02`, the next job MUST be numbered `J-ADM-01-03` (never reusing 01 or 02), and the next hook is `H-ADM-01-04`.
+- **Internal APIs:**
+  - Declared by HTTP Method + Route inside `01-backend-spec.yaml` (e.g. `GET /admin/orders`). May use prefix `API` or omit IDs if strictly internal to the consuming screen feature.
+
+### 4. In-Screen Messages, Alerts & Confirmation Popups
+- **Rule:** Standard item labels (form input labels, placeholders, column headers) **do not require IDs**.
+- **Mandatory IDs:** All **Alert banners** (success, warning), **Validation / Process Error Messages**, and **Confirmation Modal Popups / Dialogs** MUST have explicit IDs:
+  - **Pattern:** `Msg-{surfaceCode}-{idModule}-{idScreen}-{idMsg}` (each segment is 2 digits).
+  - **Examples:**
+    - `Msg-ADM-01-01-01`: "Start date must be before end date" (Filter validation error on screen S-ADM-01-01).
+    - `Msg-ADM-01-01-02`: "Are you sure you want to cancel this order?" (Order cancellation confirm popup).
+    - `Msg-ADM-01-01-03`: "Order cancelled successfully" (Success toast notification).
+- **No In-Feature Dictionary Table:** Feature specs (`S-*`, `J-*`, `H-*`) do **NOT** define the message translation catalog. Inside feature details (`actions[]`, `interactionCases[]`, `outcomes[]`), authors only specify:
+  - **Trigger condition:** When it fires (e.g. "on click Save, if validation fails on case A").
+  - **Display mode:** How it displays (toast notification, inline alert, or blocking confirm modal dialog).
+  - **Message ID:** Referenced ID (e.g. `id: Msg-ADM-01-01-01`).
+- **Interactive Link to Message Screen:** When rendered in documentation, the message ID `Msg-*` functions as a clickable link that opens the dedicated Message List / Screen (`messages`), where message IDs, multilingual translations (`en`, `vi`, `ja`), and hashtag/placeholder parameter definitions (`{month}`, `{count}`) are centrally maintained (similar to Q&A items).
+
+### 5. File Export & Download Functions
+- **Pattern:** `F-{surfaceCode}-{idModule}-{idFile}` (2 digits per segment).
+- **Purpose:** Identifies report export capabilities (Excel, CSV, PDF) or bulk-import data download templates.
+- **Examples:**
+  - `F-ADM-01-01`: Periodic revenue summary Excel report.
+  - `F-ADM-01-02`: Order reconciliation CSV import template.
+
+### 6. User Flows (`flow-*`)
+- **Pattern:** `flow-{surfaceCode}-{idModule}-{id}` (lowercase or case-insensitive, 2 digits per segment).
+- **Rule:** Step 1 Ownership determines module folder. Files are located under `surfaces/<surface>/<module>/user-flows/flow-{surface}-{module}-{id}.md`.
+- **Examples:**
+  - `flow-adm-01-01`: User flow for admin login and password reset.
+  - `flow-ta-02-01`: Tenant checkout and invoice issuance flow.
+
+### 7. Common Resources Across 3 Architectural Tiers (`G-*` and `C-*`)
+To distinguish shared resources from modular business features:
+
+#### 7.1. Tier 1 — Global Common (`surfaces/common/`): Prefix `G-` (Global)
+Applicable across all surfaces:
+- **Shared APIs:** `G-API-{id}` (e.g. `G-API-01`, `G-API-02`) — System health check, global token verification.
+- **Shared UI (Modals, Tables quy thành Screen):** `G-S-{id}` (e.g. `G-S-01`, `G-S-02`) — Generic confirm dialog, delete modal, system error layout.
+- **Shared Messages:** `G-Msg-{id}` (e.g. `G-Msg-01`, `G-Msg-02`) — System maintenance alert, session expired notification.
+- **Shared Helpers / Status / Error Codes:** `G-{id}` (e.g. `G-01`, `G-02`) — Standard HTTP error catalog, currency formatter, timezone converter.
+- *(Note: Hooks, Jobs, and modular Features do not exist at this global tier).*
+
+#### 7.2. Tier 2 — Surface Common (`surfaces/<surface>/common/`): Prefix `C-` (Common)
+Shared within a specific surface:
+- **Surface Common APIs:** `C-API-{surfaceCode}-{id}` (e.g. `C-API-ADM-01`, `C-API-ADM-02`) — Surface menu navigation API, profile info.
+- **Surface Common UI (Modals, Panels quy thành Screen):** `C-S-{surfaceCode}-{id}` (e.g. `C-S-ADM-01`, `C-S-ADM-02`) — Admin filter drawer, admin audit log drawer.
+- **Surface Common Messages:** `C-Msg-{surfaceCode}-{id}` (e.g. `C-Msg-ADM-01`, `C-Msg-ADM-02`) — Surface-level permission denied alert.
+- **Surface Common Helpers / Status:** `C-{surfaceCode}-{id}` (e.g. `C-ADM-01`, `C-ADM-02`) — Admin role definition helper, admin status badge formatter.
+
+#### 7.3. Tier 3 — Module Common (`surfaces/<surface>/<module>/common/`): Prefix `C-` (Module Common)
+Shared within a specific module:
+- **Module Common APIs:** `C-API-{surfaceCode}-{idModule}-{id}` (e.g. `C-API-ADM-01-01`, `C-API-ADM-01-02`) — Order pricing calculation preview API.
+- **Module Common UI (Modals, Tables quy thành Screen):** `C-S-{surfaceCode}-{idModule}-{id}` (e.g. `C-S-ADM-01-01`, `C-S-ADM-01-02`) — Order status history modal, order item selector dialog.
+- **Module Common Messages:** `C-Msg-{surfaceCode}-{idModule}-{id}` (e.g. `C-Msg-ADM-01-01`, `C-Msg-ADM-01-02`) — Order cancellation reason required validation error.
+- **Module Common Helpers / Status / Enums:** `C-{surfaceCode}-{idModule}-{id}` (e.g. `C-ADM-01-01`, `C-ADM-01-02`) — Order state machine transition validator.
+
+### 8. QA & Test Artifacts
+- **`TC-*` (Test Case):** `TC-{surfaceCode}-{idModule}-{idTC}`
+  - Examples: `TC-ADM-01-01` (Order list pagination test case), `TC-ADM-01-02` (Order form validation test case).
+- **`SC-*` (Scenario - Integrated E2E Journey):** `SC-{surfaceCode}-{idModule}-{idSC}`
+  - Example: `SC-ADM-01-01` (Order checkout through fulfillment dispatch flow).
+- **`Q-*` (Question / QA Inbox Ticket / Pending Tech Debt):**
+  - **Rule:** Uses clean 1-letter prefix `Q-` (replacing legacy `QA-*`).
+  - **Feature-level:** `Q-{surfaceCode}-{idModule}-{idFeature}-{id}` (e.g. `Q-ADM-01-01-01` — Question 01 on screen `S-ADM-01-01`).
+  - **Module-level:** `Q-{surfaceCode}-{idModule}-{id}` (e.g. `Q-ADM-01-01` — Module-wide business question).
+  - **Global-level:** `Q-G-{id}` (e.g. `Q-G-01` — Cross-cutting architecture/infrastructure question).
+  - **Storage:** File `qa/<id>.yaml` (e.g. `qa/Q-ADM-01-01-01.yaml` or sequence `qa/ADM-01-01_0001.yaml`).
+
+---
+
+### ID Taxonomy Cheatsheet
+
+| Prefix / Pattern | Scope & Artifact Type | Example | Meaning |
+| :--- | :--- | :--- | :--- |
+| `{SURF}` | Surface (Channel / Portal) | `ADM`, `TA`, `L`, `CUS` | Surface abbreviation (Admin, Tenant, Line, Customer) |
+| `{SURF}-{NN}` | Business Module | `ADM-01`, `TA-02` | Module 01 under Surface Admin |
+| `S-{SURF}-{NN}-{MM}` | Screen Feature | `S-ADM-01-01` | Screen 01 under module ADM-01 |
+| `J-{SURF}-{NN}-{MM}` | Background Job / Worker | `J-ADM-01-03` | Background job 03 under module ADM-01 |
+| `H-{SURF}-{NN}-{MM}` | API Hook / Integration | `H-ADM-01-04` | Webhook / Integration 04 under module ADM-01 |
+| `flow-{SURF}-{NN}-{MM}` | User Flow Journey | `flow-adm-01-01` | User flow 01 starting in module ADM-01 |
+| `Msg-{SURF}-{NN}-{MM}-{KK}` | Screen Message / Alert / Popup | `Msg-ADM-01-01-01` | Message 01 on screen S-ADM-01-01 |
+| `F-{SURF}-{NN}-{MM}` | File Export / Download Template | `F-ADM-01-01` | Export file 01 under module ADM-01 |
+| `G-API-{NN}` | Global Common API | `G-API-01` | Shared API 01 across all surfaces |
+| `G-S-{NN}` | Global Common UI (Modal/Table) | `G-S-01` | Shared UI Screen 01 across all surfaces |
+| `G-Msg-{NN}` | Global Common Message | `G-Msg-01` | Shared Message 01 across all surfaces |
+| `G-{NN}` | Global Common Helper/Status | `G-01` | Shared Helper/Status 01 across all surfaces |
+| `C-API-{SURF}-{NN}` | Surface Common API | `C-API-ADM-01` | Shared API 01 within Surface ADM |
+| `C-S-{SURF}-{NN}` | Surface Common UI (Modal) | `C-S-ADM-01` | Shared UI Screen 01 within Surface ADM |
+| `C-Msg-{SURF}-{NN}` | Surface Common Message | `C-Msg-ADM-01` | Shared Message 01 within Surface ADM |
+| `C-{SURF}-{NN}` | Surface Common Helper/Status | `C-ADM-01` | Shared Helper/Status 01 within Surface ADM |
+| `C-API-{SURF}-{NN}-{KK}` | Module Common API | `C-API-ADM-01-01` | Shared API 01 within Module ADM-01 |
+| `C-S-{SURF}-{NN}-{KK}` | Module Common UI (Modal) | `C-S-ADM-01-01` | Shared UI Screen 01 within Module ADM-01 |
+| `C-Msg-{SURF}-{NN}-{KK}` | Module Common Message | `C-Msg-ADM-01-01` | Shared Message 01 within Module ADM-01 |
+| `C-{SURF}-{NN}-{KK}` | Module Common Helper/Status | `C-ADM-01-01` | Shared Helper/Status 01 within Module ADM-01 |
+| `TC-{SURF}-{NN}-{MM}` | Test Case | `TC-ADM-01-01` | Test case 01 under module ADM-01 |
+| `SC-{SURF}-{NN}-{MM}` | Test Scenario | `SC-ADM-01-01` | E2E scenario 01 under module ADM-01 |
+| `Q-{SURF}-{NN}-{MM}-{KK}` | Question / QA Inbox Ticket | `Q-ADM-01-01-01` | Question 01 on screen S-ADM-01-01 |

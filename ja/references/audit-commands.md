@@ -25,14 +25,14 @@ coSquad audit                   # ヘルプを表示
 | 種別 (Kind) | 実行コマンド | エンジンスクリプト | 主な入力 | フラグ ＆ 環境変数 |
 | :--- | :--- | :--- | :--- | :--- |
 | **spec** | `coSquad audit spec` | `engines/spec/lib/audit-bundle-gaps.mjs` | `*.bundle.yaml` (UI/spec) | `--type list \| create \| detail \| admin-crud \| auth \| change-password \| public` |
-| **hub-prd** | `coSquad audit hub-prd` | `engines/docs/lib/audit-hub-prd.mjs` | `overview/index.md`, surface/CMP `index.md` | — |
+| **hub-prd** | `coSquad audit hub-prd` | `engines/docs/lib/audit-hub-prd.mjs` | `overview/index.md`, surface/module `index.md` | — |
 | **risks** | `coSquad audit risks` | `engines/docs/lib/audit-risks-catalog.mjs` | **`architecture/11-risks/risk-register.md`** | リスク台帳カラム（閾値、需要、差分） |
 | **flow** | `coSquad audit flow` | `audit-flow-gaps.mjs` | `FLOW-*.md` | — |
 | **api** | `coSquad audit api` | `audit-api-gaps.mjs` | 外部連携 / API `*.bundle.yaml` | — |
 | **testcase** | `coSquad audit testcase` | `audit-testcase-gaps.mjs` | `TC-*.yaml` (v2) または既存計画 | `--bundle <foo.bundle.yaml>` クロス突合 |
 | **fe-be** | `coSquad audit fe-be` | `audit-fe-be-alignment.mjs` | フロントエンド `*.bundle.yaml` | `--backend-spec …/01-backend-spec.yaml` |
 | **scenario** | `coSquad audit scenario` | `audit-scenario-coverage.mjs` | `SC-*.yaml` / シナリオ md | `--tests-docs <hub>` または `COSQUAD_TESTS_DOC` |
-| **e2e** | `coSquad audit e2e` | `audit-e2e-coverage.mjs` | Playwright コード + TC 計画 | `--id TC-*`, `--tests-docs`, `--screen W-*`, `--strict` |
+| **e2e** | `coSquad audit e2e` | `audit-e2e-coverage.mjs` | Playwright コード + TC 計画 | `--id TC-*`, `--tests-docs`, `--screen S-*`, `--strict` |
 | **legacy** | `coSquad audit legacy` | `audit-legacy-gaps.mjs` | `adoption-inventory.md` | `<target-id>` |
 
 ---
@@ -50,9 +50,6 @@ coSquad audit                   # ヘルプを表示
 ## 実行例
 
 ```bash
-export COSQUAD_DOCS_ROOT="$(pwd)/docs"
-export COSQUAD_TESTS_DOC="$(pwd)/tests"
-
 # 画面仕様バンドルの監査
 coSquad audit spec surfaces/orders/W-001.bundle.yaml --type list
 

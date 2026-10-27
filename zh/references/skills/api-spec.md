@@ -5,7 +5,7 @@
 
 ## 使用方式 (Command/Trigger)
 - 调用 Slash 命令：`/api-spec`
-- **Portal-backed:** Triggered when `ir/design.yaml` has defined actions / `apiRefs` (post `/spec` or `/update-spec` + split).
+- **Portal-backed:** Triggered when `ir/design.yaml` has defined actions / `apiRefs` (post `/spec` or `/spec` + split).
 - **BE-only** (`feature.source.base: none`): Can run without portal screens — authors `01` directly from requirements/partner specs.
 
 ## 输入 (Input)
@@ -15,7 +15,7 @@
 ## 输出 (Output)
 - **System Common APIs (`CMN-API-*`):** Stored under `architecture/04-common-apis/` (Upload, OTP, Master Data, etc.).
 - **Domain Shared APIs (`API-{SURF}-{DOMAIN}-{NN}`):** Stored under `architecture/apis/<domain>/` (Shared across Detail, Edit, List screens).
-- **Feature Private APIs:** Stored under `surfaces/<Surface>/<CMP-ID>/api/` (Exclusive to a single screen).
+- **Feature Private APIs:** Stored under `surfaces/<Surface>/<Module>/api/` (Exclusive to a single screen).
 - Contract SSOT: `01-backend-spec.yaml` (template `backend-api.yaml`; authoring guide `tpl-api-contract.md`).
 - Sibling OpenAPI: `02-openapi.yaml` via `coSquad openapi_gen`.
 - Rendered review view: `ir/generated/api.md` via `coSquad render`.
@@ -27,7 +27,7 @@
 - 错误风暴 (Error Storming)：针对端点特征标注 `#err:*` 标签。
 ## 相关技能 (Related Skills)
 - **Preceding:** `/spec` (portal-backed) or BE requirements.
-- **Subsequent:** `/openapi` (generate `02`) → `/grill-api-spec` → `/api`.
+- **Subsequent:** `/api-spec` (generate `02`) → `/grill` → `/api`.
 
 ## 注意事项 (Important Notes)
 - Always resolve questions via AskQuestion / Tech Debt into `qa/` — never write `openQuestions` in YAML.
@@ -41,6 +41,6 @@
 ```text
 /api-spec
 
-Surface: admin-portal · Module: CMP-ADM-ORD · Scope: Order Management Endpoints
+Surface: admin-portal · Module: ADM-01 · Scope: Order Management Endpoints
 ```
 

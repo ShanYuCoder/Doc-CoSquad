@@ -157,7 +157,7 @@ Sau khi setup, mở workspace trên Agent AI (Cursor, Antigravity, Claude Code,.
 | **2.1. Lập Plan** | `/help-plan` | Phân tích `inition-inventory.md`, config và hiện trạng để lên Action Plan chi tiết từng bước, rà soát toàn diện User Flow liên đới. |
 | **2.2. Huấn luyện Template** | `build-template-code` | Tự động phân tích Golden Sample (module mẫu sạch nhất) để sinh custom codegen templates theo đúng kiến trúc dự án. |
 | **3. Khảo cổ** | `/trace` *(Maintain)*<br>`/legacy` *(Rebase)* | • `/trace`: Quét mã nguồn trong `source-code` để đối chiếu & sinh spec.<br>• `/legacy`: Đọc Read-Only từ `source-legacy`, trích xuất spec/template sang `source-code`. |
-| **4. Đặc tả** | `/spec`, `/grill-bqa` | Viết Leaf Bundle spec cho từng màn hình/tính năng, phản biện logic nghiệp vụ. |
+| **4. Đặc tả** | `/spec`, `/grill` | Viết Leaf Bundle spec cho từng màn hình/tính năng, phản biện logic nghiệp vụ. |
 | **5. Thiết kế & API** | `/prototype`, `/api-spec` | Sinh HTML prototype tương tác & định nghĩa API contract (`01-backend-spec.yaml`). |
 | **6. Kiểm thử** | `/testcase`, `testcase:gen` | Xây dựng ma trận `TC-*.yaml` và sinh code kiểm thử tự động E2E Playwright. |
 | **7. Tích hợp** | `/wire` | Đấu nối FE với API thật, chạy audit đối chiếu spec ↔ code và hoàn tất. |

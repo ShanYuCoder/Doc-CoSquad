@@ -20,15 +20,15 @@
 - Generates clean, idiomatic architecture matching the project's adapter profile (NestJS / Laravel / FastAPI / ASP.NET).
 
 ## Related Skills
-- **Preceding:** `/api-spec`, `/grill-api-spec`.
-- **Subsequent:** `/unit` → `/audit-api` → `/wire`.
+- **Preceding:** `/api-spec`, `/grill`.
+- **Subsequent:** `/unit` → `/api` → `/wire`.
 
 ---
 
 ## Example Prompt
 
 ```text
-/api W-ADM-ORD-01
+/api S-ADM-01-01
 
-Generate and implement backend API endpoints using approved contract at surfaces/admin/CMP-ADM-ORD/01/01/api/01/01-backend-spec.yaml.
+Generate and implement backend API endpoints using approved contract at surfaces/admin/ADM-01/orders/api/01/01-backend-spec.yaml.
 ```

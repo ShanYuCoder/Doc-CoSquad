@@ -45,15 +45,15 @@ Commands managing documentation assets, splitting specification bundles, and ren
 
 | CoSquad Command | Description |
 |------------------|-------------|
-| `coSquad split` | Splits `.bundle.yaml` → `ir/design.yaml`, `ir/spec.yaml`, `ir/generated/spec.md` (+ `data-model.md`). |
+| `coSquad split` | Splits `.bundle.yaml` → `ir/design.yaml`, `ir/spec.yaml`, `ir/generated/spec.md` (+ `data-wire.md`). |
 | `coSquad split_all` | Scans and splits all Bundle YAML files across the repository. |
 | `coSquad render` | Re-renders UI Design Specs from YAML into Markdown (Data Dictionary & State Matrix). |
-| `coSquad dev` | VitePress dev server: reads `.coSquad/config.json` — `frontend.docsRoot` or `backend.docsRoot` (port **5173**), and/or corresponding `testsRoot` (port **5174**). Backend-only projects still utilize the docs hub (SSOT `01-backend-spec`, OpenAPI, surfaces) under the same command. |
-| `coSquad build` | Runs `vitepress build` sequentially for each `docsRoot` / `testsRoot` declared in config (output: individual `<hub>/.vitepress/dist`). |
+| `coSquad dev` | VitePress dev server: launches the local documentation hub (port **5173**). Serves the entire unified SSOT architecture (overview, architecture, surfaces, cases, and scenarios). |
+| `coSquad build` | Runs `vitepress build` to produce the static documentation site bundle. |
 | `coSquad publish` | Publishes documentation assets and generates `CATALOG.md`. |
 | `coSquad publish manual` | Synchronizes User Manual (`.md`) files to Google Docs with quota protection and E2E visual evidence. |
 | `coSquad openapi_gen` | Generates or updates OpenAPI fragments from `01-backend-spec.yaml` (`--spec` path). |
-| `coSquad openapi_render` | Consolidates individual OpenAPI YAML fragments into `docs/openapi/api.yaml`. |
+| `coSquad openapi_render` | Consolidates individual OpenAPI YAML fragments into `docs/api-spec/api.yaml`. |
 | `coSquad openapi_build_ui` | Builds a static Swagger UI interface for the Documentation Hub. |
 | `coSquad api:check` | Validates `01-backend-spec.yaml` prior to backend code generation. Defaults cwd to docs hub. |
 
@@ -172,7 +172,7 @@ CoSquad exposes full platform capabilities through its unified MCP server: **`co
       "command": "node",
       "args": ["/path/to/coSquad/bin/coSquad-mcp.mjs"],
       "env": {
-        "COSQUAD_DOCS_ROOT": "/absolute/path/to/docs-hub",
+        "COSQUAD_DOCS_ROOT": "/absolute/path/to/ssot-docs",
         "COSQUAD_TESTS_DOC": "/absolute/path/to/tests-hub",
         "COSQUAD_E2E_ROOT": "/absolute/path/to/automation-root",
         "COSQUAD_ADAPTER": "nextjs",
@@ -187,7 +187,7 @@ CoSquad exposes full platform capabilities through its unified MCP server: **`co
 ### 1. Documentation Tools (`cosquad_docs_*`)
 | MCP Tool Name | Key Parameters | Functionality |
 |---|---|---|
-| `cosquad_docs_list_ids` | `docsRoot`, `kind`, `prefix` | Scans and lists architectural IDs (`CMP-*`, `FLOW-*`, `W-*`, `API-*`, `DEP-*`, `ADR-*`). |
+| `cosquad_docs_list_ids` | `docsRoot`, `kind`, `prefix` | Scans and lists architectural IDs (`MODULE`, `FLOW-*`, `S-*`, `C-API-*`, `DEP-*`, `ADR-*`). |
 | `cosquad_docs_route` | `topic`, `docsRoot` | Routes a business query to the appropriate documentation file in the docs hub. |
 | `cosquad_docs_get_element` | `id`, `docsRoot` | Retrieves detailed information and content for an architectural element by ID. |
 | `cosquad_docs_deps_of` | `id`, `docsRoot` | Traces dependencies that this element relies on. |
@@ -254,7 +254,7 @@ CoSquad exposes full platform capabilities through its unified MCP server: **`co
 
 ```bash
 # Split and render specification assets
-coSquad split -- surfaces/admin/CMP-ADM-AUTH-01/01/01/01/<slug>.bundle.yaml
+coSquad split -- surfaces/admin/ADM-01/<slug>/feature.bundle.yaml
 coSquad render
 coSquad publish
 coSquad dev

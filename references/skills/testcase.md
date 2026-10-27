@@ -21,8 +21,8 @@
 - **Traceability:** Links every test step directly back to bundle stories, ACs, and `data-testid` selectors.
 
 ## Related Skills
-- **Preceding:** `/spec`, `/grill-bqa`.
-- **Subsequent:** `/grill-testcase` → `coSquad testcase:gen` → `/test`.
+- **Preceding:** `/spec`, `/grill`.
+- **Subsequent:** `/grill` → `coSquad testcase:gen` → `/test`.
 
 ---
 

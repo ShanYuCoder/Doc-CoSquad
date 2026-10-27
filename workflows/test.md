@@ -2,7 +2,7 @@
 
 **Scope (SSOT):** The **Code + Test** lane — specifically the **tests-docs hub** (`TC-*`, `SC-*`), test plan grilling, quality gates, rendering human-readable test cases for QA/Devs, and automation on **e2e-root**.
 
-**Not covered here:** Detailed TC schema, environment variables, full commands → [artifacts/tests-docs.md](../artifacts/tests-docs.md) · Playwright file layouts → [artifacts/code.md](../artifacts/code.md#e2e-root).
+**Not covered here:** Detailed TC schema, environment variables, full commands → [artifacts/index.md](../artifacts/index.md) · Playwright file layouts → [artifacts/index.md](../artifacts/index.md#workspace-code-repositories).
 
 **Part of Macro Workflows:** [index.md#full-cycle](./index.md#full-cycle) · Phase **2b Tests** · Quality Gates: [gates.md](./gates.md#close-one-function) (steps 3–4, 7–8).
 
@@ -18,16 +18,16 @@ flowchart TD
   end
 
   subgraph HUB["Tests-Docs Hub"]
-    SC["/scenario → SC-*"]
+    SC["/testcase → SC-*"]
     TC["/testcase → TC-*.yaml"]
     REN["cases:render → TC-*.md"]
-    GTG["/grill-testcase\ncases:gate --strict"]
+    GTG["/grill\ncases:gate --strict"]
   end
 
   subgraph E2E["e2e-root (FE/BE repo)"]
     GEN["testcase:gen"]
     T["/test"]
-    GT["/grill-test"]
+    GT["/grill"]
   end
 
   B --> TC
@@ -51,11 +51,10 @@ flowchart TD
 
 | Layer | Root | SSOT | VitePress Portal |
 |-------|------|------|------------------|
-| **Docs** | `COSQUAD_DOCS_ROOT` | `*.bundle.yaml`, `ir/*` | Port **5173** — `spec.md`, `data-model.md`, `api.md` |
-| **Tests-docs** | `COSQUAD_TESTS_DOC` | `cases/**/TC-*.yaml`, `scenarios/**/SC-*` | Port **5174** — `TC-*.md` generated via `cases:render` |
-| **Automation** | `e2e-root` | `*.spec.ts`, Page Objects | Implementation target, not planning SSOT |
+| **Docs & Tests Hub** | Workspace Root | `*.bundle.yaml`, `ir/*`, `cases/**`, `scenarios/**` | Port **5173** — Unified VitePress documentation hub |
+| **Automation** | `e2e-root` (`source-code/...`) | `*.spec.ts`, Page Objects | Implementation target, not planning SSOT |
 
-**Project-Wide Coverage:** Every functional leaf in docs has a mirroring path in `TC-*`; cross-functional flows have `SC-*` + `audit scenario`; quality gates with `--strict` + `COSQUAD_DOCS_ROOT` enforce strict **traceability** back to the bundle.
+**Project-Wide Coverage:** Every functional leaf in docs has a mirroring path in `TC-*`; cross-functional flows have `SC-*` + `audit scenario`; quality gates with `--strict` enforce strict **traceability** back to the bundle.
 
 Authoring guide: [harness/tests/templates/tpl-testcase-plan.md](../../harness/tests/templates/tpl-testcase-plan.md) (from initialization to tests hub).
 
@@ -65,14 +64,14 @@ Authoring guide: [harness/tests/templates/tpl-testcase-plan.md](../../harness/te
 
 | Role | Reads (Review / Walkthrough) | Writes |
 |------|------------------------------|--------|
-| BA / PO | Docs VitePress `spec.md` (AC, scenarios) | Does not author `TC` — routes gaps to `/update-spec` |
-| QA | Tests VitePress `TC-*.md` (steps, matrices, traces) | `/testcase`, `/scenario` in YAML |
+| BA / PO | Docs VitePress `spec.md` (AC, scenarios) | Does not author `TC` — routes gaps to `/spec` |
+| QA | Tests VitePress `TC-*.md` (steps, matrices, traces) | `/testcase`, `/testcase` in YAML |
 | FE Dev | `TC-*.md` + `ir/design.yaml` (`testIds`) | `/test`, avoids modifying YAML plan files directly |
 | Release Lead | `cases:gate --strict` JSON | Never bypasses trace/matrix criteria |
 
 **Grill testcase** reviews the **entire** `*.bundle.yaml` — never decouple `ir/spec` and `ir/design` when designing coverage.
 
-**UAT Excel Exports:** Deliverables exported **after** YAML/MD are locked — [tests-docs § Excel](../artifacts/tests-docs.md#team-operations-vs-excel-deliverables).
+**UAT Excel Exports:** Deliverables exported **after** YAML/MD are locked — [SSOT Artifacts](../artifacts/index.md).
 
 ---
 
@@ -87,7 +86,7 @@ flowchart TD
   TCG["testcase:gen\nPO + *.spec.ts"]
   TEST["/test\ngap + green scoped"]
   VIT["test:e2e scoped"]
-  GT["/grill-test\ntraceability"]
+  GT["/grill\ntraceability"]
   LIFE["lifecycle → test"]
   DONE["E2E lane done"]
 
@@ -111,32 +110,32 @@ flowchart TD
 | Semantic (`#e2e:*`) | Layout integrity, overflow detection, clean browser console |
 | Axe (WCAG) | Critical accessibility violation audits |
 
-Details: [code.md § E2E](../artifacts/code.md#e2e-root).
+Details: [SSOT § Workspace Code Repositories](../artifacts/index.md#workspace-code-repositories).
 
-### `/grill-testcase` vs `/grill-test`
+### `/grill` vs `/grill`
 
 | Skill | Root | Responsibility |
 | --- | --- | --- |
-| **`/grill-testcase`** | **tests-docs** | YAML Plan: `cases:gate --strict`, `audit testcase --bundle`, facet matrix, spec gap → docs |
-| **`/grill-test`** | **e2e-root** | TC ↔ PO ↔ `*.spec.ts`, semantic `#e2e:*` — executed after `/test` is green |
+| **`/grill`** | **tests-docs** | YAML Plan: `cases:gate --strict`, `audit testcase --bundle`, facet matrix, spec gap → docs |
+| **`/grill`** | **e2e-root** | TC ↔ PO ↔ `*.spec.ts`, semantic `#e2e:*` — executed after `/test` is green |
 
 ### Pre-Wire vs Post-Wire
 
 Using the same `TC-*.yaml`: `lifecycle` ≠ wire runs on mocks; `wire` targets real backend APIs. Handoff details: [wire.md § Pre/Post](./wire.md#pre-wire-post-wire).
 
-**API Hooks:** See [§ Grill API Hook](#grill-api-hook) · Details: [tests-docs § API Hook](../artifacts/tests-docs.md#api-hook-tc).
+**API Hooks:** See [§ Grill API Hook](#grill-api-hook).
 
 ---
 
 ## Deep Grill — Three Modes {#grill-modes}
 
-Three distinct workflows requiring **separate sessions** — never combine `/grill-testcase` (hub) with `/grill-test` (e2e-root) in one chat prompt.
+Three distinct workflows requiring **separate sessions** — never combine `/grill` (hub) with `/grill` (e2e-root) in one chat prompt.
 
 | Mode | SSOT Plan | Hub Grilling | Automation Grilling |
 |------|-----------|--------------|---------------------|
-| **Single Screen** `W-*` | `cases/…/TC-*.yaml` (`e2e`) | `/grill-testcase` + gate | `/grill-test` after `/test` |
+| **Single Screen** `W-*` | `cases/…/TC-*.yaml` (`e2e`) | `/grill` + gate | `/grill` after `/test` |
 | **Multi-Screen Flow** `SC-*` | `scenarios/…/SC-*` + N× `TC` | `audit scenario` + cluster gate | E2E per TC / CI sequence |
-| **API Hook** | `TC` `api-e2e` | `/test-api` + `/grill-testcase` | `testcase:gen:api` (+ optional Newman) |
+| **API Hook** | `TC` `api-e2e` | `/unit` + `/grill` | `testcase:gen:api` (+ optional Newman) |
 
 Agent extracts: `harness/tests/extracts/grill-screen-tc.md`, `grill-scenario-flow.md`, `grill-api-hook.md`.
 
@@ -150,23 +149,23 @@ flowchart TD
   TC["/testcase → TC-*.yaml\ngenType: e2e"]
   CHK["cases:check · audit testcase --bundle"]
   REN["cases:render → TC-*.md"]
-  GTG["/grill-testcase\ncases:gate --strict"]
+  GTG["/grill\ncases:gate --strict"]
   GEN["testcase:gen"]
   T["/test"]
-  GT["/grill-test · audit e2e"]
+  GT["/grill · audit e2e"]
 
   B --> TC --> CHK --> REN --> GTG --> GEN --> T --> GT
 ```
 
 | # | Grill Plan Verification | Command / Skill |
 |---|-------------------------|-----------------|
-| 1 | Bundle contains user stories/AC — no fabricated test steps | STOP → `/update-spec` |
+| 1 | Bundle contains user stories/AC — no fabricated test steps | STOP → `/spec` |
 | 2 | `traceability` matches `W-*`, scenarios, `AC-*`, `btn_*` | `audit testcase --bundle` |
 | 3 | Screen-level union of `testMatrix` facets (not just happy path) | `cases:gate --strict` |
 | 4 | QA reads rendered test cases on VitePress tests hub | `cases:render` |
 | 5 | `testIds.required` matches design post-split | grill-dev / spot DOM |
 | 6 | Scoped spec passes cleanly (green) | `/test` |
-| 7 | Alignment across TC ↔ PO ↔ `*.spec.ts` | `/grill-test`, `audit e2e` |
+| 7 | Alignment across TC ↔ PO ↔ `*.spec.ts` | `/grill`, `audit e2e` |
 
 Multiple `TC-*.yaml` files may coexist in one folder (smoke + regression) — gates aggregate facets grouped by `refs.screen`.
 
@@ -177,7 +176,7 @@ Objective: Validate **end-to-end user journeys** adhering to `FLOW-*.md` in docs
 ```mermaid
 flowchart TD
   FLOW["FLOW-*.md in docs"]
-  SC["/scenario → SC-*.yaml\nscreens: [W-*, …]"]
+  SC["/testcase → SC-*.yaml\nscreens: [W-*, …]"]
   TCs["/testcase for each W-*\nrefs.scenario = SC-*"]
   AUD["audit scenario"]
   GTG["grill-testcase + strict gate"]
@@ -188,11 +187,11 @@ flowchart TD
 
 | # | Grill Verification | Notes |
 |---|--------------------|-------|
-| 1 | `FLOW-*.md` exists prior to authoring SC | Thin FLOW → docs `/user-flow` |
-| 2 | `SC.screens[]` includes all `W-*` touched in journey | Matches prose in FLOW |
-| 3 | Every `W-*` has a corresponding `TC-*.yaml` **or** explicit `QA-*` deferral | `SC_SCREEN_NO_TC` check |
+| 1 | `FLOW-*.md` / `flow-*.md` exists prior to authoring SC | Thin FLOW → docs `/user-flow` |
+| 2 | `SC.screens[]` includes all `S-*` (legacy `W-*`) touched in journey | Matches prose in FLOW |
+| 3 | Every `S-*` (legacy `W-*`) has a corresponding `TC-*.yaml` **or** explicit `Q-*` (legacy `QA-*`) deferral | `SC_SCREEN_NO_TC` check |
 | 4 | Each TC individually passes trace/matrix **per screen** | `audit testcase --bundle` per leaf |
-| 5 | Walkthrough: SC + rendered `TC-*.md` files | VitePress port 5174 |
+| 5 | Walkthrough: SC + rendered `TC-*.md` files | VitePress |
 | 6 | Automation | Dedicated spec per screen; avoid monolithic 50-step TC files |
 
 **UI + API within same journey:** Two plans — `genType: e2e` (data generation) + `genType: api-e2e` (hook) — sharing `refs.scenario`; CI bridges `orderId` / tokens via env across jobs (see API hooks).
@@ -205,11 +204,11 @@ Objective: Validate HTTP endpoints for **partners / webhooks / public APIs** —
 flowchart LR
   subgraph DOCS["Docs Hub"]
     O1["01-backend-spec"]
-    GAS["/grill-api-spec"]
+    GAS["/grill"]
   end
   subgraph HUB["Tests-Docs"]
-    TA["/test-api\nTC api-e2e"]
-    GTG["/grill-testcase"]
+    TA["/unit\nTC api-e2e"]
+    GTG["/grill"]
   end
   subgraph RUN["e2e-root"]
     PG["testcase:gen:api\n*.api.spec.ts"]
@@ -224,7 +223,7 @@ flowchart LR
 | Step | Action | Skill / Command |
 |------|--------|-----------------|
 | 1 | Contract `01` + API grill | [backend.md](./backend.md) |
-| 2 | Author `TC` — `apiSteps[]`, `testMatrix` (401/403/404/422…) | `/test-api` · `TC.example-api.yaml` |
+| 2 | Author `TC` — `apiSteps[]`, `testMatrix` (401/403/404/422…) | `/unit` · `TC.example-api.yaml` |
 | 3 | Grill test plan identically to UI TCs | `audit testcase`, `cases:gate --strict` |
 | 4 | Generate Playwright test suite | `coSquad testcase:gen:api` → `tests/api-e2e/**` |
 | 5 | Execute in CI pipeline | `COSQUAD_API_TEST_BASE_URL`; secrets via env |
@@ -242,7 +241,7 @@ Portal order creation + partner export call: SC couples **UI TC** + **api-e2e TC
 
 ## Preconditions Before Entering Lane {#preconditions}
 
-- Docs leaf has a bundle with complete `userStories` / `acceptanceCriteria` (or accepted deferral with `QA-*`).
+- Docs leaf has a bundle with complete `userStories` / `acceptanceCriteria` (or accepted deferral with `Q-*`, legacy `QA-*`).
 - `coSquad check` / split succeeds on the bundle prior to batch testcase grilling.
 - `COSQUAD_DOCS_ROOT` + `COSQUAD_TESTS_DOC` configured (`coSquad doctor`).
 - Path `cases/…` strictly **mirrors** `surfaces/…` — avoid ad-hoc flat paths.
@@ -253,15 +252,15 @@ Portal order creation + partner export call: SC couples **UI TC** + **api-e2e TC
 
 | Order | Action | Role | Skill / Gate |
 |-------|--------|------|--------------|
-| 0 | (Optional) Cross-flow inventory | QA / BA | `/scenario` when `FLOW-*.md` exists |
+| 0 | (Optional) Cross-flow inventory | QA / BA | `/testcase` when `FLOW-*.md` exists |
 | 1 | Testcase YAML v2 authoring | QA | `/testcase`, `cases:check` |
 | 2 | Render human-readable user cases | QA / Any | `coSquad cases:render` → open VitePress tests hub |
-| 3 | Grill test plan | QA + Member | `/grill-testcase`, `audit testcase --bundle` |
+| 3 | Grill test plan | QA + Member | `/grill`, `audit testcase --bundle` |
 | 4 | Tests-docs quality gate | QA / Release | `cases:gate --strict` + `COSQUAD_DOCS_ROOT` |
 | 5 | Generate Playwright test suite | Dev / QA | `testcase:gen` (`genType: e2e`) |
-| 5b | Author API hook plan | QA / Dev | `/test-api`, `genType: api-e2e` |
+| 5b | Author API hook plan | QA / Dev | `/unit`, `genType: api-e2e` |
 | 6 | Implement & reach green state | Dev | `/test`, scoped `test:e2e` |
-| 7 | Grill automation implementation | Dev + QA | `/grill-test` |
+| 7 | Grill automation implementation | Dev + QA | `/grill` |
 | 8 | Audit plan vs execution | QA | `coSquad audit e2e` (policy) |
 
 Leaf closure milestones: [gates.md § Close One Function](./gates.md#close-one-function) steps 3–4, 7–8.
@@ -280,7 +279,7 @@ Leaf closure milestones: [gates.md § Close One Function](./gates.md#close-one-f
 | `portal:gen` | Script | Injects `data-testid` onto UI |
 | `testcase:gen` | Script | Page Objects + `.spec.ts` |
 | `/test` | Dev + AI | Resolves fixture gaps, achieves scoped green pass |
-| `/grill-test` | Dev + AI | Validates TC ↔ PO ↔ spec matrix alignment |
+| `/grill` | Dev + AI | Validates TC ↔ PO ↔ spec matrix alignment |
 
 ---
 
@@ -291,21 +290,21 @@ Prior to batch `testcase:gen` or IT release sign-off:
 | # | Item | Verification |
 |---|------|--------------|
 | 1 | **Gate** | `cases:gate --strict` passes with `COSQUAD_DOCS_ROOT` |
-| 2 | **Trace** | Every TC has `traceability` matching bundle screen/scenario/AC/actions |
+| 2 | **Trace** | Every TC has `traceability` matching bundle screen/testcase/AC/actions |
 | 3 | **Matrix** | Comprehensive union of facets across the screen (audit / gate) — not just happy path |
 | 4 | **Readability** | `TC-*.md` rendered in VitePress — QA walkthroughs without opening raw YAML |
 | 5 | **Docs Parity** | Spot-check AC in `spec.md` ↔ `acceptanceRefs` |
-| 6 | **Deferrals** | Uncovered gaps explicitly mapped to `QA-*` / `coverage_deferred` |
+| 6 | **Deferrals** | Uncovered gaps explicitly mapped to `Q-*` (legacy `QA-*`) / `coverage_deferred` |
 
 ```text
-Test plan sign-off: <screen W-*> | reviewer | date | cases:gate strict OK
+Test plan sign-off: <screen S-*, legacy W-*> | reviewer | date | cases:gate strict OK
 ```
 
 ---
 
 ## Handoff {#handoff}
 
-- **Upstream Design updates:** Domain gaps discovered → docs `/update-spec` (paste prompt from `/grill-testcase`).
+- **Upstream Design updates:** Domain gaps discovered → docs `/spec` (paste prompt from `/grill`).
 - **Wire:** Post-wire scoped E2E — [wire.md](./wire.md).
 - **Backend:** API-only flows — [backend.md](./backend.md) + `api-e2e` TCs.
 
@@ -315,10 +314,10 @@ Test plan sign-off: <screen W-*> | reviewer | date | cases:gate strict OK
 
 | Topic | Page |
 |-------|------|
-| Schema, directory mirroring, API hooks | [artifacts/tests-docs.md](../artifacts/tests-docs.md) |
+| Schema, directory mirroring, API hooks | [artifacts/index.md](../artifacts/index.md) |
 | Skill `/testcase` | [references/skills/testcase.md](../references/skills/testcase.md) |
-| CLI commands `testcase:gen` / `cases:*` | [references/skills/testcase-gen.md](../references/skills/testcase-gen.md) |
+| CLI commands `testcase:gen` / `cases:*` | [references/skills/testcase.md](../references/skills/testcase.md) |
 | CLI agent extract | [testcase-gen-cli.md](../../harness/tests/extracts/testcase-gen-cli.md) |
 | Design sign-off (test entry) | [design-leaf-signoff.md](./design-leaf-signoff.md) |
 | Grilling modes (single screen / SC / API hook) | [§ Deep Grill](./test.md#grill-modes) |
-| `/test-api` | [references/skills/test-api.md](../references/skills/test-api.md) |
+| `/unit` | [references/skills/unit.md](../references/skills/unit.md) |

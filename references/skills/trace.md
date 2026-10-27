@@ -23,7 +23,7 @@
 
 ## Related Skills
 - **Preceding:** `/init` (Repository discovery).
-- **Combined with:** `/spec` or `/update-spec` to draft/update specs grounded in existing code.
+- **Combined with:** `/spec` or `/spec` to draft/update specs grounded in existing code.
 - **Workflow Orchestration:** `/help-plan` (Phase 1 baseline archaeology).
 
 ## Important Notes
@@ -31,6 +31,9 @@
 - **5-Link User Flow Chain:** Must trace Upstream, Primary, Downstream side-effects, Failure/Rollback, and System/Security boundaries.
 - **External API Taxonomy (Zero Internal-External Confusion):** Outbound calls to 3rd-party services (Payment, SMS, Email, OAuth, Couriers, external webhooks) MUST be explicitly labeled as `Call External API: <Provider>` with dedicated lifelines `[External API] <Provider>` in sequence diagrams. Strictly forbidden to ambiguously write "calls api" or use internal `API-*`.
 - **Mandatory Model/Entity Deep-Dive for Database Mapping:** Never stop at Controllers or Services. The Agent must trace into Model/Entity files (`app/Models/*`) and database migrations to extract physical table names, column types, `$fillable`, `$casts`, relationships (`belongsTo`, `hasMany`), and virtual accessors (`$appends`). Must populate `design.dataModel.tables[]` and `db:` on all persistent UI controls and table columns.
+- **Mandatory Mathematical Calculation Formulas:** For screens and features involving financial, discount, tax, interest, or score computations, the `calculations:` block in the spec MUST contain explicit mathematical formulas (`formula: ...`), strictly rejecting vague prose descriptions.
+- **Audit-Driven Targeted Trace Loop:** Follow the deterministic output of the audit engine (`audit spec`). Whenever missing formulas (`MISSING_CALCULATION_FORMULA`) or unconfirmed DB mappings (`CONFIRM_DB_*`) are flagged, the Agent must autonomously trace deeper into the relevant source files until 0 critical gaps remain.
+- **Workspace-Bound Version Guarantee:** Commands and engines are locked to the version that initialized the workspace (`cosquad` vs `cosquad-local`), strictly preventing version mixing or cross-contamination.
 - **Ground Truth Priority:** Active code execution is ground truth; document discrepancies with requirements immediately.
 - **Strict Isolation:** Inspects `source-code/` only; never touches `source-legacy/`.
 

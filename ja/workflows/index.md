@@ -31,19 +31,19 @@ flowchart TD
 
   subgraph P1["Phase 1 — 設計レーン (Design)"]
     SPEC["/spec<br/>(既存保守は /trace, リプレイスは /legacy)"]
-    GRILL["/grill-bqa ➔ /grill-dev"]
-    PROTO["/prototype ➔ /grill-prototype"]
+    GRILL["/grill ➔ /grill"]
+    PROTO["/prototype ➔ /grill"]
     SPEC --> GRILL --> PROTO
   end
 
   subgraph P2["Phase 2 — 実装 ＆ テストレーン"]
     subgraph P2_BE["バックエンド開発"]
-      API_SPEC["/api-spec ➔ /grill-api-spec"]
-      API_GEN["api-gen ➔ /audit-api"]
+      API_SPEC["/api-spec ➔ /grill"]
+      API_GEN["api-gen ➔ /api"]
       API_SPEC --> API_GEN
     end
     subgraph P2_TEST["テスト ＆ 自動化"]
-      TC["/testcase ➔ /grill-testcase"]
+      TC["/testcase ➔ /grill"]
       E2E["cases:gate ➔ testcase:gen (Playwright)"]
       TC --> E2E
     end
@@ -69,7 +69,7 @@ flowchart TD
   E2E --> WIRE
   SHIP --> MANUAL
 
-  US["/update-spec"]
+  US["/spec"]
   GRILL -.->|業務ギャップ検出| US
   US -.-> SPEC
 ```
@@ -81,22 +81,22 @@ flowchart TD
 ### Phase 0: セットアップ ＆ 境界画定
 - **骨格生成：** `coSquad setup [name]` を実行し、SSOT 構造（`source-code/`, `source-legacy/`, `registries/`, Arc42 設計書）を展開。
 - **構成スキャン：** スキル `/init` でリポジトリを検出、Surfaces をマッピングし `platform-repos.local.json` を初期化。
-- **アーキテクチャ定義：** 画面仕様の作成前に、`/architecture`, `/overview`, `/surfaces`, `/module`, `/db-erd` を用いてシステムの技術境界を確定。
+- **アーキテクチャ定義：** 画面仕様の作成前に、`/architecture`, `/spec`, `/spec`, `/module`, `/db-erd` を用いてシステムの技術境界を確定。
 
 ### Phase 1: 設計レーン (Design)
 - **仕様策定：**
   - *新規開発 (Greenfield):* `/spec` で完全な仕様バンドル（`<slug>.bundle.yaml`, `ir/design.yaml`, `ir/spec.yaml`）を記述。
   - *既存保守 (Maintain):* `/trace` で `source-code/` 配下の既存実装と暗黙知を調査。
   - *リプレイス (Rebase):* `/legacy` で `source-legacy/` から読み取り専用でロジックを抽出。
-- **徹底的な業務レビュー (Grill):** `/grill-bqa`（業務の深掘り）と `/grill-dev`（技術的実現可能性）を実施。
+- **徹底的な業務レビュー (Grill):** `/grill`（業務の深掘り）と `/grill`（技術的実現可能性）を実施。
 - **対話型プロトタイプ：** `/prototype` で動く画面モックを生成し、コーディング前にステークホルダーと UX を検証。
 
 ### Phase 2: 実装 ＆ テストレーン (Backend & Test)
 - **バックエンド API：**
   - `/api-spec` で `api/<seq>/01-backend-spec.yaml` に API 契約を定義。
-  - `/grill-api-spec` で契約をレビューし、`api-gen` で雛形を生成、`/audit-api` で検証。
+  - `/grill` で契約をレビューし、`api-gen` で雛形を生成、`/api` で検証。
 - **テスト自動化：**
-  - QA が `/testcase`, `/scenario`, `/grill-testcase` を用いてテストシナリオを策定。
+  - QA が `/testcase`, `/testcase`, `/grill` を用いてテストシナリオを策定。
   - `cases:gate` で網羅性を検証後、`testcase:gen` で Playwright E2E 自動テストコードを生成。
 
 ### Phase 3: 結合 ＆ リリース (Wire & Ship)
@@ -112,7 +112,7 @@ flowchart TD
 
 | 役割 | 主な担当範囲 | 中核成果物 (Artifacts) | 推奨スキル ＆ コマンド |
 | :--- | :--- | :--- | :--- |
-| **アーキテクト / リード** | システム全体設計、モジュール境界、デプロイ構成 | `overview/`, `architecture/`, `FLOW-*` | `/architecture`, `/overview`, `/surfaces`, `/module`, `/db-erd` |
-| **ビジネスアナリスト (BA)** | 業務要件、受入基準、未決事項の明確化 | 画面仕様バンドル、動的プロトタイプ | `/spec`, `/grill-bqa`, `/prototype` |
-| **ソフトウェアエンジニア (Dev)** | 画面技術設計、API 契約、本番コード | `ir/design.yaml`, `01-backend-spec.yaml`, 本番コード | `/spec`, `/grill-dev`, `/api-spec`, `/api`, `/wire` |
-| **QA / テストエンジニア** | テストマトリクス、テストケース、E2E 自動化 | `TC-*.yaml`, Playwright E2E (`*.spec.ts`) | `/testcase`, `/scenario`, `testcase:gen`, `/test` |
+| **アーキテクト / リード** | システム全体設計、モジュール境界、デプロイ構成 | `overview/`, `architecture/`, `FLOW-*` | `/architecture`, `/spec`, `/spec`, `/module`, `/db-erd` |
+| **ビジネスアナリスト (BA)** | 業務要件、受入基準、未決事項の明確化 | 画面仕様バンドル、動的プロトタイプ | `/spec`, `/grill`, `/prototype` |
+| **ソフトウェアエンジニア (Dev)** | 画面技術設計、API 契約、本番コード | `ir/design.yaml`, `01-backend-spec.yaml`, 本番コード | `/spec`, `/grill`, `/api-spec`, `/api`, `/wire` |
+| **QA / テストエンジニア** | テストマトリクス、テストケース、E2E 自動化 | `TC-*.yaml`, Playwright E2E (`*.spec.ts`) | `/testcase`, `/testcase`, `testcase:gen`, `/test` |

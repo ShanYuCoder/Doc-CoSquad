@@ -1,6 +1,6 @@
 # Phase 0 — Data Model & ERD
 
-**Scope:** Modeling data structures **prior to** authoring leaf specifications via `/spec` — part of the Phase 0 group alongside `/overview`, `/surfaces`, `/module`, and `/user-flow`.
+**Scope:** Modeling data structures **prior to** authoring leaf specifications via `/spec` — part of the Phase 0 group alongside `/spec` (Product & Surface), `/module`, and `/user-flow`.
 
 **Not covered here:** Screen-level fields/columns (Design phase) · Complete backend contracts (Phase 2c `01`) · SQL database migrations.
 
@@ -12,11 +12,11 @@
 
 | Tier | When | Skill / Artifact | Level of Granularity |
 |------|------|------------------|----------------------|
-| **1 — Global ERD** | New module, new entities/tables, ownership shifts, cross-module relationships | `/db-erd` → `<LCA>/common/db-erd.md` | Entities, relationships, **primary** fields, owning `CMP-*` / surface |
-| **2 — Screen Binding** | Individual `W-*` / leaf bundle | `/spec` → `spec.entities` + `design.sections[].db` | Columns/forms ↔ **table.column**; list `columns[].key` ↔ DB or `#derived-data` |
+| **1 — Global ERD** | New module, new entities/tables, ownership shifts, cross-module relationships | `/db-erd` → `<LCA>/common/db-erd.md` | Entities, relationships, **primary** fields, owning module (`{surfaceCode}-{id}`) / surface |
+| **2 — Screen Binding** | Individual `S-*` (legacy `W-*`) / leaf bundle | `/spec` → `spec.entities` + `design.sections[].db` | Columns/forms ↔ **table.column**; list `columns[].key` ↔ DB or `#derived-data` |
 | **3 — BE Contract** | Following stable design inventory | `/api-spec` → `01-backend-spec.yaml` | `modules[].entities[]`, `fields[]`, endpoints — SSOT for BE codegen |
 
-Tier 1 = **Phase 0**. Tier 2 = **Phase 1 Design**. Tier 3 = **Phase 2c** (can be drafted early in grill-dev).
+Tier 1 = **Phase 0**. Tier 2 = **Phase 1 Design**. Tier 3 = **Phase 2c** (can be drafted early during `/grill`).
 
 Supplementary prose (does not replace the ERD): [`model-derived-data.md`](../../templates/project-skeleton/surfaces/common/model-derived-data.md).
 
@@ -25,15 +25,14 @@ Supplementary prose (does not replace the ERD): [`model-derived-data.md`](../../
 ## Recommended Phase 0 Sequence
 
 ```text
-/overview (+ operational areas)
-    → /surfaces (if necessary)
-    → /module (CMP-* boundaries, dependencies)
-    → /user-flow (FLOW-* touching data)
-    → /db-erd (ERD at LCA — see common-scope)
-    → (optional) /cross-service when invoking external services/aggregates
+/spec (+ operational areas & surfaces)
+    → /module (module boundaries {surfaceCode}-{id}, dependencies)
+    → /user-flow (flow-* / FLOW-* touching data)
+    → /db-erd (ERD at LCA — see /common)
+    → (optional) /architecture when invoking external services/aggregates
 ```
 
-**LCA Scope** for `db-erd.md`: [common-scope.md](../../harness/docs/extracts/common-scope.md) — follows identical scoping rules as `common/`.
+**LCA Scope** for `db-erd.md`: [Skill: /common](../references/skills/common.md) — follows identical scoping rules as `common/`.
 
 ---
 
@@ -43,7 +42,7 @@ Supplementary prose (does not replace the ERD): [`model-derived-data.md`](../../
 - Modifying **cardinality** (1-to-many, many-to-many) or **ownership** boundaries (tenants, aggregate roots).
 - Legacy adoption: mapping legacy schemas → business entities (`/legacy /db-erd`).
 
-**When it can be skipped** (jumping directly to Design): Modifying a screen in a CMP with a stable, existing `db-erd.md`, where **no new persisted tables/columns** are introduced — pure UI/validation/copy changes.
+**When it can be skipped** (jumping directly to Design): Modifying a screen in a module with a stable, existing `db-erd.md`, where **no new persisted tables/columns** are introduced — pure UI/validation/copy changes.
 
 ---
 
@@ -52,7 +51,7 @@ Supplementary prose (does not replace the ERD): [`model-derived-data.md`](../../
 - Mermaid `erDiagram`.
 - Per entity: Business name, **owner** (module/surface), logical primary key, key domain attributes.
 - Cardinality + notes regarding hard/soft deletion where relevant to product behavior.
-- Links to consumer `FLOW-*` / `CMP-*` — **never** duplicate the ER diagram inside individual bundles.
+- Links to consumer `flow-*` / `FLOW-*` / `<module>` — **never** duplicate the ER diagram inside individual bundles.
 
 ---
 
@@ -71,7 +70,7 @@ Authoring specifications: [bundle-authoring.md § Data model](../../templates/sh
 
 Post-split: `entities` + layout `db` → **`ir/design.yaml`** (excluded from `ir/spec.yaml` business prose).
 
-**Team Review:** `ir/generated/data-model.md` (aggregated by table, supporting multi-table views) + optional `design.dataModel.tables[]` on the bundle — [tpl-screen-data-model.md](../../templates/shared/tpl-screen-data-model.md). Automated audits: `coSquad audit spec` → `warnings` under `category: db`.
+**Team Review:** `ir/generated/data-wire.md` (aggregated by table, supporting multi-table views) + optional `design.dataModel.tables[]` on the bundle — [tpl-screen-data-model.md](../../templates/shared/tpl-screen-data-model.md). Automated audits: `coSquad audit spec` → `warnings` under `category: db`.
 
 ---
 
@@ -90,7 +89,7 @@ Maintain mappings within `01` or as concise comments on the bundle — not stric
 ## Known Process Gaps (Guidelines, Not Gates)
 
 - `audit spec` does not yet verify ERD ↔ `db:` correspondence (may report **warnings** in future versions).
-- **VitePress Team Review:** `spec.md` (including **list column tables**) + sibling `data-model.md` — BAs are never required to open `ir/design.yaml`. Implementation engineers consume `ir/design` + `01`.
+- **VitePress Team Review:** `spec.md` (including **list column tables**) + sibling `data-wire.md` — BAs are never required to open `ir/design.yaml`. Implementation engineers consume `ir/design` + `01`.
 
 ---
 

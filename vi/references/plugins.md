@@ -27,7 +27,7 @@ Cài đặt CoSquad như một plugin chính thức trực tiếp từ repositor
 ```bash
 agy plugin install https://github.com/ShanYuCoder/CoSquad
 ```
-Antigravity sẽ tự động nhận diện toàn bộ các skill (`/help-plan`, `/spec`, `/update-spec`, `/grill`, `/trace`,...) và gợi ý các prompt mẫu trong giao diện.
+Antigravity sẽ tự động nhận diện toàn bộ các skill (`/help-plan`, `/spec`, `/spec`, `/grill`, `/trace`,...) và gợi ý các prompt mẫu trong giao diện.
 
 ### Claude Code
 Thêm marketplace của CoSquad và cài đặt plugin:

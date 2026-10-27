@@ -1,7 +1,7 @@
 # Lệnh: `api:gen` & Kỹ năng `/unit`
 
 ## Tên
-`api:gen`, `api:unit-gen` (Script) và `/unit`, `/grill-unit` (Skills).
+`api:gen`, `api:unit-gen` (Script) và `/unit`, `/grill` (Skills).
 
 ## Cách dùng (Command/Trigger)
 - Lệnh chạy CLI:
@@ -9,7 +9,7 @@
   pnpm api:gen --spec <path_to_01_backend_spec>
   pnpm api:unit-gen --spec <path_to_01_backend_spec> --force
   ```
-- Gọi qua slash command: `/unit` và `/grill-unit`.
+- Gọi qua slash command: `/unit` và `/grill`.
 
 ## Input (Dữ liệu đầu vào)
 - Đọc đặc tả `01-backend-spec.yaml` hoặc `02-openapi.yaml`.
@@ -19,12 +19,12 @@
 - **`api:gen`**: Sinh ra bộ khung Code Backend (Modules, Prisma, Manifests) và các cấu trúc hàm.
 - **`api:unit-gen`**: Sinh ra các file Unit Test rỗng hoặc được làm giàu (`*BehaviorTest.php`) dựa trên cấu trúc API.
 - **`/unit`**: Lập trình viên AI vào viết logic bên trong file Unit Test để đảm bảo chạy Pass (Green).
-- **`/grill-unit`**: Kiểm toán độ phủ (Coverage) và quét các Request IDs xem code có bị thiếu test case nào so với Spec không. 
+- **`/grill`**: Kiểm toán độ phủ (Coverage) và quét các Request IDs xem code có bị thiếu test case nào so với Spec không. 
 
 ## Description / Ý nghĩa
 - Nằm ở **Phase 2c (API - Unit Lane)**.
 - Backend có một luồng Unit Test riêng biệt, chạy độc lập với E2E Playwright. 
-- `/grill-unit` sẽ không vòng lặp (loop) liên tục ép coverage 100%, mà chỉ quét và chỉ ra "Khoảng trống" (Gap) để dev quyết định viết thêm test hay chốt sổ.
+- `/grill` sẽ không vòng lặp (loop) liên tục ép coverage 100%, mà chỉ quét và chỉ ra "Khoảng trống" (Gap) để dev quyết định viết thêm test hay chốt sổ.
 
 ---
 
@@ -48,13 +48,13 @@ Rules:
 
 Verify: pnpm test:unit {scoped-path} — báo exit code
 
-Handoff: /grill-unit
+Handoff: /grill
 ```
 
-### Mẫu `/grill-unit`
+### Mẫu `/grill`
 
 ```text
-/grill-unit
+/grill
 
 Function slug: {hotel-list}
 

@@ -44,15 +44,15 @@ Các lệnh thao tác với tài liệu, chia tách Spec và kết xuất giao d
 
 | Lệnh CoSquad | Chức năng |
 |---------------|-----------|
-| `coSquad split` | Cắt `.bundle.yaml` → `ir/design.yaml`, `ir/spec.yaml`, `ir/generated/spec.md` (+ `data-model.md`). |
+| `coSquad split` | Cắt `.bundle.yaml` → `ir/design.yaml`, `ir/spec.yaml`, `ir/generated/spec.md` (+ `data-wire.md`). |
 | `coSquad split_all` | Quét và cắt nhỏ toàn bộ Bundle YAML trong repo. |
 | `coSquad render` | Render lại UI Design Specs từ YAML sang MD (Data Dictionary & State Matrix). |
-| `coSquad dev` | VitePress dev: đọc `.coSquad/config.json` — `frontend.docsRoot` **hoặc** `backend.docsRoot` (port **5173**), và/hoặc `testsRoot` tương ứng (port **5174**). **Backend-only** vẫn cần docs-hub (SSOT `01-backend-spec`, OpenAPI, surfaces) — cùng lệnh, không tách CLI riêng cho BE. |
-| `coSquad build` | `vitepress build` **lần lượt** cho từng `docsRoot` / `testsRoot` có trong config (output: `<hub>/.vitepress/dist` riêng). Repo BE in-repo `docs/` + `tests/` → một lệnh build cả hai hub. |
+| `coSquad dev` | VitePress dev: khởi động local documentation hub (port **5173**). Phục vụ toàn bộ kiến trúc SSOT hợp nhất (overview, architecture, surfaces, cases, scenarios). |
+| `coSquad build` | **Lệnh đóng gói hợp nhất:** tự động sinh OpenAPI specs + bundle schema + build Swagger UI Explorer (`/api-ui/`) vào thư mục public, sau đó chạy `vitepress build` đóng gói static site hoàn chỉnh. |
 | `coSquad publish` | Publish tài liệu lên server hoặc CDN tĩnh, sinh `CATALOG.md`. |
 | `coSquad publish manual` | Đồng bộ file User Manual (`.md`) lên Google Docs, tự động chống Quotas và chèn ảnh E2E. |
 | `coSquad openapi_gen` | Sinh/cập nhật fragment OpenAPI từ `01-backend-spec.yaml` (`--spec` path). |
-| `coSquad openapi_render` | Gộp các OpenAPI YAML nhỏ thành `docs/openapi/api.yaml`. |
+| `coSquad openapi_render` | Gộp các OpenAPI YAML nhỏ thành `docs/api-spec/api.yaml`. |
 | `coSquad openapi_build_ui` | Build giao diện Swagger UI tĩnh cho Docs Hub. |
 | `coSquad api:check` | Validate `01-backend-spec.yaml` (portal hoặc `base: none`) trước codegen. Cwd mặc định = docs hub (`--docs-root` / `COSQUAD_DOCS_ROOT` / `config`). |
 
@@ -214,7 +214,7 @@ CoSquad phơi bày toàn bộ khả năng xử lý thông qua máy chủ MCP duy
       "command": "node",
       "args": ["/path/to/coSquad/bin/coSquad-mcp.mjs"],
       "env": {
-        "COSQUAD_DOCS_ROOT": "/absolute/path/to/docs-hub",
+        "COSQUAD_DOCS_ROOT": "/absolute/path/to/ssot-docs",
         "COSQUAD_TESTS_DOC": "/absolute/path/to/tests-hub",
         "COSQUAD_E2E_ROOT": "/absolute/path/to/automation-root",
         "COSQUAD_ADAPTER": "nextjs",
@@ -229,7 +229,7 @@ CoSquad phơi bày toàn bộ khả năng xử lý thông qua máy chủ MCP duy
 ### 1. Nhóm Công Cụ Tài Liệu (`cosquad_docs_*`)
 | Tên Tool MCP | Tham số chính | Chức năng chi tiết |
 |---|---|---|
-| `cosquad_docs_list_ids` | `docsRoot`, `kind`, `prefix` | Quét và liệt kê danh sách toàn bộ ID kiến trúc (`CMP-*`, `FLOW-*`, `W-*`, `API-*`, `DEP-*`, `ADR-*`). |
+| `cosquad_docs_list_ids` | `docsRoot`, `kind`, `prefix` | Quét và liệt kê danh sách toàn bộ ID kiến trúc (`MODULE`, `FLOW-*`, `S-*`, `C-API-*`, `DEP-*`, `ADR-*`). |
 | `cosquad_docs_route` | `topic`, `docsRoot` | Điều hướng chủ đề nghiệp vụ tới đúng file tài liệu tương ứng trong docs hub. |
 | `cosquad_docs_get_element` | `id`, `docsRoot` | Lấy chi tiết thông tin và nội dung của một phần tử kiến trúc theo ID. |
 | `cosquad_docs_deps_of` | `id`, `docsRoot` | Truy vết tất cả các dependency mà ID này phụ thuộc vào. |
@@ -250,7 +250,7 @@ CoSquad phơi bày toàn bộ khả năng xử lý thông qua máy chủ MCP duy
 | `codegen_gen_dry` | `adapter`, `docsRoot`, `argv` | Chạy thử nghiệm sinh FE UI Component (Dry-run, không ghi đè file). |
 | `unit_gen` | `adapter`, `docsRoot`, `argv` | Sinh mã nguồn Unit Test cho Frontend (Jest/Vitest). |
 | `unit_gen_dry` | `adapter`, `docsRoot`, `argv` | Chạy thử nghiệm sinh Unit Test Frontend (Dry-run). |
-| `common_gen` | `adapter`, `docsRoot`, `argv` | Bóc tách và sinh các UI molecules dùng chung từ `surfaces/<surface>/common` hoặc `CMP-*/common`. |
+| `common_gen` | `adapter`, `docsRoot`, `argv` | Bóc tách và sinh các UI molecules dùng chung từ `surfaces/<surface>/common` hoặc `surfaces/<surface>/<module>/common`. |
 | `common_gen_dry` | `adapter`, `docsRoot`, `argv` | Chạy thử nghiệm trích xuất common UI molecules. |
 | `codegen_registry_validate` | `projectRoot` | Kiểm tra tính toàn vẹn của registry codegen FE. |
 | `unit_registry_validate` | `projectRoot` | Kiểm tra tính toàn vẹn của registry unit test FE. |
@@ -346,8 +346,8 @@ npm: `coSquad:registry-sync` (inject sau init).
 |------|----------|
 | `/api-spec` | Inventory từ **`ir/design.yaml` actions** (`apiRefs` / `#reuse-api` + `reuseFrom`). Unique → `api/<seq>/` trio. Toàn reuse → **zero** `api/` |
 | `coSquad openapi_gen --spec …/01-backend-spec.yaml` | Ghi sibling `02-openapi.yaml` |
-| `coSquad openapi_render` | Gộp toàn bộ OpenAPI specs thành `docs/openapi/api.yaml`. |
-| `/qa-resolve QA-…` | Đóng một file `qa`, patch bundle/01, split |
+| `coSquad openapi_render` | Gộp toàn bộ OpenAPI specs thành `docs/api-spec/api.yaml`. |
+| `/qa Q-…` | Đóng một file `qa`, patch bundle/01, split |
 
 ## Codegen — Frontend (`coSquad gen`)
 
@@ -355,17 +355,17 @@ npm: `coSquad:registry-sync` (inject sau init).
 
 | Lệnh | Mục đích |
 |------|----------|
-| `coSquad gen:dry -- --id W-*` / `--spec …/ir/design.yaml` | Gate sau `/grill-dev` |
+| `coSquad gen:dry -- --id S-*` / `--spec …/ir/design.yaml` | Gate sau `/grill` |
 | `coSquad gen` | Scaffold FE component vào repo |
 | `coSquad contract-gen` | Sinh FE models từ **design** |
 
 ## Codegen — Backend (`coSquad api-gen`)
 
-**Input:** `…/api/<seq>/01-backend-spec.yaml` only. `--id CMP-*` glob mọi 01 dưới module.
+**Input:** `…/api/<seq>/01-backend-spec.yaml` only. `--id <module>` glob mọi 01 dưới module.
 
 | Lệnh | Mục đích |
 |------|----------|
-| `coSquad api-gen:dry -- --spec …/api/01/01-backend-spec.yaml` | Gate sau `/grill-api-spec` |
+| `coSquad api-gen:dry -- --spec …/api/01/01-backend-spec.yaml` | Gate sau `/grill` |
 | `coSquad api-gen` | Scaffold Backend API controller/route/service |
 | `coSquad api-unit-gen` | Sinh Unit Test cho Backend API |
 
@@ -384,7 +384,7 @@ npm: `coSquad:registry-sync` (inject sau init).
 
 ```bash
 # Phân tách và render tài liệu specs
-coSquad split -- surfaces/admin/CMP-ADM-AUTH-01/01/01/01/<slug>.bundle.yaml
+coSquad split -- surfaces/admin/ADM-01/<slug>/feature.bundle.yaml
 coSquad render
 coSquad publish
 coSquad dev
@@ -423,7 +423,7 @@ Các repo runtime được checkout độc lập; docs hub không resolve chúng
 
 | Artifact | Owner | Path |
 |----------|-------|------|
-| FE bundle + `ir/design.yaml` | **base-docs** | `surfaces/…/CMP-*/NN…/` |
+| FE bundle + `ir/design.yaml` | **base-docs** | `surfaces/…/<module>/<slug>/` |
 | BE trio | **base-docs** | `…/api/<seq>/01-backend-spec.yaml` |
 | `@portal/models` (Zod) | **portal** | `packages/models/` · `pnpm contract:gen` |
 | Next app + E2E | **portal** | `src/` · `tests/e2e/` |
@@ -438,12 +438,12 @@ Các repo runtime được checkout độc lập; docs hub không resolve chúng
 
 **Không đặt trên portal:** `backend/`, `integration/`, line/integration manifests, OpenAPI export.
 
-**Contract keys:** Cùng tên field trên portal `entities` ↔ BE `requests/responses` ↔ line/integration presenter — [artifacts/code.md](../artifacts/code.md#contract-field-registry).
+**Contract keys:** Cùng tên field trên portal `entities` ↔ BE `requests/responses` ↔ line/integration presenter — [artifacts/index.md](../artifacts/index.md).
 
 ### Feature folder (mỗi repo)
 
 ```text
-surfaces/<surface>/CMP-*/<NN…>/
+surfaces/<surface>/<module>/<slug>/
   <slug>.bundle.yaml
   ir/design.yaml
   ir/spec.yaml

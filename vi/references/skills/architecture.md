@@ -8,27 +8,32 @@
 - Đóng vai trò là lệnh **Router (Điều hướng)** tổng phân phối các công việc liên quan đến kiến trúc tới các Skill con tương ứng.
 
 ## Input (Dữ liệu đầu vào)
-- Member sẽ nhập vào một khu vực kiến trúc (Operational Area), hoặc một Module (CMP ID), hoặc đơn giản là một nhu cầu chung về kiến trúc.
+- Member sẽ nhập vào một khu vực kiến trúc (Operational Area), hoặc một Module ID, hoặc đơn giản là một nhu cầu chung về kiến trúc.
 - Agent tự động quét và phân giải (Resolve ID) sử dụng các lệnh nội bộ (`cosquad_docs_route`, `cosquad_docs_list_ids`).
 
 ## Output (Kết quả mong đợi)
-- Không trực tiếp sửa file, mà sẽ **điều hướng** sang một trong các Skill con chuyên sâu.
-- Bảng điều hướng (Route Map):
-  - Hỏi về mục đích kinh doanh, chân dung người dùng → Gọi `/overview`.
-  - Hỏi về nhóm màn hình (kênh giao tiếp) → Gọi `/surfaces`.
-  - Hỏi về Module / Chức năng (CMP) → Gọi `/module`.
-  - Hỏi về hạ tầng, vật lý → Gọi `/deployment`.
-  - Quyết định kiến trúc → Gọi `/decision`.
-  - Các quy trình nghiệp vụ chéo → Gọi `/user-flow`, `/db-erd`, `/cross-service`.
+- Tác giả trực tiếp toàn bộ các chương kiến trúc theo chuẩn Arc42 dưới `architecture/`:
+  - **Chiến lược giải pháp & Khối cấu trúc (§04, §05):** `architecture/04-solution-strategy/` & `05-building-blocks/` (Mermaid `graph TB`, C4 Component Diagram).
+  - **Môi trường & Hạ tầng triển khai (§07):** `architecture/07-deployment/` (`DEP-*`).
+  - **Mối quan tâm cắt ngang (§08):** `architecture/08-cross-cutting/` (Bảo mật, Logging, Caching, Messaging, Auth).
+  - **Tích hợp liên dịch vụ:** `architecture/08-cross-cutting/` hoặc `<LCA>/common/architecture.md` (RPC đồng bộ/bất đồng bộ, event, message queue).
+  - **Tác vụ ngầm & Workers:** Các worker nền, cronjob, hàng đợi message, retry backoff, idempotency.
+  - **Hồ sơ quyết định kiến trúc (§09 ADR):** `architecture/09-decisions/ADR-{NNN}-{slug}.md`.
 
 ## Description / Ý nghĩa
+- **Kỹ năng thiết kế bản vẽ kiến trúc kỹ thuật toàn diện (Unified Architecture SSOT).**
+- Hợp nhất toàn bộ các tầng kiến trúc vào một lệnh duy nhất:
+  - Khối cấu trúc tĩnh: Sơ đồ khối topology các tầng hệ thống, service, datastore, reverse proxy.
+  - Khối giao tiếp động: Trực tiếp vẽ luồng kỹ thuật liên dịch vụ (`sequenceDiagram`).
+  - Hạ tầng và quyết định: Quản lý trực tiếp ADR và đặc tả vị trí triển khai node.
 - Tách biệt rõ ràng ranh giới giữa **Kiến trúc Kỹ thuật (Technical Architecture)** và **Đặc tả Nghiệp vụ (Business Spec)**.
-- Kiến trúc (Architecture) chỉ xoay quanh cấu trúc hệ thống, dịch vụ nội bộ, cronjobs, hạ tầng cơ sở dữ liệu và các luồng kỹ thuật cắt ngang (Cross-cutting flows như Auth).
-- Cấm lặp lại chân dung người dùng (Personas) hay use-cases chi tiết trong các file kiến trúc. Thay vào đó, nó phải đề cập thẳng vào thành phần kỹ thuật, Cloud Services và giao tiếp Backend.
-- Bắt buộc các sơ đồ thiết kế (Mermaid Flowchart / Sequence Diagram) phải mô hình hóa rõ ràng các luồng ngoại lệ và lỗi (MANDATORY ERROR FLOWS). VD: Redirect khi 401/403 IDOR, hay trạng thái Validation Fail.
+- Kiến trúc (Architecture) chỉ xoay quanh cấu trúc hệ thống, dịch vụ nội bộ, cronjobs, hạ tầng cơ sở dữ liệu và các luồng kỹ thuật cắt ngang. Cấm lặp lại chân dung người dùng (Personas) trong kiến trúc.
+- Bắt buộc các sơ đồ thiết kế (Mermaid Flowchart / Sequence Diagram) phải mô hình hóa rõ ràng các luồng ngoại lệ và lỗi (MANDATORY ERROR FLOWS).
 
 ## Các Skill liên quan
-- **Điều hướng đến:** Các skill như `/overview`, `/surfaces`, `/module`, `/user-flow`, `/db-erd`, `/deployment`.
+- **Trước đó:** `/spec`, `/spec`, `/module`.
+- **Luồng người dùng:** Chuyển tiếp luồng end-to-end cho `/user-flow`.
+- **Hợp nhất hoàn toàn:** Thay thế và xóa bỏ hoàn toàn các skill con riêng lẻ: `/architecture`, `/architecture`, `/architecture`, `/architecture`, `/spec`, và `/grill`.
 
 ---
 
@@ -41,6 +46,6 @@
 ```text
 /architecture
 
-Surface: {admin-web} · Module: {CMP-…} · Scope: {mô tả ngắn}
+Surface: {admin-web} · Module: {ADM-01} · Scope: {mô tả ngắn}
 ```
 

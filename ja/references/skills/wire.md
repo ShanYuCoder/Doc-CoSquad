@@ -20,8 +20,8 @@
 ## 説明・役割 (Description)
 - Phase 3 の統合連携中核スキル。フロントエンドからモックやスタブを撤去し、実バックエンド API に接続、RBAC 権限を復元して統合後 E2E テストを実行。
 ## 関連スキル (Related Skills)
-- **Preceding:** Prototype passed `/grill-prototype`, Backend passed `/audit-api`, Tests passed `cases:gate --strict`.
-- **Subsequent:** Scoped E2E tests → `/grill-wire`.
+- **Preceding:** Prototype passed `/grill`, Backend passed `/api`, Tests passed `cases:gate --strict`.
+- **Subsequent:** Scoped E2E tests → `/grill wire`.
 
 ---
 

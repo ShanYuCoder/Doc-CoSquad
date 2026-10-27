@@ -34,11 +34,12 @@ CoSquad 无需动态探测，而是内置了**企业级标准 Central Gateway �
 ## 2. Docker 考古：复用项目既有 Docker 配置
 
 **[强制执行规则]** 在生成任何新 Docker 配置之前，Agent 必须全面审查项目仓库（例如 `local/`、`dev/`, `_docker/`, `prod/`, `docker/` 等子目录）：
-1. **绝不从零臆造 Dockerfile**：若代码库中已存在定义了语言版本、系统依赖与 PECL 扩展（GD、Redis、Swoole、BCMath、Sockets 等）的既有 `Dockerfile`，必须优先复用。
-2. **复用或精简既有 Dockerfile：**
-   - 直接将 `build.context` 指向既有目录（例如 `context: ${PROJECT_WORKSPACE}/backend/_docker/php`）。
-   - 或将既有 Dockerfile 精简后放入 `docker/php/Dockerfile`：剥离 Nginx/Supervisor/DB 等分层，仅保留纯应用运行时（如 PHP-FPM 或 Swoole）。
-3. **保留既有配置与扩展：** 严格对齐黄金样本中的 `php.ini`、`fpm-pool.conf` / `www.conf` 以及编译配置。
+1. **提取运行时版本与扩展（仅作技术参考）**：严格从既有 `Dockerfile` 提取语言版本、系统依赖包与已编译扩展（如 GD、Redis、Swoole、BCMath、Sockets 等）。
+2. **全新编写独立 Dockerfile（严禁直接复用或路径指向既有 Dockerfile）：**
+   - 即使成员明确指定“按旧 Docker 搭建”，既有 Docker 配置也**仅作为技术提取参考**。
+   - **严禁**直接将 `build.context` 或 `dockerfile` 指向旧项目路径（例如 `context: ${PROJECT_WORKSPACE}/backend/_docker/php` 或 `dockerfile: local/octane/Dockerfile`），以彻底规避旧 Dockerfile 堆砌所有服务的单体污染风险。
+   - 必须针对每个拆分后的服务，在 `<workspace>/docker/<service>/Dockerfile` 中全新编写干净、模块化的独立 Dockerfile。
+3. **保留既有配置与扩展：** 严格对齐项目既有配置中的 `php.ini`、`fpm-pool.conf` / `www.conf` 以及编译配置。
 
 ### 2.1. 端口解析与分配策略 (覆盖 BE、FE 及所有语言代码库)
 
@@ -208,6 +209,13 @@ x-dev-ca-env: &dev-ca-env
 ```
 - 容器名称必须符合规范：`${PROJECT_NAME:-dev}_${PROJECT_SLUG}_<service>`（例如 `dev_portal_php_83`、`dev_portal_node`、`dev_portal_octane`、`dev_portal_reverb`）。
 
+> [!CRITICAL] 强制对齐宿主机用户权限（HOST_UID:HOST_GID）杜绝 Root 越权
+> 基于 `~/docker-webbeds` 和 `~/docker-external` 的实战黄金标准：
+> - **所有挂载宿主机源码卷的服务**（`frontend-node`、`octane`、`php`、`backend-worker` 等）**必须显式声明 `user: "${HOST_UID:-1000}:${HOST_GID:-1000}"`**（通过锚点 `<<: *dev-user`）。
+> - `docker/.env` 和 `docker/.env.example` **必须**声明 `HOST_UID=1000` 与 `HOST_GID=1000`。
+> - **核心技术意义：** 若容器以 root 运行，应用在挂载卷中生成的缓存、日志、编译文件或上传文件都会变成宿主机上的 `root:root` 归属，导致宿主机开发者（用户 `vutv`）失去读写与修改权限，无法在 IDE 中编辑或通过 Git 提交。
+> - **Dockerfile 构建准则：** 自定义 Dockerfile（如 PHP）中，系统运行时目录（`/run`、`/var/log`、`/var/run/supervisor`、`/tmp`）必须赋予全权可写（`chmod -R 777 /run /var/log /tmp`），以保证非 root 的 `HOST_UID:HOST_GID` 进程能正常创建 socket 和日志。**严禁**在挂载的代码目录上执行 `chown -R www-data:www-data`。
+
 ### B. 共享网关网络
 所有服务通过环境变量连接至网关外部网络：
 ```yaml
@@ -226,6 +234,7 @@ Compose 中的每个服务声明：
 - **不编写自定义 Dockerfile：** 直接使用官方 Node LTS 镜像：
   ```yaml
   frontend-node:
+    <<: *dev-user
     image: ${NODE_IMAGE:-node:20-bookworm} # 或匹配项目的 node:18.19-bookworm
     container_name: ${PROJECT_NAME:-dev}_${PROJECT_SLUG}_frontend_node
     working_dir: /workspace/${FRONTEND_REPO}
@@ -246,34 +255,41 @@ Compose 中的每个服务声明：
     `- ${PROJECT_WORKSPACE}/${FRONTEND_REPO}:/workspace/${FRONTEND_REPO}`
   - 直接挂载代码目录已包含 `node_modules`，保证宿主机 IDE 与容器内部 100% 同步，杜绝文件锁死和无用卷残留。
 
-### D. `frontend-dev.sh` 自动感知包管理器与端口绑定
-包装脚本 `docker/node/frontend-dev.sh` 必须自动检测并支持项目实际使用的包管理器（`pnpm`、`yarn`、`npm`），并绑定至解析后的端口（`${FRONTEND_DEV_PORT:-3000}`）：
+### D. 容器内命令纪律：仅用于实时代码编译与 Hosting（严禁自动 Install）
+> [!CRITICAL] 严禁在 Docker 容器内部自动安装依赖包
+> - **容器命令（`command:`）专用于实时代码编译与开发服务器托管（Dev Server）：**
+>   - 前端运行实时热重载开发服务器：`pnpm run dev -- --host 0.0.0.0 --port "$PORT"`（或 `npm run dev`、`yarn dev`、`vite`、`serve`）。
+> - **依赖包安装由开发者在宿主机外部主动执行：**
+>   - 安装依赖（`npm i`、`pnpm i`、`yarn install`、`composer install`）是开发者的管理职责，必须在宿主机上直接执行。
+>   - **严禁**在 Docker 启动脚本中内置自动运行 `npm install`、`pnpm install` 或 `composer install`！
+>   - 若检测到 `node_modules` 不存在，脚本将输出清晰的警示信息，提示开发者在宿主机上执行安装，并等待 `node_modules` 出现后再启动服务。
+
+脚本 `docker/node/frontend-dev.sh` 必须遵循如下规范：
 ```sh
 #!/bin/sh
 set -eu
-cd /workspace/${FRONTEND_REPO}
+cd "/workspace/${FRONTEND_REPO}"
 
 PORT="${FRONTEND_DEV_PORT:-3000}"
 
-# 根据 Lockfile 自动检测包管理器
+# 1. 依赖前提检查（绝对不在容器内部自动安装）
+# 依赖包（npm i, pnpm i）由开发者在宿主机外部自行执行
+if [ ! -d node_modules ]; then
+  echo "[WARNING] 未在 /workspace/${FRONTEND_REPO} 检测到 'node_modules' 目录。"
+  echo "[ACTION REQUIRED] 请在宿主机外部执行 'pnpm install'（或 'npm install'）。"
+  echo "[WAITING] 容器正等待 node_modules 目录就绪后再启动开发服务器..."
+  while [ ! -d node_modules ]; do
+    sleep 3
+  done
+  echo "[INFO] 已检测到 node_modules，开始启动实时编译托管..."
+fi
+
+# 2. 实时编译托管启动命令
 if [ -f pnpm-lock.yaml ]; then
-  if ! command -v pnpm >/dev/null 2>&1; then
-    corepack enable
-    corepack prepare pnpm@latest --activate
-  fi
-  if [ ! -d node_modules ]; then
-    pnpm install
-  fi
   exec pnpm run dev -- --host 0.0.0.0 --port "$PORT"
 elif [ -f yarn.lock ]; then
-  if [ ! -d node_modules ]; then
-    yarn install
-  fi
   exec yarn dev --host 0.0.0.0 --port "$PORT"
 else
-  if [ ! -d node_modules ]; then
-    npm install
-  fi
   exec npm run dev -- --host 0.0.0.0 --port "$PORT"
 fi
 ```
@@ -295,9 +311,9 @@ fi
      - Schedule: `command: ["php", "artisan", "schedule:work"]`
    - **纯内部运行：** 这些 Worker 仅执行后台 CLI 命令，不接收 HTTP 请求。严格禁止将其暴露给网关或放入 `router.txt`。
 
-3. **项目专属非标数据存储（例如 Meilisearch）：**
-   - 若项目确实需要网关未包含的独立服务（如 `meilisearch`），直接在 Compose 中使用官方镜像声明（`image: getmeili/meilisearch:v1.15.2`）。**不编写自定义 Dockerfile**。
-   - 后端通过 Docker 内部网络别名（如 `http://meilisearch:7700`）访问，不向网关暴露。
+3. **项目专属数据存储、搜索引擎与消息队列（例如 Elasticsearch, Solr, RabbitMQ, Kafka, MongoDB）：**
+   - 若项目确实需要网关未包含的独立服务（如 `rabbitmq`、`elasticsearch`、`solr` 等），直接在 Compose 中使用官方镜像声明（例如 `rabbitmq:3-management-alpine`、`elasticsearch:8.13.0`）。**不编写自定义 Dockerfile**。
+   - 后端通过 Docker 内部网络别名（如 `http://elasticsearch:9200`、`rabbitmq:5672`）访问，不向网关暴露。
 
 4. **Laravel Octane / Reverb（若存在）：**
    - 若采用 Octane 替代 PHP-FPM 提供 HTTP API，监听 8000 端口（`router.txt` 中使用 `role: "node"`）。
@@ -307,12 +323,17 @@ fi
 
 ## 6. 网关路由配置导出 (`docker/router.txt`)
 
+> [!CRITICAL] ROUTER.TXT 的唯一用途：CENTRAL GATEWAY JSON 代码片段（严禁转换为 HOST 文件）
+> - **`docker/router.txt` 的唯一目的：作为 JSON 代码片段直接复制粘贴进 Central Gateway 的 `routes.json`（位于 `projects.<slug>` 下）！**
+> - **严禁将 `router.txt` 转换或生成为主机映射文件（如 `/etc/hosts` 语法、`127.0.0.1 domain` 或 `domain -> container:port`）。**
+> - 参考现有项目（`~/docker-webbeds`、`~/docker-external`）时，**仅参考其 Docker 容器配置**（`HOST_UID:HOST_GID` 权限映射、卷挂载、实时编译与托管命令）。**`router.txt` 规范的网关 JSON 结构必须 100% 完整保留。**
+
 Central Gateway (`routes.json`) 仅需配置**开发者浏览器能够直接访问的公共入口**：
 - **后端 API (FastCGI)：** 1 条路由指向 PHP-FPM 容器（`role: "web"`，监听 9000 端口并指定 `docroot`）。
 - **后端 API (HTTP / Octane)：** 1 条路由指向 Octane（`role: "node"`，监听 8000 端口）。
 - **前端 Web：** 1 条路由指向 Node 开发服务器（`role: "node"`，端口匹配 `${FRONTEND_DEV_PORT}`，如 3000、5173 等）。
 - **WebSocket (Reverb)：** 1 条路由指向 Reverb（`role: "node"`，监听 6001 端口）。
-- **严禁将内部辅助服务**（Queue、Schedule、Meilisearch、Redis、DB）放入 `router.txt`！
+- **严禁将内部辅助服务**（Queue、Schedule、Message Broker、Search Engine、Redis、DB）放入 `router.txt`！
 
 ### 规范的 `docker/router.txt` 格式（包含 Workspace Key）
 

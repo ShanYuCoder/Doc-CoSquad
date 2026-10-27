@@ -12,14 +12,14 @@
 
 | Mốc | Lệnh / skill gợi ý | Ai đọc kết quả |
 |-----|-------------------|----------------|
-| Sau `/spec`, `/update-spec` | `coSquad audit spec` (`--type`) | BQA / Dev grill |
-| Grill contract (docs) | `/grill-api-spec` · `audit api` | Dev BE + BQA |
-| BE trước wire | `/audit-api` · `audit api` | Dev BE |
+| Sau `/spec`, `/spec` | `coSquad audit spec` (`--type`) | BQA / Dev grill |
+| Grill contract (docs) | `/grill` · `audit api` | Dev BE + BQA |
+| BE trước wire | `/api` · `audit api` | Dev BE |
 | Trước đóng testcase | `cases:check`, `audit testcase` (+ `--bundle`) | QA |
-| Release tests-docs | `cases:gate` (`--strict`, `--docs-root`) | QA + `/grill-testcase` |
+| Release tests-docs | `cases:gate` (`--strict`, `--docs-root`) | QA + `/grill` |
 | Pre-wire E2E | scoped `test:e2e` · (policy) `audit e2e` | Dev FE + QA |
-| **Sau `/wire`** | **`/grill-wire`** hoặc chuỗi `audit e2e` + `audit fe-be` + `audit scenario` | Dev FE + QA |
-| Matrix TC ↔ PO (chi tiết) | `/grill-test` sau `/test` green | QA / Dev FE |
+| **Sau `/wire`** | **`/grill wire`** hoặc chuỗi `audit e2e` + `audit fe-be` + `audit scenario` | Dev FE + QA |
+| Matrix TC ↔ PO (chi tiết) | `/grill` sau `/test` green | QA / Dev FE |
 | Legacy adoption | `audit legacy` | Lead |
 | **Trước merge/UAT leaf** | Bước 1–10 [§ đóng function](#close-one-function) · human chốt [grill § sign-off](./grill-and-human-review.md#human-signoff) | Lead / PM / QA |
 
@@ -42,22 +42,22 @@ Tool **không** tự chạy — member gọi CLI/skill. Bỏ bước → rủi r
 ### Change request
 
 ```text
-/update-spec → audit spec (bắt buộc trong skill) → split
+/spec → audit spec (bắt buộc trong skill) → split
 → re-grill-bqa / grill-dev nếu đổi UX hoặc bundle.gen
 → patch TC cùng W-* / bundle impact
 → cases:gate --strict
-→ /grill-testcase (đọc gate output)
+→ /grill (đọc gate output)
 → gen + IT + manual E2E (policy team)
-→ nếu đã wire: `/grill-wire` lại sau patch TC/spec
+→ nếu đã wire: `/grill wire` lại sau patch TC/spec
 ```
 
 ### Sau wire — behaviour đổi
 
 ```text
 UAT / staging phát hiện lệch acceptance
-→ docs /update-spec (hoặc /api-update) — KHÔNG vá ngầm trên FE
-→ split/render → tests /grill-testcase nếu matrix đổi
-→ FE /wire hoặc /test → /grill-wire
+→ docs /spec (hoặc /api-spec) — KHÔNG vá ngầm trên FE
+→ split/render → tests /grill nếu matrix đổi
+→ FE /wire hoặc /test → /grill wire
 → human sign-off leaf (bước 10)
 ```
 
@@ -73,10 +73,10 @@ Policy testcase: `/testcase` đọc **`*.bundle.yaml`** (không tách đọc IR 
 |-------|------------------------|----------|
 | **A** | `audit testcase --bundle` | Scenario/AC/action ↔ TC |
 | **B** | `audit fe-be` + grill-dev | `apiRef` ↔ `01-backend-spec` |
-| **C** | `audit scenario` + `/scenario` | `FLOW` / SC `screens[]` ↔ `cases/**` |
-| **D** | `/update-spec` rules | Delta design ↔ `userStories` / AC |
+| **C** | `audit scenario` + `/testcase` | `FLOW` / SC `screens[]` ↔ `cases/**` |
+| **D** | `/spec` rules | Delta design ↔ `userStories` / AC |
 | **F** | `cases:gate`, TC schema v2 | Release gate tests-docs |
-| **G** | `/wire` + `/grill-wire` | Post-wire `audit e2e` + `fe-be` + `scenario`; plan ↔ API thật |
+| **G** | `/wire` + `/grill wire` | Post-wire `audit e2e` + `fe-be` + `scenario`; plan ↔ API thật |
 | **E** | *(DevOps, optional)* | CI: `check`, `cases:gate`, `doctor`, `audit e2e` scoped |
 
 ```mermaid
@@ -100,7 +100,7 @@ flowchart TD
   S5 --> S7["7–8 E2E · audit e2e"]
   S7 --> S9["9 Wire · grill-wire"]
   S9 --> S10["10 Ship/UAT human"]
-  CR["/update-spec"] -.-> S1
+  CR["/spec"] -.-> S1
   CR -.-> S3
 ```
 
@@ -116,16 +116,16 @@ Chuỗi gợi ý trước khi coi **một leaf** (màn / API seq) đã khớp ar
 
 | # | Mốc | Lệnh / skill | Đọc kết quả |
 | --- | --- | --- | --- |
-| 1 | Spec & grill | `coSquad audit spec` (`--type`) · `/grill-bqa` · `/grill-dev` | `gaps[]` / confirms xử lý; member chốt |
+| 1 | Spec & grill | `coSquad audit spec` (`--type`) · `/grill` · `/grill` | `gaps[]` / confirms xử lý; member chốt |
 | 2 | IR đồng bộ | `coSquad split` · `coSquad check` | Bundle ↔ `ir/*` khớp trước testcase/codegen |
-| 3 | Plan tests-docs | `/testcase` · `/grill-testcase` | `cases:check` · `audit testcase --bundle` |
+| 3 | Plan tests-docs | `/testcase` · `/grill` | `cases:check` · `audit testcase --bundle` |
 | 4 | Gate plan | `cases:gate --strict` + `COSQUAD_DOCS_ROOT` | Schema v2, trace, ma trận facet |
 | 5 | Contract BE | `audit api` · `audit fe-be` | `apiRef` ↔ `01-backend-spec.yaml` |
-| 6 | Cross-flow (nếu SC) | `audit scenario` | `screens[]` có `TC-*.yaml` hoặc defer có `QA-*` |
-| 7 | E2E (e2e-root) | `testcase:gen` · `/test` · `/grill-test` | Matrix TC ↔ PO ↔ `*.spec.ts` |
+| 6 | Cross-flow (nếu SC) | `audit scenario` | `screens[]` có `TC-*.yaml` hoặc defer có `Q-*` (legacy `QA-*`) |
+| 7 | E2E (e2e-root) | `testcase:gen` · `/test` · `/grill` | Matrix TC ↔ PO ↔ `*.spec.ts` |
 | 8 | Plan ↔ chạy | `coSquad audit e2e` (`--e2e-root`, `--tests-docs`) | Plan hub khớp spec Playwright scoped |
-| 9 | Wire (API thật) | `/wire` · E2E post-wire scoped — [wire.md](./wire.md#wire-gates) | `/grill-wire` hoặc `audit e2e` · `audit fe-be` · `audit scenario` · lifecycle `wire` |
-| 10 | Ship / UAT (leaf) | Manual acceptance theo bundle AC (policy team) · merge/release checklist product | **Human** chốt “đủ scope”; behaviour mới → `/update-spec` **trước** bước 10 |
+| 9 | Wire (API thật) | `/wire` · E2E post-wire scoped — [wire.md](./wire.md#wire-gates) | `/grill wire` hoặc `audit e2e` · `audit fe-be` · `audit scenario` · lifecycle `wire` |
+| 10 | Ship / UAT (leaf) | Manual acceptance theo bundle AC (policy team) · merge/release checklist product | **Human** chốt “đủ scope”; behaviour mới → `/spec` **trước** bước 10 |
 
 **Audit pass ≠ Ship:** JSON không có `critical` không thay PM/QA ký UAT — [grill-and-human-review § sign-off](./grill-and-human-review.md#human-signoff).
 
@@ -159,8 +159,8 @@ Skill ↔ audit inventory: [references/audit-commands.md § skill](../references
 | `cases:gate` | Schema, matrix facet, trace bundle | QA / grill-testcase |
 | `audit testcase --bundle` | Scenario / AC / action chưa map | Author TC |
 | `audit scenario` | `screens[]` chưa có TC | Owner cross-flow |
-| `audit e2e` | `missingInPlaywright`, `matrixRowsUncovered` | `/test` · `/grill-test` · post-wire `/grill-wire` |
-| `audit fe-be` | `FEBE_*` | `/api-update` (docs) · re-wire |
+| `audit e2e` | `missingInPlaywright`, `matrixRowsUncovered` | `/test` · `/grill` · post-wire `/grill wire` |
+| `audit fe-be` | `FEBE_*` | `/api-spec` (docs) · re-wire |
 
 Output `--json` dùng cho **review và sign-off**, không thay judgment “đủ cho release” ([grill-and-human-review.md](./grill-and-human-review.md#human-signoff)).
 

@@ -27,7 +27,7 @@ CoSquad は、**ワークスペース構成の同期**（`coSquad init` / `harne
 ```bash
 agy plugin install https://github.com/ShanYuCoder/CoSquad
 ```
-Antigravity はすべてのスキル（`/help-plan`, `/spec`, `/update-spec`, `/grill`, `/trace` 等）を自動認識します。
+Antigravity はすべてのスキル（`/help-plan`, `/spec`, `/spec`, `/grill`, `/trace` 等）を自動認識します。
 
 ### Claude Code
 CoSquad マーケットプレイスを追加してインストール：

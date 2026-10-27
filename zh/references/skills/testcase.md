@@ -18,8 +18,8 @@
 ## 描述说明 (Description)
 - 读取 `*.bundle.yaml`，在 tests-docs hub 编写符合 Schema v2 的 `TC-*.yaml` 测试计划，确保 100% 溯源至验收标准 AC。
 ## 相关技能 (Related Skills)
-- **Preceding:** `/spec`, `/grill-bqa`.
-- **Subsequent:** `/grill-testcase` → `coSquad testcase:gen` → `/test`.
+- **Preceding:** `/spec`, `/grill`.
+- **Subsequent:** `/grill` → `coSquad testcase:gen` → `/test`.
 
 ---
 

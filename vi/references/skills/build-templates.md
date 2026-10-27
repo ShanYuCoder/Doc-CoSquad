@@ -53,6 +53,6 @@
 ```text
 /build-templates
 
-Surface: {admin-web} · Module: {CMP-…} · Scope: {mô tả ngắn}
+Surface: {admin-web} · Module: {ADM-01} · Scope: {mô tả ngắn}
 ```
 

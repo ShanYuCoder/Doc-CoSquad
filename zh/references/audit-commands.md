@@ -25,14 +25,14 @@ coSquad audit                   # 输出帮助信息
 | 检查类型 (Kind) | 执行命令 | 引擎脚本实现 | 核心输入 | 标志参数与环境变量 |
 | :--- | :--- | :--- | :--- | :--- |
 | **spec** | `coSquad audit spec` | `engines/spec/lib/audit-bundle-gaps.mjs` | `*.bundle.yaml` (UI/spec) | `--type list \| create \| detail \| admin-crud \| auth \| change-password \| public` |
-| **hub-prd** | `coSquad audit hub-prd` | `engines/docs/lib/audit-hub-prd.mjs` | `overview/index.md`, surface/CMP `index.md` | — |
+| **hub-prd** | `coSquad audit hub-prd` | `engines/docs/lib/audit-hub-prd.mjs` | `overview/index.md`, surface/module `index.md` | — |
 | **risks** | `coSquad audit risks` | `engines/docs/lib/audit-risks-catalog.mjs` | **`architecture/11-risks/risk-register.md`** | 风险登记册字段（阈值、诉求、偏差） |
 | **flow** | `coSquad audit flow` | `audit-flow-gaps.mjs` | `FLOW-*.md` | — |
 | **api** | `coSquad audit api` | `audit-api-gaps.mjs` | 接口集成 `*.bundle.yaml` | — |
 | **testcase** | `coSquad audit testcase` | `audit-testcase-gaps.mjs` | `TC-*.yaml` (v2) 或历史用例 | `--bundle <foo.bundle.yaml>` 交叉比对 |
 | **fe-be** | `coSquad audit fe-be` | `audit-fe-be-alignment.mjs` | 前端 UI `*.bundle.yaml` | `--backend-spec …/01-backend-spec.yaml` |
 | **scenario** | `coSquad audit scenario` | `audit-scenario-coverage.mjs` | `SC-*.yaml` / 场景 md | `--tests-docs <hub>` 或 `COSQUAD_TESTS_DOC` |
-| **e2e** | `coSquad audit e2e` | `audit-e2e-coverage.mjs` | Playwright 代码 + TC 测试计划 | `--id TC-*`, `--tests-docs`, `--screen W-*`, `--strict` |
+| **e2e** | `coSquad audit e2e` | `audit-e2e-coverage.mjs` | Playwright 代码 + TC 测试计划 | `--id TC-*`, `--tests-docs`, `--screen S-*`, `--strict` |
 | **legacy** | `coSquad audit legacy` | `audit-legacy-gaps.mjs` | `adoption-inventory.md` | `<target-id>` |
 
 ---
@@ -50,9 +50,6 @@ coSquad audit                   # 输出帮助信息
 ## 常用执行示例
 
 ```bash
-export COSQUAD_DOCS_ROOT="$(pwd)/docs"
-export COSQUAD_TESTS_DOC="$(pwd)/tests"
-
 # 审计单个页面规格包
 coSquad audit spec surfaces/orders/W-001.bundle.yaml --type list
 

@@ -2,7 +2,7 @@
 
 **Scope (SSOT):** The **Design** lane (macro) — from analysis/spec to grilled prototype, ready for codegen dry-run.
 
-**Not covered here:** Bundle/IR structure → [artifacts/docs.md](../artifacts/docs.md) · DNA/tags → [artifacts/dsl.md](../artifacts/dsl.md).
+**Not covered here:** Bundle/IR structure and DNA/tags → [artifacts/index.md](../artifacts/index.md).
 
 **Part of Macro Workflows:** [index.md](./index.md) · Phase 0 Setup: [phase-0-setup.md](./phase-0-setup.md) · Grill & Review: [grill-and-human-review.md](./grill-and-human-review.md).
 
@@ -10,7 +10,7 @@
 
 ## Design Cycle (Phase 1) {#design-cycle}
 
-Emerald color scheme matches the [Workflow Overview](./index.md). Optional `/grill-docs` = amber in the diagram (non-default).
+Emerald color scheme matches the [Workflow Overview](./index.md). Optional `/grill` = amber in the diagram (non-default).
 
 Project setup & surface mapping: [phase-0-setup.md](./phase-0-setup.md) — **before** writing detailed specs.
 
@@ -23,26 +23,26 @@ flowchart TD
 
   subgraph CORE["Bundle → grill → dry"]
     BUNDLE["*.bundle.yaml"]
-    SPLIT["coSquad split"]
-    BQA["/grill-bqa"]
-    DEV["/grill-dev\nbundle.gen"]
-    DRY["coSquad gen:dry\nir/design.yaml"]
+    RENDER["coSquad render"]
+    BQA["/grill"]
+    DEV["/grill\nbundle.gen"]
+    DRY["coSquad gen:dry\nfeature.bundle.yaml"]
   end
 
   subgraph OUT["Prototype → handoff"]
     PR["/prototype"]
     GEN["coSquad gen"]
-    GP["/grill-prototype"]
+    GP["/grill"]
     NEXT["Phase 2 Tests + API"]
   end
 
-  GW["/grill-docs\noptional"]
-  US["/update-spec"]
+  GW["/grill\noptional"]
+  US["/spec"]
   QA["AskQuestion → qa"]
 
   LEG --> BUNDLE
   SPEC --> BUNDLE
-  BUNDLE --> SPLIT --> BQA --> DEV --> DRY --> PR --> GEN --> GP --> NEXT
+  BUNDLE --> RENDER --> BQA --> DEV --> DRY --> PR --> GEN --> GP --> NEXT
   %% PR = /prototype session (gen:dry at start of session, gen, implement Mo*). GP = UI checklist after prototype code.
   DEV -.->|optional| GW --> DRY
   BQA -.->|gap| US
@@ -59,7 +59,7 @@ flowchart TD
   classDef qa fill:#FDE68A,stroke:#D97706,color:#92400E
 
   class LEG,SPEC entry
-  class BUNDLE,SPLIT,BQA,DEV,DRY core
+  class BUNDLE,RENDER,BQA,DEV,DRY core
   class PR,GEN,GP,NEXT out
   class GW opt
   class US gap
@@ -86,37 +86,37 @@ flowchart TD
 
 Reusable or standard shell/widget components (non-domain-only) must be **promoted** into `.coSquad/registries/design.registry.json` (`planned` → `implemented`, update `aliasIndex`, `registry` check passes), then re-grill the spec using `#widget:` / `#shell:` instead of `#needs-*`. Domain-only / `#wire-only` components remain within the feature without being promoted.
 
-Promote criteria, hashtag mappings, and PR reviews: [artifacts/dsl.md — Registry & promote](../artifacts/dsl.md#registry--promote).
+Promote criteria, hashtag mappings, and PR reviews: [SSOT § Registries](../artifacts/index.md#4-cosquadregistries--shared-component--capability-registries-workspace-ssot).
 
 ---
 
 ## Prerequisites (FE Code Repository)
 
-- **Standard base:** FE codebase has run `coSquad registry:sync` (initialization or post-UI/composable change) — `/spec` maps `#ui:`, `#shell:`, `#composable:` from `.coSquad/registries/design.registry.json` in the Workspace SSOT ([dsl.md](../artifacts/dsl.md#registry--script-sau-init-repo-code)).
-- **Prior to `gen:dry`:** `grillStatus.dev: done` + `coSquad split` / `check` passes with zero errors on the leaf bundle.
+- **Standard base:** FE codebase has run `coSquad registry:sync` (initialization or post-UI/composable change) — `/spec` maps `#ui:`, `#shell:`, `#composable:` from `.coSquad/registries/design.registry.json` in the Workspace SSOT ([SSOT § Registries](../artifacts/index.md#4-cosquadregistries--shared-component--capability-registries-workspace-ssot)).
+- **Prior to `gen:dry`:** `grillStatus.dev: done` + `coSquad audit spec` passes with zero errors on the leaf bundle.
 
 ## Workflow Steps
 
 | Sequence | Task | Role | Skill / Gate (example) |
 |----------|------|------|------------------------|
 | 0b | ERD / Ownership (when new entities or tables exist) | Lead / Data Engineer | `/db-erd` → `common/db-erd.md` — see [architecture-data.md](./architecture-data.md) |
-| 1 | Scope, module, flow analysis & **Module API** | Lead / BA | `/overview`, `/module` (finalize `W-*`), `/user-flow` |
-| 2 | Spec bundle + IR (including **bind/db** & **link apiBindings**) | BA / Dev | `/spec`, `/legacy /spec`, read LCA ERD, reuse `#reuse-api`, `split` + `render` |
-| 3 | Business & technical grill / arbitration | BA + Dev | `/grill-bqa`, `/grill-dev`, `/grill-docs` (optional) — re-run `split` after every bundle patch |
-| 4 | Finalize codegen readiness (docs hub) | Dev | `coSquad gen:dry` against `ir/design.yaml` (FE repo, `COSQUAD_DOCS_ROOT`) |
+| 1 | Scope, module, flow analysis & **Module API** | Lead / BA | `/spec`, `/module` (finalize `W-*`), `/user-flow` |
+| 2 | Spec bundle (including **bind/db** & **link apiBindings**) | BA / Dev | `/spec`, `/legacy /spec`, read LCA ERD, reuse `#reuse-api`, `render` |
+| 3 | Business & technical grill / arbitration | BA + Dev | `/grill`, `/grill`, `/grill` (optional) — re-run `render` after bundle patches |
+| 4 | Finalize codegen readiness (docs hub) | Dev | `coSquad gen:dry` against `feature.bundle.yaml` (FE repo, `COSQUAD_DOCS_ROOT`) |
 | 5 | UI Prototype (mock API) + promote reusable Mo* registry | FE Dev | `coSquad gen` → `/prototype` → `coSquad registry` validation |
-| 6 | Grill prototype (UI checklist) | FE Dev / BA | `/grill-prototype` **after** Step 5 — layout, copy, mock boundary, testIds (no Playwright) |
+| 6 | Grill prototype (UI checklist) | FE Dev / BA | `/grill` **after** Step 5 — layout, copy, mock boundary, testIds (no Playwright) |
 
 ### Module API Catalog Pre-Allocation & Centralized Reference Binding
 
 To eliminate Git merge conflicts between team members developing screens in parallel (e.g., Detail and Edit screens sharing the same detail API):
 
 1. **PM / Leader Pre-Allocation**:
-   - When running `/module` for `CMP-*`, the Lead pre-allocates shared API catalogs under `common/yaml/`.
+   - When running `/module` for `<module>` (`{surfaceCode}-{id}`), the Lead pre-allocates shared API catalogs under `common/yaml/` (`C-API-*`).
 2. **BE Lead Contract-First Pre-Design**:
-   - Decouple all shared APIs from feature folders (`CMP-*/api/`). Store them centrally in module LCA `common/yaml/<slug>/` or `surfaces/common/yaml/`.
+   - Decouple all shared APIs from feature folders (`<module>/api/`). Store them centrally in module LCA `surfaces/<surface>/<module>/common/yaml/` or `surfaces/common/yaml/`.
 3. **FE Member Reference Binding**:
-   - In Leaf Spec (`W-*.bundle.yaml`), FE engineers **only reference** shared APIs using `#reuse-api` + `reuseFrom`. The feature directory `CMP-*` only holds UI Specs and private APIs (if any). This guarantees that PRs developed in parallel remain **100% conflict-free**.
+   - In Leaf Spec (`S-*.bundle.yaml` / `feature.bundle.yaml`), FE engineers **only reference** shared APIs using `#reuse-api` + `reuseFrom`. The feature directory only holds UI Specs and private APIs (if any). This guarantees that PRs developed in parallel remain **100% conflict-free**.
 
 Parallel execution (non-blocking for emerald flow): After round 1 of grilling, team members can start `/testcase` on the test hub ([gates.md](./gates.md)).
 
@@ -126,15 +126,15 @@ Parallel execution (non-blocking for emerald flow): After round 1 of grilling, t
 |-------|----------|-------|
 | Global ERD (Phase 0) | `<LCA>/common/db-erd.md` | `/db-erd` before authoring new leaf |
 | Screen Detail (Phase 1) | `spec.entities`, `design.sections[].db`, `spec.ui.list` columns | `/spec` — [bundle-authoring § Data](../../templates/shared/bundle-authoring.md#data-model--phase-0-erd-vs-screen-detail) |
-| BE Contract | `api/.../01-backend-spec.yaml` | `/api-spec`, `/grill-dev` |
+| BE Contract | `api/.../01-backend-spec.yaml` | `/api-spec`, `/grill` |
 
 `/spec` does **not** create `db-erd.md`; it **must read** the existing ERD when declaring `db.schema` / `db.field`. For list/detail/form columns: define `key` + `meaning` + (if persisted) `db` or `#derived-data`.
 
 ### Technical Deliverables of `/spec`
 
 - Raw inputs (bullet points, screenshots, legacy code) + LCA ERD → `*.bundle.yaml` (user stories, screen access, **entities + db binding**, dictionary, validation, action flows, state matrix).
-- `coSquad split` + `coSquad render` → `ir/generated/spec.md` (table of contents, overview, metrics, non-goals) for BA review — do not handcraft `.md`.
-- Open questions: `qa/*.yaml` → `/qa-resolve`.
+- `coSquad render` → `<leaf>/spec.md` (table of contents, overview, metrics, non-goals) for BA review — do not handcraft `.md`.
+- Open questions: `qa/*.yaml` → `/qa`.
 - **Sign-off (voluntary per team):** 6-point rubric in [design-leaf-signoff.md](./design-leaf-signoff.md) — optional, not an engine-enforced gate.
 
 ### Grilling in Design

@@ -6,10 +6,10 @@
 
 | 示例页面 | 推荐缩写标识 | 生成的文件路径 |
 |---|---|---|
-| `W-HOTEL-LIST` | `HOTEL-LIST` | `qa/HOTEL-LIST_0001.yaml` |
-| `cmp-adm-ord-01-02-01-02` | `ADM-AUTH` (团队约定简短标识) | `qa/ADM-AUTH_0001.yaml` |
+| `S-ADM-01-01` | `ADM-AUTH` | `qa/ADM-AUTH_0001.yaml` |
+| `S-ORD-01-01` | `ORD-LIST` | `qa/ORD-LIST_0001.yaml` |
 
-CoSquad 早期工作区仍支持 `QA-<page-id>-NNNN` 命名格式 —— 新增条目推荐使用简短缩写。
+CoSquad 工作区采用 `{页面或模块缩写}_{四位序号}` 命名格式。
 
 ---
 
@@ -61,7 +61,7 @@ updates:
 | `kind` 类型 | 操作人 / 触发时机 |
 |---|---|
 | `question` | 新发起 QA 疑点（记录技术债务 / AskQuestion 弹窗确认） |
-| `answer` | 敲定最终决策 —— 伴随规范文件打补丁更新 (`/qa-resolve`) |
+| `answer` | 敲定最终决策 —— 伴随规范文件打补丁更新 (`/qa`) |
 | `review` | 高级工程师/负责人评审意见；若文本包含 `needs-change` 则将状态重置为 `status: open` |
 | `note` | 仅做信息补充说明，不改动规格 |
 
@@ -85,8 +85,8 @@ updates:
 | 技能 | 对应操作 |
 |---|---|
 | 发起 QA | 创建 `qa/{CODE}_NNNN.yaml`，首条记录 `updates[0]` 类型为 `question` |
-| `/qa-resolve` | 追加 `answer` 记录 + 更新 Bundle/01 目标字段 + 将状态标记为 `status: closed` |
-| `/qa-review` | 追加 `kind: review` 记录 —— 不直接修改 Bundle（除非后续调用 `/update-spec`） |
+| `/qa` | 追加 `answer` 记录 + 更新 Bundle/01 目标字段 + 将状态标记为 `status: closed` |
+| `/qa` | 追加 `kind: review` 记录 —— 不直接修改 Bundle（除非后续调用 `/spec`） |
 
 ---
 

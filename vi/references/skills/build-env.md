@@ -31,14 +31,74 @@ Thay vì quét động môi trường của máy host, CoSquad tổng hợp sẵ
 
 ---
 
-## 2. Khảo cổ Docker: Tái sử dụng cấu hình Docker sẵn có trong dự án
+## 2. Khảo cổ Docker: Tái sử dụng, Bóc tách Monolith & Phân lập Dịch vụ
 
-**[QUY TẮC BẮT BUỘC]** Trước khi tạo mới bất kỳ cấu hình Docker nào, Agent PHẢI quét kỹ mã nguồn dự án (ví dụ trong `local/`, `dev/`, `_docker/`, `prod/`, `docker/`):
-1. **Không tự sáng chế Dockerfile từ đầu** nếu dự án đã có sẵn `Dockerfile` định nghĩa phiên bản ngôn ngữ, các thư viện hệ thống và PECL extensions (GD, Redis, Swoole, BCMath, Sockets,...).
-2. **Tái sử dụng hoặc điều chỉnh Dockerfile sẵn có:**
-   - Hoặc trỏ trực tiếp `build.context` tới thư mục docker cũ (ví dụ: `context: ${PROJECT_WORKSPACE}/backend/_docker/php`).
-   - Hoặc tinh chỉnh Dockerfile cũ vào `docker/php/Dockerfile`: bóc tách lớp Nginx/Supervisor/DB và chỉ giữ lại môi trường thực thi ứng dụng (PHP-FPM hoặc Swoole).
-3. **Giữ nguyên cấu hình extension:** Đồng bộ `php.ini`, `fpm-pool.conf` / `www.conf`, và các cờ biên dịch từ golden sample của dự án.
+> [!CRITICAL]
+> **5 NGUYÊN TẮC BẤT BIẾN KHI KHẢO CỔ VÀ PHÂN LẬP CONTAINER:**
+> 1. **KHÔNG SAI LỆCH PHIÊN BẢN (ZERO VERSION DRIFT):** Tuyệt đối không tự ý dùng image mới nhất khi dự án cũ đã có Dockerfile cố định phiên bản và extensions qua các thư mục môi trường (`local/`, `dev/`, `stg/`, `prod/`, `_docker/`).
+> 2. **DỰNG MỚI DOCKERFILE RIÊNG (CHỈ THAM KHẢO — CẤM DÙNG LẠI HAY TRỎ ĐƯỜNG DẪN CŨ):**
+>    - Kể cả khi dự án cũ đã có sẵn Dockerfile hoặc member yêu cầu "lấy theo docker cũ", cấu hình Docker cũ **CHỈ ĐƯỢC DÙNG LÀM TÀI LIỆU THAM KHẢO KỸ THUẬT** (để bóc tách chính xác phiên bản runtime, base OS, các thư viện hệ thống và extensions/modules biên dịch).
+>    - Agent **TUYỆT ĐỐI CẤM** trỏ `build.dockerfile` vào đường dẫn cũ của dự án (ví dụ `dockerfile: local/octane/Dockerfile` hay `dockerfile: ../source-code/Dockerfile`), và **CẤM** copy/symlink nguyên si file Dockerfile cũ vào `docker/`.
+>    - Agent **BẮT BUỘC PHẢI VIẾT MỚI DOCKERFILE RIÊNG** chuẩn hóa và độc lập trong `<workspace>/docker/<service>/Dockerfile` cho từng service cần build (ví dụ `docker/php/Dockerfile`, `docker/octane/Dockerfile`, `docker/api/Dockerfile`).
+> 3. **BÓC TÁCH HẠ TẦNG RA KHỎI MONOLITH TẤT-CẢ-TRONG-MỘT:** Nếu Dockerfile cũ đóng gói Nginx + PHP + MySQL + Redis vào 1 container, Agent PHẢI bóc tách hạ tầng (Nginx chuyển cho Gateway; MySQL/Redis dùng Gateway hoặc service DB riêng). Dùng lại Dockerfile cũ tiềm ẩn rủi ro cực lớn vì các dự án cũ thường nhồi nhét tất cả service vào 1 file, phá vỡ kiến trúc phân lập service của CoSquad.
+> 4. **CHỐNG GỘP NHẦM DỊCH VỤ (ANTI-CONSOLIDATION) & TÔN TRỌNG THỰC TẾ:**
+>    - **Tuyệt đối không gộp các dịch vụ khác nhau chỉ vì chung ngôn ngữ/framework:** Nếu dự án định nghĩa nhiều service khác nhau (ví dụ: `octane` chạy Swoole cổng 8000 làm môi trường dev mock/high-performance và `php` chạy PHP-FPM cổng 9000 quản lý bởi supervisord; hoặc Node `frontend` và Node `mock-api`; hoặc Python `api` và Python `worker`), Agent **BẮT BUỘC PHẢI GIỮ RIÊNG TỪNG SERVICE ĐÓ TRONG DOCKER-COMPOSE**. Nghiêm cấm tự ý gộp chúng vào một container "backend" chung.
+>    - **Không tự ý xé nhỏ vô căn cứ (Zero Fabrication):** Không tự bịa thêm các container rời rạc như `worker`, `scheduler` nếu mã nguồn dự án đã quản lý chúng qua `supervisord` bên trong container ứng dụng hoặc không hề định nghĩa chúng.
+> 5. **BẢO TOÀN 100% CẤU TRÚC PHÂN TÁCH DỊCH VỤ TỪ MÃ NGUỒN CŨ:**
+>    - File `docker/docker-compose.yml` mới **BẮT BUỘC PHẢI DUY TRÌ ĐẦY ĐỦ TỪNG SERVICE ỨNG DỤNG** được phát hiện từ cấu hình của repo qua mọi môi trường (`local/`, `dev/`, `stg/`, `prod/`).
+>    - Bảo toàn ranh giới dịch vụ là yêu cầu dung sai bằng 0.
+
+**[QUY TẮC BẮT BUỘC] Quy trình Ưu tiên & Đối chiếu Chéo 3 Lớp ("Tâm thế Cảnh giác: Phòng ngừa Bẫy Legacy"):**
+Để phục vụ trơn tru mọi thể loại dự án (dù có cấu hình Docker đa môi trường hay dự án chưa hề có Docker / thiếu file môi trường), Agent BẮT BUỘC thực thi tuần tự 3 tầng khảo cổ & đối chiếu chéo sau:
+
+> [!CAUTION]
+> **TÂM THẾ CẢNH GIÁC CAO ĐỘ ("Phòng Ngừa Bẫy Legacy"):**
+> Tuyệt đối không bao giờ tin tưởng mù quáng vào `.env.example` hay các file compose cũ!
+> - Với các dự án thực tế: Dù có Docker ở các môi trường nhưng `.env.example` lại rất hay thiếu các tham số runtime mà code thực tế bắt buộc phải có.
+> - Với nhiều dự án: `.env.example` thiếu hẳn một loạt tham số cốt lõi hoặc chỉ chứa giá trị mẫu tượng trưng — nếu agent ngây thơ dò theo `.env.example` thì chắc chắn sẽ sập ngay ("trace theo là tèo").
+> - Các team phát triển legacy trước đó thường để lại nợ kỹ thuật (tech debt), quên cập nhật file mẫu, hoặc hardcode biến môi trường trong code. Agent phải luôn giữ tâm thế cảnh giác và dùng chính mã nguồn thực tế để kiểm chứng đối chiếu!
+
+1. **Tầng 1 (Kiểm tra Dấu hiệu & Phân tích Mục tiêu Docker):**
+   - Rà soát toàn bộ repo xem có dấu vết Docker: `local/`, `dev/`, `stg/`, `prod/`, `_docker/`, `deploy/`, `infra/`, root `Dockerfile*`, `docker-compose*.yml`.
+   - Phân tích mục tiêu kiến trúc: Runtime chính là gì (Swoole/Octane vs PHP-FPM, Vite vs Webpack, Uvicorn vs Gunicorn), phiên bản ngôn ngữ/hệ điều hành gốc, các thư viện/extensions hệ thống, và ranh giới các service độc lập (`octane` Swoole :8000, `php` FPM :9000, `meilisearch` :7700).
+   - *Cảnh giác:* Bóc tách monolith (Nginx, DB) ra khỏi app container; không tự ý bịa thêm worker nếu `supervisord` đã quản lý.
+2. **Tầng 2 (Khảo sát Cấu hình Môi trường & Manifests):**
+   - Đọc các file mẫu: `.env.example`, `.env.dist`, `.env.local.example`, `composer.json`, `package.json`, `pyproject.toml`, `go.mod`.
+   - Thu thập danh mục biến môi trường sơ bộ, cổng lắng nghe mặc định và các thư viện phụ thuộc.
+   - *Cảnh giác (CỰC KỲ QUAN TRỌNG):* Chỉ coi Tầng 2 là **bản nháp chưa được kiểm chứng**, tuyệt đối không coi là chân lý. Đi thẳng vào việc sinh file chỉ dựa trên `.env.example` sẽ khiến container crash khi chạy tính năng.
+3. **Tầng 3 (Khảo Cổ & Đối Chiếu Chéo Mã Nguồn Sâu — "Phòng Ngừa Bẫy Legacy"):**
+   - Mã nguồn thực tế (active source code) là chân lý kiểm chứng tối thượng. Agent PHẢI quét grep toàn bộ code để tìm tất cả các lệnh đọc biến môi trường xuyên suốt mọi ngôn ngữ (`env()`, `config()`, `process.env.*`, `os.environ.get()`, `os.Getenv()`, `@Value`).
+   - **Ma trận Phân loại Hạ tầng Toàn diện (Universal Infrastructure Taxonomy):** Bóc tách thư mục cấu hình Framework (`config/*.php`, settings modules) để phân biệt rạch ròi hằng số logic nội bộ (phân trang, enum, role) vs các driver dịch vụ hạ tầng thực tế:
+     - *Cơ sở dữ liệu quan hệ (SQL):* MySQL, PostgreSQL, MariaDB, MS SQL Server, Oracle (`DB_HOST`, `DATABASE_URL`).
+     - *Cơ sở dữ liệu phi quan hệ (NoSQL / Document / Columnar):* MongoDB, Cassandra, ClickHouse, DynamoDB (`MONGODB_URI`, `CLICKHOUSE_HOST`).
+     - *Bộ nhớ đệm (Cache & In-Memory):* Redis, Memcached, KeyDB, Dragonfly, Valkey (`CACHE_STORE`, `REDIS_HOST`, `MEMCACHED_HOST`).
+     - *Hàng đợi & Message Broker (Event Streaming):* RabbitMQ (AMQP), Apache Kafka, NATS, Apache Pulsar, ActiveMQ, Beanstalkd, AWS SQS (`RABBITMQ_HOST`, `KAFKA_BROKERS`, `NATS_URL`, `QUEUE_CONNECTION`).
+     - *Công cụ tìm kiếm toàn văn & Vector (Search Engines):* Elasticsearch, OpenSearch, Apache Solr, Meilisearch, Typesense, Algolia, Qdrant (`ELASTICSEARCH_HOSTS`, `OPENSEARCH_HOST`, `SOLR_URL`, `MEILISEARCH_HOST`, `TYPESENSE_HOST`, `SCOUT_DRIVER`).
+     - *Giao thức Realtime, WebSocket & IoT:* Socket.io, EMQX / Mosquitto (MQTT), Centrifugo, Laravel Reverb, Pusher, ws native (`WS_PORT`, `MQTT_BROKER_URL`, `CENTRIFUGO_API_KEY`, `REVERB_APP_KEY`).
+     - *Lưu trữ đối tượng (Object Storage):* AWS S3, MinIO, Google Cloud Storage, Azure Blob (`AWS_ENDPOINT`, `AWS_BUCKET`, `S3_ENDPOINT`).
+     - *Môi trường kiểm thử Email:* SMTP, Sendgrid, Mailgun, AWS SES (`MAIL_MAILER`, `MAIL_HOST` -> giả lập local qua Mailpit).
+   - **Khảo sát khởi tạo Client SDK:** Quét tìm các lệnh khởi tạo SDK thực tế (`Elasticsearch\Client`, `Solarium\Client`, `Meilisearch\Client`, `PhpAmqpLib\Connection\AMQPStreamConnection`, `Kafka\Producer`, `MongoDB\Client`, `amqplib`, `kafkajs`, `celery`, `pika`, `nats`, `socket.io-client`).
+   - **Tự động Bù Đắp & Khớp Nối Tham Số (Auto-Synthesize Missing Parameters):** So sánh đối chiếu biến tìm thấy ở Tầng 3 với Tầng 2. Mọi biến có trong code nhưng bị thiếu trong `.env.example` **BẮT BUỘC PHẢI TỰ ĐỘNG BỔ SUNG** vào `docker/.env` và `docker/.env.example` với giá trị mặc định chuẩn xác cho môi trường local dev (ví dụ: `DB_HOST=mysql`, `REDIS_HOST=redis`, `RABBITMQ_HOST=rabbitmq`, `ELASTICSEARCH_HOSTS=http://elasticsearch:9200`, `MAIL_HOST=mailpit`).
+4. **Giữ nguyên cấu hình extension:** Đồng bộ `php.ini`, `fpm-pool.conf` / `www.conf`, và các cờ biên dịch từ golden sample của dự án.
+5. **Cổng hỏi ý kiến Member (`AskQuestion`) khi gặp Service phụ trợ / bên thứ 3 mơ hồ:**
+   - Khi bóc tách monolith hoặc gặp các thành phần phụ trợ (như RabbitMQ, Elasticsearch, Apache Solr, Meilisearch, Kafka, daemon chạy ngầm, mock server):
+   - Nếu Agent **không thể xác định chắc chắn** từ cấu hình có sẵn rằng nên đẩy ra Central Gateway, tách container riêng trong compose, hay gộp vào container ứng dụng:
+   - Agent **TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ SUY ĐOÁN HAY TỰ QUYẾT ĐỊNH NGẦM**.
+   - **Hỏi trực tiếp qua GUI chat/client từng câu một (TUYỆT ĐỐI KHÔNG GHI VÀO FILE MD):** Agent BẮT BUỘC dùng công cụ tương tác `AskQuestion` để bật modal tương tác trên giao diện chat cho từng service mơ hồ. Nghiêm cấm ghi câu hỏi vào file markdown để bắt member đọc/sửa.
+   - **Đưa ra đề xuất tối ưu phân tích được lên đầu:** Agent phải phân tích bối cảnh trước và đưa phương án tối ưu nhất lên vị trí số 1 kèm tiền tố `(Recommended): <Lý do kỹ thuật>` (ví dụ: nếu là MySQL/Redis/Postgres thì đề xuất dùng Central Gateway; nếu là dịch vụ chuyên biệt như RabbitMQ, Elasticsearch, Solr thì đề xuất dựng container riêng).
+   - **Hỗ trợ phương án tự nhập (Write-in / Other):** Giao diện UI modal luôn có ô nhập liệu để member tự gõ phương án riêng theo nhu cầu (ví dụ: bỏ qua không chạy, kết nối đến server staging từ xa).
+   - *3 Lựa chọn cốt lõi cung cấp:*
+     - *Lựa chọn 1 (Đề xuất tối ưu):* `(Recommended) Tách container riêng — Định nghĩa thành 1 service container độc lập trong docker-compose.yml (cách ly tài nguyên và bảo toàn config riêng)`.
+     - *Lựa chọn 2:* `Ủy quyền cho Central Gateway — Sử dụng service hạ tầng dùng chung qua ${GATEWAY_NETWORK_NAME} (tiết kiệm tài nguyên máy dev)`.
+     - *Lựa chọn 3:* `Chạy kèm trong container ứng dụng — Quản lý tiến trình qua supervisord/entrypoint của container app chính`.
+5. **Bước 2: Cổng bắt buộc hỏi ý kiến về Kiến trúc & Tách/Gộp Service (`AskQuestion`):**
+   - Chỉ xuất bảng ra chat là CHƯA ĐỦ; Agent **TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ Ý TÁCH HAY GỘP RỒI SINH FILE NGAY**.
+   - Ngay sau khi xuất bảng kê khai topology, Agent **BẮT BUỘC PHẢI GỌI `AskQuestion`** trên UI chat để hỏi member:
+     - *Câu hỏi:* `"Phát hiện các service trong codebase: <danh sách service, ví dụ octane, php, supervisord>. Bạn muốn cấu trúc chúng trong docker-compose.yml như thế nào?"`
+     - *Lựa chọn 1 (Đề xuất tối ưu):* `"(Recommended) Tách thành các container độc lập — Chạy mỗi service thành container riêng (ví dụ: 'octane' chạy Swoole:8000 và 'php' chạy FPM:9000 + supervisord, bảo toàn môi trường dev gốc)"`
+     - *Lựa chọn 2:* `"Gộp vào 1 container chung — Gộp các service vào một container duy nhất chạy qua supervisord"`
+     - *Ô Write-in:* Cho phép member tự nhập cấu trúc nhóm container mong muốn hoặc bỏ bớt service.
+   - Chỉ sau khi member bấm chọn/xác nhận thì Agent mới được phép tiến hành sinh file cấu hình.
 
 ### 2.1. Chiến lược phân giải Cổng (Port Resolution Strategy) cho BE, FE và mọi loại Repo
 
@@ -126,7 +186,6 @@ GATEWAY_CERTS_DIR=~/.gateway/certs
 ###############################################################################
 BACKEND_HOST=myproject-api.local.com
 FRONTEND_HOST=myproject.local.com
-OCTANE_HOST=myproject-octane.local.com
 REVERB_HOST=myproject-reverb.local.com
 
 ###############################################################################
@@ -209,6 +268,13 @@ x-dev-ca-env: &dev-ca-env
 ```
 - Tên Container PHẢI theo format: `${PROJECT_NAME:-dev}_${PROJECT_SLUG}_<service>` (ví dụ: `dev_portal_php_83`, `dev_portal_node`, `dev_portal_octane`, `dev_portal_reverb`).
 
+> [!CRITICAL] BẮT BUỘC ĐỒNG BỘ QUYỀN USER MÁY HOST CHO CÁC VOLUME MOUNT CODE (CHỐNG LỖI ROOT)
+> Dựa trên kiến trúc chuẩn thực chiến từ `~/docker-webbeds` và `~/docker-external`:
+> - **TẤT CẢ các service mount volume mã nguồn từ máy host** (`frontend-node`, `octane`, `php`, `backend-worker`, Python, v.v.) **BẮT BUỘC PHẢI KHAI BÁO `user: "${HOST_UID:-1000}:${HOST_GID:-1000}"`** (thông qua anchor `<<: *dev-user`).
+> - Cả `docker/.env` và `docker/.env.example` **BẮT BUỘC** khai báo `HOST_UID=1000` và `HOST_GID=1000`.
+> - **Ý nghĩa kỹ thuật sống còn:** Nếu không mapping user, container sẽ chạy dưới quyền root (hoặc www-data). Mọi file do ứng dụng sinh ra trong volume mount (log, cache, view compile, upload, socket, vite cache) sẽ bị gắn quyền `root:root` ngoài máy host, khiến lập trình viên (user host `vutv`) bị khóa quyền, không thể sửa/xóa trên IDE hay commit git.
+> - **Quy tắc viết Dockerfile:** Đối với các service tự build (như PHP), các thư mục runtime hệ thống (`/run`, `/var/log`, `/var/run/supervisor`, `/tmp`, `/tmp/composer`) PHẢI được cấp quyền ghi mở (`chmod -R 777 /run /var/log /tmp`) để tiến trình non-root `HOST_UID:HOST_GID` có thể tạo socket và file log bình thường. **TUYỆT ĐỐI CẤM** chạy lệnh `chown -R www-data:www-data` trên thư mục mã nguồn được mount.
+
 ### B. Mạng dùng chung với Gateway
 Mọi dịch vụ kết nối vào mạng external của gateway được cấu hình linh hoạt qua biến môi trường:
 ```yaml
@@ -227,6 +293,7 @@ Từng dịch vụ trong compose khai báo:
 - **Không viết Dockerfile riêng:** Dùng trực tiếp image chính thức của Node LTS:
   ```yaml
   frontend-node:
+    <<: *dev-user
     image: ${NODE_IMAGE:-node:20-bookworm} # hoặc node:18.19-bookworm phù hợp dự án
     container_name: ${PROJECT_NAME:-dev}_${PROJECT_SLUG}_frontend_node
     working_dir: /workspace/${FRONTEND_REPO}
@@ -247,34 +314,41 @@ Từng dịch vụ trong compose khai báo:
     `- ${PROJECT_WORKSPACE}/${FRONTEND_REPO}:/workspace/${FRONTEND_REPO}`
   - Việc mount trọn gói mã nguồn đã bao gồm luôn `node_modules`, giúp IDE trên host và container đồng bộ 100%, không bị lỗi file lock và không tốn volume thừa.
 
-### D. Tự nhận diện Package Manager & Khởi chạy Cổng trong `frontend-dev.sh`
-File script `docker/node/frontend-dev.sh` PHẢI nhận diện đúng package manager của dự án (`pnpm`, `yarn`, `npm`) và bind dev server vào cổng đã được phân giải (`${FRONTEND_DEV_PORT:-3000}`):
+### D. Kỷ luật Lệnh trong Container: Chỉ Biên Dịch & Realtime Hosting (Cấm Tự Chạy Install)
+> [!CRITICAL] CẤM TỰ Ý CÀI ĐẶT THƯ VIỆN BÊN TRONG CONTAINER DOCKER
+> - **Lệnh container (`command:`) chỉ dành riêng cho việc biên dịch code realtime và hosting (Dev Server):**
+>   - Frontend chạy dev server live reload: `pnpm run dev -- --host 0.0.0.0 --port "$PORT"` (hoặc `npm run dev`, `yarn dev`, `vite`, `serve`).
+> - **Cài đặt thư viện do Member tự chủ động chạy ở ngoài máy host:**
+>   - Các thao tác cài đặt package (`npm i`, `pnpm i`, `yarn install`, `composer install`, `pip install`) là trách nhiệm của lập trình viên và PHẢI được chạy trực tiếp ngoài máy host.
+>   - **TUYỆT ĐỐI CẤM** chèn các lệnh `npm install`, `pnpm install`, hay `composer install` tự động chạy ngầm bên trong script khởi động container Docker!
+>   - Nếu phát hiện chưa có `node_modules`, script `frontend-dev.sh` sẽ xuất thông báo cảnh báo rõ ràng yêu cầu member chạy `npm install` hoặc `pnpm install` ngoài máy host, và chờ `node_modules` xuất hiện trước khi khởi chạy server.
+
+File script `docker/node/frontend-dev.sh` PHẢI tuân thủ cấu trúc chuẩn hóa sau:
 ```sh
 #!/bin/sh
 set -eu
-cd /workspace/${FRONTEND_REPO}
+cd "/workspace/${FRONTEND_REPO}"
 
 PORT="${FRONTEND_DEV_PORT:-3000}"
 
-# Tự động nhận diện package manager qua lockfile
+# 1. Kiểm tra điều kiện phụ thuộc (Tuyệt đối KHÔNG tự install trong container)
+# Thư viện (npm i, pnpm i) phải do lập trình viên tự chạy ngoài máy host.
+if [ ! -d node_modules ]; then
+  echo "[CẢNH BÁO] Chưa tìm thấy thư mục 'node_modules' tại /workspace/${FRONTEND_REPO}."
+  echo "[YÊU CẦU THAO TÁC] Vui lòng chạy 'pnpm install' (hoặc 'npm install' / 'yarn install') ngoài máy host."
+  echo "[ĐANG CHỜ] Container đang chờ thư mục node_modules trước khi chạy dev server..."
+  while [ ! -d node_modules ]; do
+    sleep 3
+  done
+  echo "[THÀNH CÔNG] Đã phát hiện node_modules. Bắt đầu chạy realtime hosting..."
+fi
+
+# 2. Lệnh biên dịch realtime hosting
 if [ -f pnpm-lock.yaml ]; then
-  if ! command -v pnpm >/dev/null 2>&1; then
-    corepack enable
-    corepack prepare pnpm@latest --activate
-  fi
-  if [ ! -d node_modules ]; then
-    pnpm install
-  fi
   exec pnpm run dev -- --host 0.0.0.0 --port "$PORT"
 elif [ -f yarn.lock ]; then
-  if [ ! -d node_modules ]; then
-    yarn install
-  fi
   exec yarn dev --host 0.0.0.0 --port "$PORT"
 else
-  if [ ! -d node_modules ]; then
-    npm install
-  fi
   exec npm run dev -- --host 0.0.0.0 --port "$PORT"
 fi
 ```
@@ -296,24 +370,34 @@ fi
      - Schedule: `command: ["php", "artisan", "schedule:work"]`
    - **Chỉ chạy nội bộ:** Các worker chỉ chạy CLI nền, KHÔNG nhận HTTP request. TUYỆT ĐỐI KHÔNG đưa vào `router.txt` hay mở cổng ra gateway.
 
-3. **Dịch vụ dữ liệu đặc thù của dự án (ví dụ Meilisearch):**
-   - Nếu dự án thực sự cần dịch vụ mà Gateway không có (như `meilisearch`), khai báo trực tiếp bằng image chính thức (`image: getmeili/meilisearch:v1.15.2`). **KHÔNG build custom Dockerfile.**
-   - Backend giao tiếp qua Docker network alias nội bộ (`http://meilisearch:7700`). Không export ra `router.txt`.
+3. **Dịch vụ dữ liệu & hạ tầng đặc thù (Search, Broker, NoSQL):**
+   - Nếu dự án thực sự cần dịch vụ mà Gateway không có sẵn (như Elasticsearch, Apache Solr, RabbitMQ, Kafka, Meilisearch, MongoDB), khai báo trực tiếp bằng image chính thức (ví dụ `rabbitmq:3-management-alpine`, `elasticsearch:8.13.0`, `solr:9`). **KHÔNG build custom Dockerfile.**
+   - Backend giao tiếp qua Docker network alias nội bộ (`http://elasticsearch:9200`, `rabbitmq:5672`). Không mở cổng ra Central Gateway.
 
 4. **Laravel Octane / Reverb (nếu có):**
    - Nếu dùng Octane thay cho PHP-FPM, phục vụ API tại cổng 8000 (`role: "node"` trong `router.txt`).
-   - Nếu dùng Reverb, phục vụ kết nối WebSocket tại cổng 6001 (`role: "node"` trong `router.txt`).
+   - If dùng Reverb, phục vụ kết nối WebSocket tại cổng 6001 (`role: "node"` trong `router.txt`).
 
 ---
 
 ## 6. Cấu hình định tuyến Gateway (`docker/router.txt`)
 
+> [!CRITICAL] MỤC ĐÍCH DUY NHẤT CỦA ROUTER.TXT: ĐOẠN MÃ JSON CHO CENTRAL GATEWAY — TUYỆT ĐỐI KHÔNG PHẢI FILE HOST
+> - **Mục đích duy nhất của `docker/router.txt` là một đoạn JSON snippet dùng để copy-paste trực tiếp vào file `routes.json` của Central Gateway (dưới mục `projects.<slug>`)!**
+> - **TUYỆT ĐỐI CẤM chuyển đổi hoặc sinh `router.txt` dưới dạng file ánh xạ host (như cú pháp `/etc/hosts`, `127.0.0.1 domain`, hay `domain -> container:port`).**
+> - Khi tham khảo các dự án chuẩn (`~/docker-webbeds`, `~/docker-external`), **CHỈ tham khảo cấu hình Docker container** (phân quyền user `HOST_UID:HOST_GID`, mount thư mục, command biên dịch/hosting realtime). **Định dạng JSON chuẩn của `router.txt` cho Central Gateway PHẢI ĐƯỢC BẢO TOÀN NGUYÊN VẸN 100%.**
+
 Central Gateway (`routes.json`) CHỈ cần định tuyến cho **các cổng truy cập công khai từ trình duyệt của developer**:
-- **Backend API (FastCGI):** 1 route trỏ tới container PHP-FPM (`role: "web"` cổng 9000 kèm `docroot`).
-- **Backend API (HTTP / Octane):** 1 route trỏ tới Octane (`role: "node"`, port 8000).
-- **Frontend Web:** 1 route trỏ tới dev server Node (`role: "node"`, port khớp với `${FRONTEND_DEV_PORT}`, ví dụ 3000, 5173,...).
-- **WebSocket (Reverb):** 1 route trỏ tới Reverb (`role: "node"`, port 6001).
-- **TUYỆT ĐỐI KHÔNG đưa các dịch vụ nội bộ** (Queue, Schedule, Meilisearch, Redis, DB) vào `router.txt`!
+- **Backend API:** 1 route trỏ tới container phục vụ API (`role: "node"` cổng 8000 nếu chạy HTTP/Octane; hoặc `role: "web"` cổng 9000 kèm `docroot` nếu chạy PHP-FPM FastCGI).
+- **Frontend Web:** 1 route trỏ tới dev server Node (`role: "node"`, port khớp với `${FRONTEND_DEV_PORT}`, ví dụ 5173, 3000,...).
+- **WebSocket / Realtime:** 1 route trỏ tới container WebSocket (`role: "node"`, ví dụ cổng 6001).
+- **TUYỆT ĐỐI KHÔNG đưa các dịch vụ nội bộ** (Queue workers, Schedulers, Message Brokers, Search Engines, Redis, DB) vào `router.txt`!
+
+> [!CRITICAL] NGUYÊN TẮC BẢO TOÀN TÊN MIỀN HOST ROUTER KHÔNG PHỤ THUỘC TÁCH CONTAINER
+> - **Trường `host` đại diện cho tên miền truy cập từ trình duyệt / client** (ví dụ `${PROJECT_SLUG}.local.com` cho Frontend, `${PROJECT_SLUG}-api.local.com` cho API, `${PROJECT_SLUG}-reverb.local.com` cho WebSocket).
+> - **NGHIÊM CẤM TỰ Ý THÊM HẬU TỐ CONTAINER / CÔNG NGHỆ (như `-fpm`, `-octane`, `-node`, `-swoole`) vào tên miền `host`!**
+> - Việc phân tách các container Docker trong `docker-compose.yml` là việc quản lý nội bộ container, **HOÀN TOÀN KHÔNG ĐƯỢC làm biến dạng hay đổi tên domain công khai trong `router.txt`**.
+> - Dù API chạy bằng container `octane` hay container `php`, tên miền `host` vẫn giữ nguyên là `${PROJECT_SLUG}-api.local.com`.
 
 ### Định dạng chuẩn của `docker/router.txt` (Kèm Workspace Key)
 
@@ -324,19 +408,13 @@ Central Gateway (`routes.json`) CHỈ cần định tuyến cho **các cổng tr
   "external": true,
   "sites": [
     {
-      "host": "${PROJECT_SLUG}-api.local.com",
-      "role": "web",
-      "container": "${PROJECT_NAME:-dev}_${PROJECT_SLUG}_php_83",
-      "docroot": "/var/www/${PROJECT_SLUG}_be/public"
-    },
-    {
       "host": "${PROJECT_SLUG}.local.com",
       "role": "node",
-      "container": "${PROJECT_NAME:-dev}_${PROJECT_SLUG}_node",
-      "port": 3000
+      "container": "${PROJECT_NAME:-dev}_${PROJECT_SLUG}_frontend_node",
+      "port": 5173
     },
     {
-      "host": "${PROJECT_SLUG}-octane.local.com",
+      "host": "${PROJECT_SLUG}-api.local.com",
       "role": "node",
       "container": "${PROJECT_NAME:-dev}_${PROJECT_SLUG}_octane",
       "port": 8000
@@ -344,12 +422,13 @@ Central Gateway (`routes.json`) CHỈ cần định tuyến cho **các cổng tr
     {
       "host": "${PROJECT_SLUG}-reverb.local.com",
       "role": "node",
-      "container": "${PROJECT_NAME:-dev}_${PROJECT_SLUG}_reverb",
+      "container": "${PROJECT_NAME:-dev}_${PROJECT_SLUG}_php",
       "port": 6001
     }
   ]
 }
 ```
+*(Ghi chú: Nếu service API chạy bằng PHP-FPM FastCGI thay vì Octane, trỏ `container` về `${PROJECT_NAME:-dev}_${PROJECT_SLUG}_php` với `role: "web"` và `docroot: "/var/www/html/public"`, trong khi tên miền `host` vẫn giữ nguyên là `${PROJECT_SLUG}-api.local.com`).*
 
 *Quy cách thuộc tính Role:*
 - `role: "web"`: Bắt buộc có `"container"` và `"docroot"`. Cấu hình Nginx FastCGI pass tới container PHP-FPM tại cổng 9000.

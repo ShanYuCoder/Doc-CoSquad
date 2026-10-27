@@ -5,7 +5,7 @@
 
 ## 使用方法 (Command/Trigger)
 - スラッシュコマンド実行：`/grill`
-- Router command directing to specialized grilling skills: `/grill-bqa`, `/grill-dev`, `/grill-api-spec`, `/grill-testcase`, `/grill-prototype`, or `/grill-wire`.
+- Router command directing to specialized grilling skills: `/grill`, `/grill`, `/grill`, `/grill`, `/grill`, or `/grill wire`.
 
 ## 入力 (Input)
 - Specification bundle, API contract, test plan, or prototype code depending on the active lifecycle phase.
@@ -21,6 +21,6 @@
 ## プロンプト実行例 (Example Prompt)
 
 ```text
-/grill surfaces/admin/CMP-ADM-ORD/01/01/order-list.bundle.yaml
+/grill surfaces/admin/ADM-01/order-list/order-list.bundle.yaml
 ```
 

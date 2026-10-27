@@ -16,16 +16,16 @@ AI 负责**标准化** YAML 与 IR 结构；人类成员负责**评审** Markdow
 
 | 工具链 (产品能力) | 团队职责 (人类流程) |
 |---|---|
-| 提供技能 `/spec`, `/update-spec`, `/testcase`, `coSquad audit *`, `cases:gate`, `testcase:gen` | 在适当节点运行技能；审阅生成的 JSON 缺口报告；深入质询核心业务规则 |
+| 提供技能 `/spec`, `/spec`, `/testcase`, `coSquad audit *`, `cases:gate`, `testcase:gen` | 在适当节点运行技能；审阅生成的 JSON 缺口报告；深入质询核心业务规则 |
 | 提供 AskQuestion 弹窗交互与 `qa` 待办 | 做出“推荐选择 / 其他决策 / **记录为技术债务**”的裁决 · 团队协作：[qa-team.md](./qa-team.md) |
-| `/update-spec` 及技能内嵌的自动重审 | 在需求变更后同步维护 `TC-*.yaml`；执行人工探索性 E2E 走查 |
+| `/spec` 及技能内嵌的自动重审 | 在需求变更后同步维护 `TC-*.yaml`；执行人工探索性 E2E 走查 |
 
 | 典型风险场景 | 首要问责角色 |
 |---|---|
 | 在技能明确提示审计时跳过审计或质询 | 责任工程师 + 技术主管 |
-| 执行 `/update-spec` 变更后未同步更新测试用例与溯源关系 | 变更发起人 + QA |
-| Playwright 测试用例矩阵流于形式、缺乏异常分支覆盖 | 用例编写者 + `/grill-test` 评审人 |
-| 真实 API 联调完成后跳过 `/grill-wire` | 前端开发 + QA（极易遗漏 `FEBE_*` 契约冲突） |
+| 执行 `/spec` 变更后未同步更新测试用例与溯源关系 | 变更发起人 + QA |
+| Playwright 测试用例矩阵流于形式、缺乏异常分支覆盖 | 用例编写者 + `/grill` 评审人 |
+| 真实 API 联调完成后跳过 `/grill wire` | 前端开发 + QA（极易遗漏 `FEBE_*` 契约冲突） |
 | UAT 验收未通过，但因“自动化审计全绿”强行合并上线 | PM / 技术负责人 —— 自动化工具绝不能替代人工业务验收 |
 | 由于跳过规定步骤导致线上缺陷逃逸 | 工程交付流程缺陷 —— 工具链不承诺无脑零 Bug |
 
@@ -93,7 +93,7 @@ sequenceDiagram
         Agent->>Bundle: 每轮深度完善单一区域
     end
 
-    Member->>Agent: /grill-bqa · /grill-dev · /grill-docs
+    Member->>Agent: /grill · /grill · /grill
     Agent->>Script: 重新运行审计
     Agent->>Member: 分区业务质询，定稿设计
 ```
@@ -109,9 +109,9 @@ sequenceDiagram
 ```mermaid
 flowchart TD
   IN["入口\n/legacy /spec 或 /spec"]
-  BQA["/grill-bqa\nStep A 业务事实锁定\nStep B AskQuestion 疑点确认"]
-  DEV["/grill-dev\nbundle.gen + 01 action 校验"]
-  DOCS["/grill-docs\n可选协调仲裁"]
+  BQA["/grill\nStep A 业务事实锁定\nStep B AskQuestion 疑点确认"]
+  DEV["/grill\nbundle.gen + 01 action 校验"]
+  DOCS["/grill\n可选协调仲裁"]
   DRY["coSquad gen:dry\nir/design.yaml 预检"]
   PROTO["/prototype 原型生成"]
   IN --> BQA
@@ -122,7 +122,7 @@ flowchart TD
   DRY --> PROTO
 ```
 
-**未决疑问规范：** **严禁**将未解决的业务疑问存放在 Bundle/YAML 的 `openQuestions` 中。必须通过 AskQuestion 当场确认 → 直接更新字段；若确实无法立即决策，则登记至 `qa/<SHORT>_NNNN.yaml` 并使用 `/qa-resolve` 闭环。
+**未决疑问规范：** **严禁**将未解决的业务疑问存放在 Bundle/YAML 的 `openQuestions` 中。必须通过 AskQuestion 当场确认 → 直接更新字段；若确实无法立即决策，则登记至 `qa/<SHORT>_NNNN.yaml` 并使用 `/qa` 闭环。
 
 ---
 
@@ -130,15 +130,15 @@ flowchart TD
 
 | 技能 | 核心质询聚焦点 |
 |---|---|
-| `/grill-bqa` | 领域业务逻辑、表单校验、User Stories、UX 交互完整性 |
-| `/grill-dev` | `bundle.gen` 配置、事件操作、`#gen:*`、`#needs-component`、IR Split 一致性 |
-| `/grill-docs` | 仲裁 BQA 业务要求与 Dev 开发诉求的冲突 |
-| `/grill-prototype` | UI 视觉与交互还原度、Mock 边界、`data-testid` 埋点 |
-| `/grill-api-spec` | 文档中心中的 API YAML 接口契约合规性 |
-| `/audit-api` | 联调前验证后端实际代码与 `01` 契约的一致性 |
-| `/grill-test` | 审查 Spec ↔ TC ↔ Playwright 矩阵对齐，避免盲目重写用例 |
-| `/grill-wire` | 联调后审计链路：`audit e2e` + `fe-be` + `scenario`；发现缺口快速分流 |
-| `/grill-testcase` | 审查 tests-docs 中的 YAML 测试计划 —— 规格遗漏回传 Docs |
+| `/grill` | 领域业务逻辑、表单校验、User Stories、UX 交互完整性 |
+| `/grill` | `bundle.gen` 配置、事件操作、`#gen:*`、`#needs-component`、IR Split 一致性 |
+| `/grill` | 仲裁 BQA 业务要求与 Dev 开发诉求的冲突 |
+| `/grill` | UI 视觉与交互还原度、Mock 边界、`data-testid` 埋点 |
+| `/grill` | 文档中心中的 API YAML 接口契约合规性 |
+| `/api` | 联调前验证后端实际代码与 `01` 契约的一致性 |
+| `/grill` | 审查 Spec ↔ TC ↔ Playwright 矩阵对齐，避免盲目重写用例 |
+| `/grill wire` | 联调后审计链路：`audit e2e` + `fe-be` + `scenario`；发现缺口快速分流 |
+| `/grill` | 审查 tests-docs 中的 YAML 测试计划 —— 规格遗漏回传 Docs |
 
 ---
 
@@ -148,24 +148,24 @@ flowchart TD
 flowchart LR
   subgraph TEST["2b 测试规划中心"]
     TC["/testcase"]
-    GTC["/grill-testcase"]
+    GTC["/grill"]
     GT["cases:gate"]
     TC --> GTC --> GT
   end
   subgraph AUTO["e2e-root 测试工程"]
     GEN["testcase:gen"]
     T["/test"]
-    GTE["/grill-test"]
+    GTE["/grill"]
     GEN --> T --> GTE
   end
   subgraph API["2c 后端开发"]
-    GAS["/grill-api-spec"]
-    AA["/audit-api"]
+    GAS["/grill"]
+    AA["/api"]
     GAS --> AA
   end
   subgraph WIRE["3 真实联调"]
     W["/wire"]
-    GW["/grill-wire"]
+    GW["/grill wire"]
     W --> GW
   end
   GT --> GEN
@@ -175,10 +175,10 @@ flowchart LR
 
 | 阶段 | 定性质询 (Grill) | 定量审计 (Audit) | 人工决策门禁 (Human Gate) |
 |---|---|---|---|
-| **测试计划** | `/grill-testcase` — 审查 AC 与矩阵覆盖 | `cases:gate`, `audit testcase --bundle` | QA：确认覆盖全量业务异常，非仅正常流 |
-| **自动化** | `/grill-test` — 检查 PO 结构与 testId 稳定性 | `audit e2e` | Dev + QA：测试代码符合规范，无脆弱选择器 |
-| **契约** | `/grill-api-spec` | `audit api`, `audit fe-be` | BE + Dev：字段类型准确，HTTP 状态码完备 |
-| **联调** | HANDOFF 中 `#wire-only` 逐项验证 | `/grill-wire` 全链路审计 | 严禁带病上线绕过鉴权的代码或 Mock 残留 |
+| **测试计划** | `/grill` — 审查 AC 与矩阵覆盖 | `cases:gate`, `audit testcase --bundle` | QA：确认覆盖全量业务异常，非仅正常流 |
+| **自动化** | `/grill` — 检查 PO 结构与 testId 稳定性 | `audit e2e` | Dev + QA：测试代码符合规范，无脆弱选择器 |
+| **契约** | `/grill` | `audit api`, `audit fe-be` | BE + Dev：字段类型准确，HTTP 状态码完备 |
+| **联调** | HANDOFF 中 `#wire-only` 逐项验证 | `/grill wire` 全链路审计 | 严禁带病上线绕过鉴权的代码或 Mock 残留 |
 
 ---
 

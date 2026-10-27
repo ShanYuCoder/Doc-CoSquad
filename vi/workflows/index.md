@@ -31,19 +31,19 @@ flowchart TD
 
   subgraph P1["Phase 1 — Design Lane"]
     SPEC["/spec<br/>(kèm /trace nếu Maintain, /legacy nếu Rebase)"]
-    GRILL["/grill-bqa ➔ /grill-dev"]
-    PROTO["/prototype ➔ /grill-prototype"]
+    GRILL["/grill ➔ /grill"]
+    PROTO["/prototype ➔ /grill"]
     SPEC --> GRILL --> PROTO
   end
 
   subgraph P2["Phase 2 — Implementation & Tests Lane"]
     subgraph P2_BE["Backend"]
-      API_SPEC["/api-spec ➔ /grill-api-spec"]
-      API_GEN["api-gen ➔ /audit-api"]
+      API_SPEC["/api-spec ➔ /grill"]
+      API_GEN["api-gen ➔ /api"]
       API_SPEC --> API_GEN
     end
     subgraph P2_TEST["Test & Automation"]
-      TC["/testcase ➔ /grill-testcase"]
+      TC["/testcase ➔ /grill"]
       E2E["cases:gate ➔ testcase:gen (Playwright)"]
       TC --> E2E
     end
@@ -69,7 +69,7 @@ flowchart TD
   E2E --> WIRE
   SHIP --> MANUAL
 
-  US["/update-spec"]
+  US["/spec"]
   GRILL -.->|Gap nghiệp vụ| US
   US -.-> SPEC
 ```
@@ -81,7 +81,7 @@ flowchart TD
 ### Phase 0: Setup & Boundary
 - **Khởi tạo:** Chạy `coSquad setup [name]` để sinh cấu trúc SSOT skeleton (`source-code/`, `source-legacy/`, `registries/`, Arc42 docs).
 - **Nhận diện:** Mở Agent chạy skill `/init` để map surfaces và cấu hình repo maps `platform-repos.local.json`.
-- **Kiến trúc:** Dùng `/architecture`, `/overview`, `/surfaces`, `/module`, `/db-erd` để chốt ranh giới hệ thống trước khi đi sâu vào từng màn hình.
+- **Kiến trúc:** Dùng `/architecture`, `/spec`, `/spec`, `/module`, `/db-erd` để chốt ranh giới hệ thống trước khi đi sâu vào từng màn hình.
 - *Chi tiết:* [phase-0-setup.md](./phase-0-setup.md) và [architecture-data.md](./architecture-data.md).
 
 ### Phase 1: Design Lane
@@ -89,16 +89,16 @@ flowchart TD
   - *Mới hoàn toàn:* Chạy `/spec` để sinh bundle spec (`<slug>.bundle.yaml`, `ir/design.yaml`, `ir/spec.yaml`).
   - *Dự án Maintain:* Dùng kèm skill `/trace` để đối chiếu mã nguồn `source-code/`.
   - *Dự án Rebase:* Dùng kèm skill `/legacy` để trích xuất logic từ `source-legacy/`.
-- **Phản biện (*Grill*):** Chạy `/grill-bqa` (nghiệp vụ) và `/grill-dev` (khả thi kỹ thuật) để hoàn thiện spec.
+- **Phản biện (*Grill*):** Chạy `/grill` (nghiệp vụ) và `/grill` (khả thi kỹ thuật) để hoàn thiện spec.
 - **Early Feedback Prototype:** Chạy `/prototype` sinh giao diện tương tác (HTML/Vue/React) để PO/BA bấm thử và chốt hành vi trước khi code production.
 - *Chi tiết:* [design.md](./design.md).
 
 ### Phase 2: Implementation & Tests Lane
 - **Backend API:**
   - Định nghĩa contract REST/DTO tại `api/<seq>/01-backend-spec.yaml` với `/api-spec`.
-  - Phản biện contract với `/grill-api-spec`, sinh code controller/service với `api-gen` và kiểm tra với `/audit-api`.
+  - Phản biện contract với `/grill`, sinh code controller/service với `api-gen` và kiểm tra với `/api`.
 - **Tests-docs & Automation E2E:**
-  - QA xây dựng ma trận kịch bản tại tests-docs hub với `/testcase`, `/scenario` và `/grill-testcase`.
+  - QA xây dựng ma trận kịch bản tại tests-docs hub với `/testcase`, `/testcase` và `/grill`.
   - Chạy `cases:gate` để chốt kế hoạch testcase, sau đó chạy `testcase:gen` để tự động sinh code Playwright E2E (`*.spec.ts`) trên repo FE.
 - *Chi tiết:* [backend.md](./backend.md) và [test.md](./test.md).
 
@@ -116,10 +116,10 @@ Quy định vai trò theo **trách nhiệm đầu ra**, không gắn cứng vào
 
 | Vai trò | Phạm vi chính | Đầu ra (Artifacts) | Skill / Lệnh gợi ý |
 | :--- | :--- | :--- | :--- |
-| **Solution Architect / Lead** | Kiến trúc hệ thống, ranh giới module, deployment | `overview/`, `architecture/`, `FLOW-*` | `/architecture`, `/overview`, `/surfaces`, `/module`, `/db-erd` |
-| **Business Analyst (BA)** | Yêu cầu nghiệp vụ, acceptance criteria, câu hỏi mở | Spec leaf bundle, Prototype UI sớm | `/spec`, `/grill-bqa`, `/prototype` |
-| **Software Engineer (Dev)** | Kỹ thuật màn hình, API contract, implementation | `ir/design.yaml`, `01-backend-spec.yaml`, code thật | `/spec`, `/grill-dev`, `/api-spec`, `/api`, `/wire` |
-| **Quality Engineer (QA)** | Ma trận testcase, kịch bản kiểm thử, automation | `TC-*.yaml`, Playwright E2E (`*.spec.ts`) | `/testcase`, `/scenario`, `testcase:gen`, `/test` |
+| **Solution Architect / Lead** | Kiến trúc hệ thống, ranh giới module, deployment | `overview/`, `architecture/`, `FLOW-*` | `/architecture`, `/spec`, `/spec`, `/module`, `/db-erd` |
+| **Business Analyst (BA)** | Yêu cầu nghiệp vụ, acceptance criteria, câu hỏi mở | Spec leaf bundle, Prototype UI sớm | `/spec`, `/grill`, `/prototype` |
+| **Software Engineer (Dev)** | Kỹ thuật màn hình, API contract, implementation | `ir/design.yaml`, `01-backend-spec.yaml`, code thật | `/spec`, `/grill`, `/api-spec`, `/api`, `/wire` |
+| **Quality Engineer (QA)** | Ma trận testcase, kịch bản kiểm thử, automation | `TC-*.yaml`, Playwright E2E (`*.spec.ts`) | `/testcase`, `/testcase`, `testcase:gen`, `/test` |
 
 ---
 
@@ -133,14 +133,14 @@ Quy định vai trò theo **trách nhiệm đầu ra**, không gắn cứng vào
 | `/spec` | Phase 1 | Tạo Leaf Bundle spec (`.bundle.yaml`, `ir/`, data model). |
 | `/trace` | Phase 1 | *(Maintain)* Khảo cổ trực tiếp mã nguồn trong `source-code/`. |
 | `/legacy` | Phase 1 | *(Rebase)* Đọc Read-Only từ `source-legacy/`, trích xuất sang code mới. |
-| `/grill-bqa`, `/grill-dev` | Phase 1 | Phản biện nghiệp vụ và khả thi kỹ thuật cho spec. |
-| `/prototype`, `/grill-prototype` | Phase 1 | Sinh và review prototype giao diện tương tác sớm. |
-| `/api-spec`, `/grill-api-spec` | Phase 2 | Thiết kế và phản biện API contract backend. |
-| `/testcase`, `/grill-testcase` | Phase 2 | Xây dựng ma trận kịch bản testcase tại tests-docs hub. |
+| `/grill`, `/grill` | Phase 1 | Phản biện nghiệp vụ và khả thi kỹ thuật cho spec. |
+| `/prototype`, `/grill` | Phase 1 | Sinh và review prototype giao diện tương tác sớm. |
+| `/api-spec`, `/grill` | Phase 2 | Thiết kế và phản biện API contract backend. |
+| `/testcase`, `/grill` | Phase 2 | Xây dựng ma trận kịch bản testcase tại tests-docs hub. |
 | `testcase:gen` | Phase 2 | Tự động sinh mã kiểm thử Playwright E2E từ testcase YAML. |
-| `/wire`, `/grill-wire` | Phase 3 | Đấu nối FE với API thật, đối chiếu spec ↔ code. |
+| `/wire`, `/grill wire` | Phase 3 | Đấu nối FE với API thật, đối chiếu spec ↔ code. |
 | `/manual` | Phase 4 | Sinh User Manual từ User Flow và kết quả chạy E2E. |
 | `coSquad publish manual` | Phase 4 | Publish User Manual lên Google Docs (kèm xử lý Anti-Quotas API). |
-| `/update-spec`, `/qa-resolve` | Bất kỳ | Cập nhật delta khi thay đổi yêu cầu hoặc đóng câu hỏi QA. |
+| `/spec`, `/qa` | Bất kỳ | Cập nhật delta khi thay đổi yêu cầu hoặc đóng câu hỏi QA. |
 
 *Xem chi tiết toàn bộ lệnh CLI và options nâng cao tại:* [CLI & Commands](../references/cli-and-commands.md).

@@ -2,7 +2,7 @@
 
 **Phạm vi (SSOT):** member **review, grill, chốt**; AI không thay PO; **chất** (grill / reasoning) vs **lượng** (audit script `gaps[]` / `confirms[]`).
 
-**Không viết ở đây:** tham số lệnh audit → [references/cli-and-commands.md](../references/cli-and-commands.md#audit--harness-pr-workflow) · tag QA → [artifacts/dsl.md](../artifacts/dsl.md).
+**Không viết ở đây:** tham số lệnh audit → [references/cli-and-commands.md](../references/cli-and-commands.md#audit--harness-pr-workflow) · tag QA → [artifacts/index.md](../artifacts/index.md).
 
 **Bối cảnh lane:** [design.md](./design.md) · [backend.md](./backend.md) · [test.md](./test.md) · [wire.md](./wire.md) · mốc gate: [gates.md](./gates.md#close-one-function).
 
@@ -16,18 +16,18 @@ AI **chuẩn hóa** YAML/IR; member **review** Markdown + prototype trực quan.
 
 | Tool (product) | Team (out of product) |
 |----------------|----------------------|
-| Skills `/spec`, `/update-spec`, `/testcase`, `coSquad audit *`, `cases:gate`, `testcase:gen` | Chạy skill khi cần; đọc gap JSON; grill nghiệp vụ |
+| Skills `/spec`, `/spec`, `/testcase`, `coSquad audit *`, `cases:gate`, `testcase:gen` | Chạy skill khi cần; đọc gap JSON; grill nghiệp vụ |
 | AskQuestion + `qa` | Chọn Recommended / Other / **Log as Tech Debt** · team: [qa-team.md](./qa-team.md) |
-| `/update-spec` + re-audit trong skill | Cập nhật `TC-*.yaml` sau CR; QA manual E2E (policy team) |
+| `/spec` + re-audit trong skill | Cập nhật `TC-*.yaml` sau CR; QA manual E2E (policy team) |
 
 **Out of scope product:** deploy/CI, ALM/sprint, dashboard “ai quên grill”, bắt PM full BQA trước sketch nhanh.
 
 | Tình huống | Ai chịu trách nhiệm |
 |------------|---------------------|
 | Bỏ grill/audit khi skill yêu cầu | Member + lead |
-| `/update-spec` không sync TC / traceability | Author CR + QA |
-| Matrix Playwright sơ sài | Author test + `/grill-test` |
-| Bỏ `/grill-wire` sau API thật | Dev FE + QA — `FEBE_*` / plan gap lọt |
+| `/spec` không sync TC / traceability | Author CR + QA |
+| Matrix Playwright sơ sài | Author test + `/grill` |
+| Bỏ `/grill wire` sau API thật | Dev FE + QA — `FEBE_*` / plan gap lọt |
 | UAT fail nhưng merge vì “audit OK” | PM/Lead — audit không thay acceptance judgment |
 | Release lọt bug do bỏ bước | Process người — tool không cam kết zero bug |
 
@@ -97,7 +97,7 @@ sequenceDiagram
         Agent->>Bundle: hoàn thiện từng zone / turn
     end
 
-    Member->>Agent: /grill-bqa · /grill-dev · /grill-docs
+    Member->>Agent: /grill · /grill · /grill
     Agent->>Script: re-run audit
     Agent->>Member: grill theo zone, chốt design
 ```
@@ -117,9 +117,9 @@ Sau `/spec` hoặc `/legacy /spec` — khớp [design cycle](./design.md#design-
 ```mermaid
 flowchart TD
   IN["Entry\n/legacy /spec or /spec"]
-  BQA["/grill-bqa\nStep A fact-lock\nStep B AskQuestion"]
-  DEV["/grill-dev\nbundle.gen + 01 action"]
-  DOCS["/grill-docs\noptional reconcile"]
+  BQA["/grill\nStep A fact-lock\nStep B AskQuestion"]
+  DEV["/grill\nbundle.gen + 01 action"]
+  DOCS["/grill\noptional reconcile"]
   DRY["coSquad gen:dry\nir/design.yaml"]
   PROTO["/prototype"]
   IN --> BQA
@@ -130,28 +130,28 @@ flowchart TD
   DRY --> PROTO
 ```
 
-Sau `PROTO` trên macro [design.md](./design.md#design-cycle): `coSquad gen` + lặp `#needs-component` trong session `/prototype`, rồi **`/grill-prototype`** (checklist UI) trước handoff test.
+Sau `PROTO` trên macro [design.md](./design.md#design-cycle): `coSquad gen` + lặp `#needs-component` trong session `/prototype`, rồi **`/grill`** (checklist UI) trước handoff test.
 
-**Câu hỏi treo:** **không** dùng `openQuestions` trên bundle/YAML. AskQuestion → ghi field đã chốt, hoặc `qa/<SHORT>_NNNN.yaml` rồi `/qa-resolve` (tag `#tech-debt:QA-*` — [artifacts/dsl.md](../artifacts/dsl.md)).
+**Câu hỏi treo:** **không** dùng `openQuestions` trên bundle/YAML. AskQuestion → ghi field đã chốt, hoặc `qa/<id>.yaml` (hoặc `qa/<SHORT>_NNNN.yaml`) rồi `/qa` (tag `#tech-debt:Q-*` — [artifacts/index.md](../artifacts/index.md)).
 
 ### Load policy (agent)
 
 | Phase | Load | Không load / không làm |
 | --- | --- | --- |
-| `/grill-bqa` | Toàn bộ `ir/design.yaml` (layout/copy) + `ir/spec.yaml` prose | Sửa tay `ir/*`; invent field |
-| `/grill-dev` | `ir/design.yaml` + sibling `api/<seq>/01` | `bundle.spec.api`; dùng `ir/spec.yaml` làm codegen input |
-| `/grill-docs` | Bundle + IR reconcile (BQA ↔ Dev) | Archaeology lại từ đầu |
+| `/grill` | Toàn bộ `ir/design.yaml` (layout/copy) + `ir/spec.yaml` prose | Sửa tay `ir/*`; invent field |
+| `/grill` | `ir/design.yaml` + sibling `api/<seq>/01` | `bundle.spec.api`; dùng `ir/spec.yaml` làm codegen input |
+| `/grill` | Bundle + IR reconcile (BQA ↔ Dev) | Archaeology lại từ đầu |
 
-Skill harness: [references/skills/grill-bqa](../references/skills/grill-bqa.md), [grill-dev](../references/skills/grill-dev.md), [grill-docs](../references/skills/grill-docs.md), [qa-resolve](../references/skills/qa-resolve.md).
+Skill harness: [/grill](../references/skills/grill.md), [/qa](../references/skills/qa.md).
 
 ### `grillStatus` (trên bundle)
 
 | Field | Set bởi |
 | --- | --- |
-| `bqaFacts` / `bqaOpen` | `/grill-bqa` |
-| `dev` | `/grill-dev` khi `codegen.profile` + entity/module + `01` `action` đủ — `coSquad split` **fail** nếu `done` thiếu |
+| `bqaFacts` / `bqaOpen` | `/grill` |
+| `dev` | `/grill` khi `codegen.profile` + entity/module + `01` `action` đủ — `coSquad split` **fail** nếu `done` thiếu |
 
-Delta sau pilot: `/update-spec` → re-audit spec → grill lại nếu cần — [gates.md](./gates.md).
+Delta sau pilot: `/spec` → re-audit spec → grill lại nếu cần — [gates.md](./gates.md).
 
 ---
 
@@ -159,19 +159,19 @@ Delta sau pilot: `/update-spec` → re-audit spec → grill lại nếu cần �
 
 | Skill | Trọng tâm |
 |-------|-----------|
-| `/grill-bqa` | Nghiệp vụ, validation, user story, UX affordance |
-| `/grill-dev` | `bundle.gen`, actions, `#gen:*`, `#needs-component`, split `ir/design` |
-| `/grill-docs` | Hòa giải BQA ↔ Dev — **không** thay từng grill riêng |
-| `/grill-prototype` | UI vs spec, mock boundary, testIds |
-| `/grill-api-spec` | Contract YAML trên docs hub |
-| `/audit-api` | Code BE vs `01` trước `/wire` |
-| `/grill-test` | Matrix spec ↔ TC ↔ Playwright — audit, không regen hàng loạt |
-| `/grill-wire` | Sau `/wire`: chuỗi `audit e2e` + `fe-be` + `scenario`; route gap spec/test/code |
-| `/grill-testcase` | Plan YAML trên tests-docs — gap spec → paste `/docs-hub /update-spec` |
-| `/grill-api-spec` | Contract YAML — trước codegen BE / wire |
-| `/audit-api` | Code BE vs `01` — human chốt trước wire FE |
+| `/grill` | Nghiệp vụ, validation, user story, UX affordance |
+| `/grill` | `bundle.gen`, actions, `#gen:*`, `#needs-component`, split `ir/design` |
+| `/grill` | Hòa giải BQA ↔ Dev — **không** thay từng grill riêng |
+| `/grill` | UI vs spec, mock boundary, testIds |
+| `/grill` | Contract YAML trên docs hub |
+| `/api` | Code BE vs `01` trước `/wire` |
+| `/grill` | Matrix spec ↔ TC ↔ Playwright — audit, không regen hàng loạt |
+| `/grill wire` | Sau `/wire`: chuỗi `audit e2e` + `fe-be` + `scenario`; route gap spec/test/code |
+| `/grill` | Plan YAML trên tests-docs — gap spec → paste `/ssot-docs /spec` |
+| `/grill` | Contract YAML — trước codegen BE / wire |
+| `/api` | Code BE vs `01` — human chốt trước wire FE |
 
-`/qa-resolve` đóng `qa/*` — không hallucinate câu treo trên bundle.
+`/qa` đóng `qa/*` — không hallucinate câu treo trên bundle.
 
 ---
 
@@ -183,24 +183,24 @@ Sau [design grill chain](#design-grill-chain) và macro impl — **grill chất*
 flowchart LR
   subgraph TEST["2b Tests hub"]
     TC["/testcase"]
-    GTC["/grill-testcase"]
+    GTC["/grill"]
     GT["cases:gate"]
     TC --> GTC --> GT
   end
   subgraph AUTO["e2e-root"]
     GEN["testcase:gen"]
     T["/test"]
-    GTE["/grill-test"]
+    GTE["/grill"]
     GEN --> T --> GTE
   end
   subgraph API["2c BE"]
-    GAS["/grill-api-spec"]
-    AA["/audit-api"]
+    GAS["/grill"]
+    AA["/api"]
     GAS --> AA
   end
   subgraph WIRE["3 Wire"]
     W["/wire"]
-    GW["/grill-wire"]
+    GW["/grill wire"]
     W --> GW
   end
   GT --> GEN
@@ -210,10 +210,10 @@ flowchart LR
 
 | Giai đoạn | Grill (chất) | Audit (lượng) | Member chốt |
 |-----------|--------------|---------------|-------------|
-| Plan | `/grill-testcase` — AC/matrix đủ facet | `cases:gate`, `audit testcase --bundle` | QA: plan đủ nghiệp vụ, không chỉ happy path |
-| Automation | `/grill-test` — PO/testIds | `audit e2e` | Dev+QA: spec khớp TC, không raw locator |
-| Contract | `/grill-api-spec` | `audit api`, `audit fe-be` | BE+Dev: field/status thật |
-| Wire | HANDOFF `#wire-only` | `/grill-wire` full chain | Không ship bypass auth/mock |
+| Plan | `/grill` — AC/matrix đủ facet | `cases:gate`, `audit testcase --bundle` | QA: plan đủ nghiệp vụ, không chỉ happy path |
+| Automation | `/grill` — PO/testIds | `audit e2e` | Dev+QA: spec khớp TC, không raw locator |
+| Contract | `/grill` | `audit api`, `audit fe-be` | BE+Dev: field/status thật |
+| Wire | HANDOFF `#wire-only` | `/grill wire` full chain | Không ship bypass auth/mock |
 
 Lane SSOT: [test.md](./test.md) · [backend.md](./backend.md) · [wire.md](./wire.md).
 
@@ -221,14 +221,14 @@ Lane SSOT: [test.md](./test.md) · [backend.md](./backend.md) · [wire.md](./wir
 
 ## Vòng gap sau wire (human + agent) {#post-wire-loop}
 
-Khi staging/UAT hoặc `/grill-wire` chứng minh **spec/plan/contract** sai — **quay lane docs/tests**, không vá một dòng FE rồi đóng:
+Khi staging/UAT hoặc `/grill wire` chứng minh **spec/plan/contract** sai — **quay lane docs/tests**, không vá một dòng FE rồi đóng:
 
 | Phát hiện | Grill/audit nguồn | Hành động member |
 |-----------|-------------------|------------------|
-| UX/AC/copy | UAT, grill-test | `/update-spec` → re-audit spec → `/grill-testcase` nếu matrix đổi |
-| `01` / DTO | `audit fe-be`, `/audit-api` | `/api-update` → BE deploy → `/wire` |
-| TC thiếu post-wire facet | `audit e2e` | tests-hub patch YAML → `cases:gate` → `testcase:gen` → `/test` → `/grill-wire` |
-| Chủ đích hoãn | AskQuestion **Tech Debt** | `qa` + `QA-*` / `coverage_deferred` trên SC |
+| UX/AC/copy | UAT, grill-test | `/spec` → re-audit spec → `/grill` nếu matrix đổi |
+| `01` / DTO | `audit fe-be`, `/api` | `/api-spec` → BE deploy → `/wire` |
+| TC thiếu post-wire facet | `audit e2e` | tests-hub patch YAML → `cases:gate` → `testcase:gen` → `/test` → `/grill wire` |
+| Chủ đích hoãn | AskQuestion **Tech Debt** | `qa` + `Q-*` (legacy `QA-*`) / `coverage_deferred` trên SC |
 
 Extract FE: `wire-audit-loop.md` · tests: `wire-test-handoff.md` · docs: `wire-spec-feedback.md`.
 
@@ -249,9 +249,9 @@ Checklist gợi ý trước coi leaf **Ship-ready** (không thay release cả pr
 |---|-----|----------------|
 | 1 | Spec/grill đã chốt cho scope | `audit spec` không blocker; grill round done |
 | 2 | Plan + gate tests-docs | `cases:gate --strict` |
-| 3 | E2E + wire audits | `/grill-wire` hoặc tương đương — [wire sign-off](./wire.md#wire-signoff) |
+| 3 | E2E + wire audits | `/grill wire` hoặc tương đương — [wire sign-off](./wire.md#wire-signoff) |
 | 4 | Manual/UAT (nếu team bật) | AC bundle / TC đã grill — **người** ký |
-| 5 | Không behaviour mới chưa spec | Mọi delta qua `/update-spec` trước bước 10 |
+| 5 | Không behaviour mới chưa spec | Mọi delta qua `/spec` trước bước 10 |
 
 **Script pass + human chưa UAT** → vẫn **STOP** ở bước 10, không coi là “CoSquad đã guarantee”.
 
@@ -266,10 +266,10 @@ Ràng buộc chi tiết nằm trong skill (`harness/docs/skills/…`, `harness/t
 | Page type | `/spec` / grill gọi `coSquad audit spec --type <pageType>` — output `gaps[]` / `confirms[]` |
 | Khối lượng confirms | Tổng `gaps` + `confirms` ≥ 10 → skill dừng, lập plan phase (không hỏi lẻ tẻ) |
 | Trang lớn | Phân **zone** — một turn / zone (tránh lost-in-the-middle) |
-| Chuỗi Design | BQA → Dev → (`/grill-docs` nếu conflict) → `gen:dry` — [§ design grill chain](#design-grill-chain) |
+| Chuỗi Design | BQA → Dev → (`/grill` nếu conflict) → `gen:dry` — [§ design grill chain](#design-grill-chain) |
 | Gap chưa chốt | Ghi `qa/*` hoặc xử lý trong bundle — không invent |
-| Sau `/update-spec` | Skill yêu cầu **re-audit spec** trước split/merge an toàn |
-| Sau wire gap | `/grill-testcase` hoặc `/update-spec` → lặp automation + `/grill-wire` |
+| Sau `/spec` | Skill yêu cầu **re-audit spec** trước split/merge an toàn |
+| Sau wire gap | `/grill` hoặc `/spec` → lặp automation + `/grill wire` |
 | Đóng leaf | Chuỗi 10 bước + human bước 10 — [gates.md](./gates.md#close-one-function) |
 
 Mốc audit/gate theo lane: [gates.md § khi nào chạy](./gates.md#when-to-run) · [SSOT chain](./gates.md#ssot-chain) · [sơ đồ 10 mốc](./gates.md#close-leaf-overview).

@@ -22,25 +22,174 @@ extractBundle: architecture-core
 
 ---
 
-## 1. Initial Discovery & Execution Mode
+## 1. Phát hiện Ban đầu & Chế độ Thực thi
 
-- **[MANDATORY]** At the start of `/init`, the Agent **MUST** run `coSquad repo-maps auto-scan --json` in the terminal to discover internal repositories in the workspace, and accept external repository paths provided by the user in chat.
-- **[MANDATORY]** The Agent **MUST** prompt the Member via `AskQuestion` wizard (or parse command flags) to select the scan mode:
-  - **Option 1 (Recommended):** `(Recommended) Full Deep Init (Map Repos to Surfaces in config.json + Deep Multi-Layer Scan for Frontend & Backend Architectures & Commons)`
-  - **Option 2:** `Greenfield / Mapping Only (Map Repos to Surfaces in config.json, skip code analysis)`
+- **[MANDATORY]** Khi bắt đầu `/init`, Agent **BẮT BUỘC** chạy `coSquad repo-maps auto-scan --json` trong terminal để phát hiện các repository nội bộ trong workspace, đồng thời tiếp nhận đường dẫn repo bên ngoài nếu user cung cấp trong chat.
+- **[TỰ ĐỘNG NHẬN DIỆN ZERO-REPO]** Nếu `coSquad repo-maps auto-scan` phát hiện **0 repository** và member không cung cấp đường dẫn ngoài, workspace được xác định là **Greenfield (Dự án Mới Toàn Bộ / Chưa Có Source Code)**. Agent **TUYỆT ĐỐI KHÔNG ĐƯỢC** cố quét code, bịa repo ảo hay dẫn dắt lung tung.
+- **[MANDATORY]** Agent **BẮT BUỘC** hiển thị câu hỏi qua modal `AskQuestion` để Member chọn chế độ:
+  - **Lựa chọn 1 (Đề xuất cho code sẵn có):** `(Recommended) Full Deep Init (Map Repos vào Surfaces trong config.json + Quét kiến trúc sâu & Commons cho Frontend/Backend)`
+  - **Lựa chọn 2 (Cho dự án mới / Chưa có code):** `Greenfield Staged Bootstrapping (Định hình nghiệp vụ trên Docs -> Đề xuất công nghệ & Tạo Repo -> Nạp Adapter & Commons)`
 
 ---
 
-## 2. Rule: Repository Discovery & Surface Mapping
+## 2. Cơ Chế Khởi Tạo Từng Phần Cho Dự Án Mới (Greenfield Staged Progressive Bootstrapping)
 
-- **[MANDATORY]** Before scanning code, the Agent MUST ask the user how to group discovered/provided repositories into logical `surfaces`.
-  - In SaaS apps, one physical repo (e.g., `admin-web`) may serve multiple logical surfaces (e.g., `admin`, `tenant`).
-  - Or, multiple repos (e.g., `admin-fe`, `client-fe`, `api`) must be mapped together.
-- **[MANDATORY]** The Agent MUST present a **Draft Plan (JSON)** of the `projects` and `surfaces` blocks:
-  - `projects`: Each repo's `path` (relative to workspace), `role`, `technology`.
-  - `surfaces`: Logical names mapping to `frontend` and `backend` project IDs.
-- **[MANDATORY]** Once the user approves the Draft Plan, the Agent MUST update `.coSquad/config.json` directly.
-- **[GREENFIELD]** If Option 2 is selected (Greenfield), the Agent stops here and outputs a clean success message (no `inition-inventory.md` is generated, or just an empty placeholder).
+Khi bắt đầu một dự án mới hoàn toàn chưa có mã nguồn (hoặc khi Member chọn Chế độ 2), Agent **BẮT BUỘC thực thi quy trình khởi tạo từng phần 3 Chặng**, tận dụng triệt để các skill CoSquad sẵn có mà không sinh thêm skill dư thừa:
+
+```mermaid
+graph TD
+    S1["Chặng 1: Nền tảng Docs-First<br/>(/spec -> /spec -> /module -> /user-flow)"] --> S2["Chặng 2: Đề xuất Công nghệ & Tạo Repo<br/>(/architecture + AskQuestion -> Scaffold Repos -> config.json)"]
+    S2 --> S3["Chặng 3: Nạp Adapter & Commons theo Stack<br/>(/build-templates -> /common -> /build-env)"]
+```
+
+### 🟢 Chặng 1: Bóc Tách Nghiệp Vụ Trên Docs Hub (Docs-First Foundation)
+- **Mục tiêu:** Định hình bức tranh sản phẩm, các kênh tương tác và danh mục module chức năng trên Docs Hub *trước khi* tạo repo hay viết code.
+- **Thực thi tuần tự bằng các skill sẵn có:**
+  1. **`/spec`:** Khởi tạo `overview/index.md` (Mục tiêu sản phẩm, Bối cảnh, Phạm vi In/Out) và các miền nghiệp vụ (`overview/operational-areas/<slug>.md`).
+  2. **`/spec`:** Định nghĩa các bề mặt tương tác của người dùng / client (`surfaces/<surface>/index.md`, ví dụ: `admin`, `portal`, `mobile`, `api`) kèm vai trò người dùng và đặc thù kênh.
+  3. **`/module`:** Bóc tách danh mục các Module tính năng nghiệp vụ (`{surfaceCode}-{id}`) theo từng surface (`surfaces/<surface>/<module>/index.md`).
+  4. **`/user-flow` & `/spec`:** Vẽ luồng nghiệp vụ người dùng chính (`architecture/03-user-flows/`) và phác thảo đặc tả màn hình / API sơ bộ.
+- **Cột mốc:** Toàn bộ kiến trúc nghiệp vụ và ranh giới domain đã được thống nhất và hiển thị trực quan trên VitePress docs hub.
+
+### 🟢 Chặng 2: Đề Xuất Công Nghệ & Khởi Tạo Repo Theo Surfaces
+- **Mục tiêu:** Dựa trên các Surfaces và Modules đã chốt ở Chặng 1, đề xuất tech stack tối ưu và khởi tạo các repository mã nguồn.
+- **Thực thi kết hợp (Tận dụng `/architecture` + `/init`):**
+  1. **Phân tích yêu cầu kỹ thuật:** Agent đánh giá đặc thù của từng surface từ Chặng 1:
+     - *Admin Surface:* Đề xuất framework dashboard nhanh (ví dụ Vue/Nuxt + Tailwind / PrimeVue / Ant Design, hoặc React/Next + shadcn/ui).
+     - *Customer / Public Surface:* Đề xuất framework SSR thân thiện SEO (ví dụ Nuxt 3, Next.js).
+     - *Backend Core API:* Đề xuất framework xử lý giao dịch cao, bảo mật, queue mạnh mẽ (ví dụ Laravel 11, NestJS, FastAPI, Go Fiber).
+     - *Mobile Surface:* Đề xuất framework đa nền tảng (ví dụ Flutter, React Native).
+  2. **Cổng duyệt tương tác (`AskQuestion`):** Agent trình bày bảng Đề xuất Tech Stack trên modal giao diện chat với phương án đề xuất lên đầu và ô tự nhập tùy biến.
+  3. **Khởi tạo Repo Code:**
+     - Sau khi member xác nhận, hướng dẫn hoặc hỗ trợ chạy lệnh scaffold chính thức (ví dụ: `npx nuxi init <repo>`, `composer create-project laravel/laravel <repo>`, `npm create vite@latest`).
+     - Tự động cập nhật các repo vừa tạo vào `.coSquad/config.json` tại mục `projects` và ánh xạ vào `surfaces`.
+
+### 🟢 Chặng 3: Nạp Adapter & Common Chuẩn Hóa Theo Công Nghệ
+- **Mục tiêu:** Khi các repo code và công nghệ đã được chốt trong `config.json`, nạp đúng các adapter và quy tắc common tương ứng với công nghệ đó.
+- **Thực thi tuần tự (Tận dụng `/build-templates`, `/common`, `/build-env`):**
+  1. **`/build-templates` (hoặc `coSquad build-template-code` / `coSquad add`):** Nạp bộ template adapter vào `.coSquad/adapters/<project_id>/` chuẩn khớp với công nghệ đã chọn (ví dụ adapter Laravel cho backend, adapter Nuxt cho frontend).
+  2. **`/common`:** Khởi tạo bộ quy tắc Common UX/UI, tokens giao diện và mẫu thiết kế backend tương thích với stack đang dùng.
+  3. **`/build-env`:** Tự động sinh `docker/docker-compose.yml`, `docker/.env` và định tuyến Central Gateway khớp với các service vừa khởi tạo.
+- **[HOÀN TẤT]** Dự án Greenfield được thiết lập bài bản từ tài liệu, cấu trúc repo, templates adapter tới môi trường dev local đang chạy!
+
+---
+
+## 2.1. Khảo cổ Kiến trúc Repository & Phân Tách Surfaces (Brownfield)
+
+> [!CRITICAL]
+> **TUYỆT ĐỐI KHÔNG ĐOÁN MÒ HOẶC HỎI SƠ SÀI VỀ SURFACES VÀ REPO TOPOLOGY:**
+> - Trong thực tế các hệ thống enterprise lớn, các surfaces **KHÔNG HỀ gộp chung trong 1 repo**, mà được tách thành **nhiều Git repositories độc lập (Multi-Repo Architecture)**, ví dụ: repo `admin-portal` riêng, repo `seller-web` riêng, repo `customer-mobile` riêng, và repo `core-backend-api` riêng!
+> - Ở các dự án khác, mã nguồn có thể nằm trong một **Monorepo** (`apps/admin`, `apps/seller`, `packages/shared`) hoặc một **Single Codebase Monolith** được phân tách role thông qua tiền tố routing (`/admin`, `/seller`).
+> - Agent **TUYỆT ĐỐI KHÔNG** hỏi qua loa sơ sài một câu. Agent PHẢI thực hiện rà quét nhận diện topology và tiến hành phỏng vấn kiến trúc bài bản với Member.
+
+### A. Nhận Diện Kiến Trúc Workspace & Repository
+Agent quét cây thư mục và các dấu hiệu Git (`.git/`, submodules, `packages/`, `apps/`, workspace manifests) để xác định topology:
+1. **Multi-Repo Architecture (Tách Repo Độc Lập theo Role / Surface):**
+   - Các repositories được clone độc lập dưới dạng thư mục con hoặc ngang cấp trong workspace (ví dụ: `repos/admin-web/`, `repos/buyer-web/`, `repos/backend-api/`).
+   - Ranh giới vật lý cô lập 100% surface, loại bỏ hoàn toàn nguy cơ vô tình làm bẩn hoặc phụ thuộc chéo.
+2. **Monorepo Architecture (Chung 1 Repo với nhiều Packages / Apps):**
+   - Root chứa cấu hình workspace (`pnpm-workspace.yaml`, `lerna.json`, `turbo.json`, `nx.json`).
+   - Mỗi surface nằm ở một thư mục con riêng biệt (ví dụ: `apps/admin-portal/`, `apps/buyer-app/`, `services/order-api/`).
+3. **Single Codebase Monolith (1 Codebase duy nhất):**
+   - Một repository duy nhất, việc phân tách surface và quyền hạn được quản lý bằng tiền tố route (`/admin/*`, `/seller/*`), namespace controller và layout templates.
+
+### B. Chiến Lược Phân Tách Surfaces
+Agent phân tích bảng route, middleware phân quyền, auth guards và thư mục views để nhận diện chiến lược phân tách:
+1. **Phân tách theo Roles / Phân Quyền (Khuyến nghị cho SaaS & Multi-Tenant):**
+   - Phân tách theo **User Persona & Ranh Giới Quyền Hạn**:
+     - `admin` (`ADM`): Cổng Quản Trị Hệ Thống / Vận Hành (Super-Admin / Operations)
+     - `merchant` / `seller` (`MER` / `SLR`): Cổng Đối Tác Bán Hàng / Quản Lý Shop
+     - `customer` / `buyer` (`CUS` / `BUY`): Storefront / Cổng Khách Hàng Cuối
+     - `staff` / `operator` (`STF`): Cổng Nhân Viên Kho / Vận Chuyển / Hỗ Trợ
+     - `partner` (`PRT`): Cổng Tích Hợp B2B / Đại Lý
+2. **Phân tách theo Kênh / Nền Tảng Thiết Bị (Channel / Platform):**
+   - Phân tách theo **Thiết Bị & Nền Tảng Client**:
+     - `web-portal` (`WEB`), `mobile-app` (`APP`), `pos-terminal` (`POS`), `api-gateway` (`GW`)
+3. **Kết Hợp Hybrid (Role + Channel):**
+   - Ví dụ: `admin-web` (`ADM`), `merchant-web` (`MER`), `customer-mobile` (`CUS-MOB`)
+
+### C. Quy Trình Phỏng Vấn Tương Tác Với Member (`AskQuestion` Modal)
+Agent **TUYỆT ĐỐI KHÔNG** tự ý đoán mò. Agent PHẢI hỏi Member thông qua modal tương tác:
+
+- **Câu hỏi 1 — Kiến trúc Repository:**
+  - *Câu hỏi:* `Workspace này được tổ chức theo kiến trúc Repository nào?`
+  - *Lựa chọn 1 (Khuyến nghị nếu thấy nhiều repo):* `(Recommended) Multi-Repo Architecture [Các surfaces và backend nằm ở các Git repo độc lập riêng biệt]`
+  - *Lựa chọn 2 (Khuyến nghị nếu thấy workspace manifest):* `(Recommended) Monorepo Architecture [Chung 1 Git repo, phân tách theo thư mục apps/*, packages/*]`
+  - *Lựa chọn 3:* `Single Codebase Monolith [1 repo duy nhất, phân tách role theo route prefix và namespace controller]`
+
+- **Câu hỏi 2 — Chiến Lược Phân Tách Surfaces:**
+  - *Câu hỏi:* `Dự án phân tách các Surfaces theo chiến lược nào?`
+  - *Lựa chọn 1 (Khuyến nghị):* `(Recommended) Phân tách theo Roles / Phân quyền người dùng [admin (ADM), merchant/seller (SLR), customer/buyer (CUS), staff (STF)]`
+  - *Lựa chọn 2:* `Phân tách theo Kênh / Nền tảng thiết bị [web-portal (WEB), mobile-app (APP), pos (POS), open-api (API)]`
+  - *Lựa chọn 3:* `Kết hợp Hybrid [Role + Channel, ví dụ: admin-web, merchant-web, customer-mobile]`
+
+### D. Chuẩn Hóa Cấu Trúc Lưu Trữ Trong `.coSquad/config.json`
+Sau khi Member duyệt phương án, Agent **PHẢI ghi trực tiếp cấu hình chi tiết, rõ ràng vào `.coSquad/config.json`**:
+
+```json
+{
+  "type": "Workspace",
+  "topology": "multi-repo", // "multi-repo" | "monorepo" | "single-repo"
+  "projects": {
+    "admin-fe": {
+      "path": "repos/admin-web",
+      "role": "frontend",
+      "technology": "react-vite",
+      "repoUrl": "git@github.com:org/admin-web.git"
+    },
+    "seller-fe": {
+      "path": "repos/seller-web",
+      "role": "frontend",
+      "technology": "vue-nuxt",
+      "repoUrl": "git@github.com:org/seller-web.git"
+    },
+    "core-be": {
+      "path": "repos/core-api",
+      "role": "backend",
+      "technology": "laravel",
+      "repoUrl": "git@github.com:org/core-api.git"
+    }
+  },
+  "surfaces": {
+    "admin": {
+      "surfaceCode": "ADM",
+      "name": "Operations Admin Portal",
+      "partitionDimension": "role-based",
+      "targetRole": "System Administrator & Operations Staff",
+      "channel": "web",
+      "routePrefix": "/admin",
+      "projects": {
+        "frontend": "admin-fe",
+        "backend": "core-be"
+      },
+      "sourcePaths": {
+        "frontendRoot": "repos/admin-web/src",
+        "backendControllers": "repos/core-api/app/Http/Controllers/Admin",
+        "backendRoutes": "repos/core-api/routes/admin.php"
+      }
+    },
+    "seller": {
+      "surfaceCode": "SLR",
+      "name": "Merchant & Seller Portal",
+      "partitionDimension": "role-based",
+      "targetRole": "Vendor & Shop Owner",
+      "channel": "web",
+      "routePrefix": "/seller",
+      "projects": {
+        "frontend": "seller-fe",
+        "backend": "core-be"
+      },
+      "sourcePaths": {
+        "frontendRoot": "repos/seller-web/src",
+        "backendControllers": "repos/core-api/app/Http/Controllers/Seller",
+        "backendRoutes": "repos/core-api/routes/seller.php"
+      }
+    }
+  }
+}
+```
+
+File cấu hình này là nguồn chân lý duy nhất (SSOT) cho toàn bộ các skill tiếp theo (`/trace`, `/legacy`, `/help-plan`, `/spec`, `/module`), giúp mọi agent nắm chính xác repo vật lý, route prefix và ranh giới quyền hạn của từng surface mà không cần đoán mò!
 
 ---
 
@@ -65,6 +214,22 @@ The Agent MUST inspect router configurations, layout templates, view containers,
    - Confirmation dialogs (especially "Delete Flow" or "Confirm Action" dialogs).
    - Form modals vs slide-over drawer panels.
    - Feedback alerts, toast notifications, snackbars, and loading skeletons.
+5. **Quy tắc Ranh giới Màn hình (`W-*`) & Interactive Hỏi ý kiến Member:**
+   - **Ranh giới Cô lập Surface / Phân Quyền Roles (Surface LUÔN ĐỨNG TRÊN URL):**
+     - Khi dự án phân chia surfaces theo roles/portals (ví dụ: `admin`, `merchant`, `buyer`, `staff`), nếu hai roles truy cập cùng một URL path giống hệt nhau (ví dụ: cùng có `/profile`, `/orders`, `/dashboard`, hoặc `/settings`):
+     - **BẮT BUỘC PHẢI TÁCH THÀNH 2 BẢN ĐẶC TẢ SPEC MÀN HÌNH (`W-*`) RIÊNG BIỆT NẰM Ở 2 SURFACE TƯƠNG ỨNG (`surfaces/<surface-1>/...` và `surfaces/<surface-2>/...`)**.
+     - **TUYỆT ĐỐI CẤM GỘP CHUNG GIỮA CÁC SURFACE KHÁC NHAU:** Các surfaces phục vụ các đối tượng người dùng khác nhau, ranh giới quyền hạn RBAC khác nhau, dữ liệu và nghiệp vụ độc lập.
+     - Các quy tắc "Ranh giới theo URL", "Gộp Create + Edit", và "Gộp trùng lặp 70–80%" **CHỈ ÁP DỤNG NỘI BỘ TRONG CÙNG 1 SURFACE**. Màn hình khác Surface không bao giờ được gộp chung.
+   - **Ranh giới chuẩn theo URL (Nội bộ Surface):** Đơn vị cơ sở bên trong 1 surface là URL Route. Form trong page và Table list trong trang danh sách nằm trọn vẹn trong màn hình đó, **TUYỆT ĐỐI KHÔNG tách thành ID riêng**.
+   - **Chỉ tách ID riêng khi:** Là Modal lớn che kín $\ge 80\%$ màn hình hoặc Tabs container lớn toàn trang có $\ge 10$ tabs/items.
+   - **Gộp Create + Edit thành 1 ID duy nhất (`W-*` - Chỉ trong cùng 1 Surface):** Khai báo 2 routes và submit phân nhánh (`create: POST...`, `edit: PUT...`), không tách đôi và không sinh common form.
+   - **Gộp duplicate 70–80% (Chỉ trong cùng 1 Surface):** Gom vào 1 Screen ID, mô tả khác biệt qua interaction cases / scenarios.
+   - **Interactive Hỏi ý kiến Member (`AskQuestion` / Phân tách Plan):**
+     - Agent **TUYỆT ĐỐI KHÔNG** tự ý âm thầm quyết định gộp hay tách mà không hỏi Member.
+     - *Phạm vi nhỏ ($\le 5$ quyết định nội bộ surface):* Bật câu hỏi qua modal `AskQuestion` trên chat UI để Member chọn:
+       - (1) `(Recommended) Gộp chung thành 1 Screen Feature ID (W-*) [Dùng spec đa hình với dual-routes & submit phân nhánh]`
+       - (2) `Tách riêng từng màn hình ID (W-*) độc lập`
+     - *Phạm vi lớn ($\ge 6$ quyết định):* Lập bảng đề xuất gộp/tách trong Implementation Plan (`.plan.md` hoặc `inition-inventory.md`) chia theo Phase để Member review và duyệt tập trung. Việc tách theo Surface là bất biến về mặt kiến trúc, không đưa vào danh sách gộp.
 
 ### B. Backend Layer Deep Scan (Service, API & Middleware Architecture)
 The Agent MUST inspect controllers, router definitions, middleware/guards, service layers, and data models to extract:
@@ -152,7 +317,7 @@ Trong quá trình deep scan, `/init` BẮT BUỘC phải tạo file kế hoạch
 > - **Toàn bộ Commons BẮT BUỘC phải đăng ký vào DSL Registry tại Workspace SSOT** (`.coSquad/registries/design.registry.json` cho FE, `.coSquad/registries/be-capabilities.registry.json` cho BE).
 > - **Existing Commons (`status: "implemented"`)**: Đăng ký với đường dẫn file code đang chạy (`path`), thẻ DSL (`#ui: <Name>`, `#pattern: <ID>`, `#reuse-api: <ID>`), và file docs spec.
 > - **Duplicate Candidates / Planned Commons (`status: "planned"`)**: **Đăng ký trước trong `/init` với `status: "planned"`** kèm Target Code Path dự kiến trong `shared/`, thẻ DSL (`#pattern: <ID>`, `#ui: <Name>`), và Target Docs Path.
-> - **Tác dụng với DSL**: Giúp `/spec`, `/update-spec` và bộ sinh mã DSL nhận diện được ngay component này để gắn thẻ `#pattern: <ID>`, `#ui: <Name>` mà không bị sinh ra các component tạm `#needs-component` hoặc copy-paste lặp lại. Khi chạy `/common <CMN-ID>` sinh code xong, registry entry sẽ tự động được promote từ `planned` ➔ `implemented`.
+> - **Tác dụng với DSL**: Giúp `/spec`, `/spec` và bộ sinh mã DSL nhận diện được ngay component này để gắn thẻ `#pattern: <ID>`, `#ui: <Name>` mà không bị sinh ra các component tạm `#needs-component` hoặc copy-paste lặp lại. Khi chạy `/common <CMN-ID>` sinh code xong, registry entry sẽ tự động được promote từ `planned` ➔ `implemented`.
 
 #### Cấu trúc & Định dạng chuẩn của `common-plan.md`
 
@@ -307,7 +472,7 @@ Each flow entry MUST include:
 - **ID & Title:** `FLOW-{SURF}-{DOMAIN}-{NN}` (Standardized ID + Descriptive Title)
 - **Tier:** A / B / C
 - **Trigger & Entry Point:** Button click, URL route, webhook event, state change
-- **Surfaces & Modules involved:** e.g., `admin` (`CMP-ADM-ORD-01`), `customer-web` (`CMP-CUS-CART-01`)
+- **Surfaces & Modules involved:** e.g., `admin` (`ADM-01`), `customer-web` (`CUS-01`)
 - **Step Sequence:** Ordered sequence connecting UI screens (`W-*`), API calls (`API-*`), and dialog actions
 - **Branches & Fallbacks:** Error handling, validation failures, role branching
 - **Code Evidence:** Specific files and methods implementing the flow
@@ -323,38 +488,98 @@ This summary MUST be included in the `inition-inventory.md` under a new section 
 
 ---
 
-## 8. Rule: Output Format (`inition-inventory.md`)
+## 8. Chuẩn Output Trực Tiếp Trên Docs Hub (Khử Bỏ `inition-inventory.md`)
 
-The Agent MUST generate `inition-inventory.md` directly at the workspace root using the following structure:
+File monolithic `inition-inventory.md` đã được **loại bỏ hoàn toàn**. Toàn bộ cấu trúc cây thư mục sống trên Docs Hub `surfaces/` và `.coSquad/config.json` là Single Source of Truth (SSOT).
 
+### 8.1. Surface Hub Index (`surfaces/<surface>/index.md`)
+Tuân thủ nghiêm ngặt `_surface-index.template.md` (tiêu đề tiếng Anh, nội dung tiếng Việt):
 ```markdown
-# Core Inition Inventory (Architecture Scan & Common Catalog)
+---
+id: SURF-ADM
+surfaceCode: ADM
+title: "Operations Admin Portal"
+status: active
+contentLocale: vi
+---
 
-> **Scan Date**: YYYY-MM-DD | **Sources Config**: `.coSquad/config.json` | **Common Analysis**: [Full Deep Scan]
+# Surface: Operations Admin Portal
 
-## 1. Surfaces
-- **Admin Portal** (`surfaces/admin`) — `[Role: Operations Admin | Channel: Web SPA]` → Repo: `admin-fe`
-- **Customer Web** (`surfaces/customer-web`) — `[Role: End-Customer | Channel: Web SSR]` → Repo: `customer-fe`
-- **Core Backend API** (`projects/backend-api`) — `[Role: Central API | Channel: REST API]` → Repo: `backend-api`
+## Goals {#goals}
+- Cung cấp cổng quản trị vận hành tập trung cho hệ thống.
 
-## 2. Modules Catalog (`CMP-*`)
-- **CMP-ADM-AUTH-01**: Authentication & Identity Management → Legacy: `admin-fe/src/modules/auth/`
-- **CMP-ADM-ORD-01**: Order Processing & Fulfillment → Legacy: `admin-fe/src/modules/orders/`
+## Background {#background}
+- Đối tượng sử dụng: Quản trị viên hệ thống, Nhân viên vận hành.
 
-## 3. Screens & API Function Inventory (`W-*`, `API-*`)
-### Admin Portal (`surfaces/admin/CMP-ADM-AUTH-01`)
-- **W-ADM-AUTH-01**: Admin Login Screen → `admin-fe/src/pages/Login.tsx`
-- **API-ADM-AUTH-01**: Admin Login & Token Endpoint → `backend-api/src/controllers/AuthController.ts:login`
+## Scope {#scope}
+**In scope:**
+- Quản lý xác thực, người dùng, đơn hàng và danh mục.
+
+**Out of scope:**
+- Cổng khách hàng mua sắm (thuộc customer-web).
+
+## Modules
+| Module | Summary | Notes |
+| --- | --- | --- |
+| `ADM-01` | Phân hệ Xác thực & Phân quyền | Quản lý đăng nhập, RBAC |
+| `ADM-02` | Phân hệ Đơn hàng & Quyết toán | Quản lý vòng đời đơn |
+```
+
+### 8.2. Module Hub Index (`surfaces/<surface>/<module>/index.md`)
+Tuân thủ nghiêm ngặt `_module-index.template.md`:
+```markdown
+---
+id: ADM-02
+title: "Quản lý Đơn hàng & Quyết toán"
+status: active
+contentLocale: vi
+---
+
+# Module: Quản lý Đơn hàng & Quyết toán
+
+## Goals {#goals}
+- Xử lý quy trình duyệt đơn, theo dõi trạng thái giao vận và đối soát quyết toán.
+
+## Scope {#scope}
+**In scope:**
+- Danh sách đơn hàng, tạo/sửa đơn, chi tiết đơn hàng.
+
+**Out of scope:**
+- Thanh toán qua cổng Stripe/VNPAY (gọi qua tích hợp bên ngoài).
+
+## Features overview {#features-overview}
+| Function | Screen / Access flow | Route |
+|---|---|---|
+| `order-list` | [Màn hình Danh sách Đơn hàng] · Menu Sidebar | `/admin/orders` |
+| `order-form` | [Màn hình Tạo & Chỉnh sửa Đơn] · Bấm [Tạo mới] | `/admin/orders/create` |
+| `order-detail` | [Màn hình Chi tiết Đơn] · Bấm xem dòng bản ghi | `/admin/orders/:id` |
+```
+
+### 8.3. Scaffolding Lá Tính Năng (`feature.bundle.yaml`)
+Mỗi tính năng trong bảng `## Features overview` được tạo thư mục lá tương ứng:
+`surfaces/<surface>/<module>/<feature-slug>/feature.bundle.yaml`
+```yaml
+page-id: W-ADM-ORD-01
+title: "Danh sách Đơn hàng"
+summary: "Màn hình danh sách đơn hàng cho Admin vận hành"
+codegen:
+  profile: list
+design:
+  shell:
+    tag: AdminShell
+spec:
+  status: draft
+```
 
 ## 4. User Flows (`FLOW-*`)
 ### A — Cross-surface (org catalog) → `architecture/03-user-flows/`
-- **FLOW-CUS-CHECKOUT-01**: Multi-channel Order & Checkout Flow — Surfaces: `customer-web`, `admin-portal` — CMPs: `CMP-CUS-CART-01`, `CMP-ADM-ORD-01` — Tier: **A**
+- **FLOW-CUS-CHECKOUT-01**: Multi-channel Order & Checkout Flow — Surfaces: `customer-web`, `admin-portal` — Modules: `CUS-01`, `ADM-02` — Tier: **A**
 
 ### B — Shared on one surface → `surfaces/<surface>/user-flows/`
-- **FLOW-ADM-DELETE-01**: Entity Safe Delete & Cascade Confirmation Flow — Surface: `admin-portal` — CMPs: `CMP-ADM-ORD-01` — Tier: **B**
+- **FLOW-ADM-DELETE-01**: Entity Safe Delete & Cascade Confirmation Flow — Surface: `admin-portal` — Modules: `ADM-02` — Tier: **B**
 
-### C — Module / cluster scope → `…/CMP-*/user-flows/`
-- **FLOW-ADM-AUTH-RESET-01**: Password Reset with OTP Flow — Surface: `admin-portal` — CMP: `CMP-ADM-AUTH-01` — Tier: **C**
+### C — Module / cluster scope → `…/<module>/user-flows/`
+- **FLOW-ADM-AUTH-RESET-01**: Password Reset with OTP Flow — Surface: `admin-portal` — Module: `ADM-01` — Tier: **C**
 
 ## 5. Common Catalog & Reconciliation
 ### 5.1 Native Project Commons (Code-First Priority)
@@ -371,8 +596,8 @@ The Agent MUST generate `inition-inventory.md` directly at the workspace root us
   - *Target Docs Path*: `surfaces/admin/common/CMN-UI-003.md`
   - *Safety Boundary*: Chỉ sinh mã nguồn mới. Toàn bộ file evidence giữ nguyên 100%.
 
-### 5.3 Whole Page Duplication Warnings
-- **W-ADM-USR-01 (Create User)** & **W-ADM-USR-02 (Edit User)**: 90% identical → *Recommendation: Consolidate into single Polymorphic Spec `CMP-ADM-USR-FORM`*
+### 5.3 Gộp Create+Edit & Màn hình Duplicate 70–80%
+- **W-ADM-USR-01 (Quản lý người dùng: Thêm & Sửa)**: Gộp từ `CreateUser.vue` và `EditUser.vue` (trùng lặp 70–90%) → *1 Screen Spec duy nhất với 2 route (`/users/create`, `/users/:id/edit`) và submit phân nhánh (`create: POST /api/users`, `edit: PUT /api/users/:id`). Không cần tách 2 ID và không cần tạo common form riêng.*
 
 ### 5.4 Common Recommendations & Gaps
 > Standard enterprise capabilities not found in the codebase.
@@ -412,6 +637,6 @@ The Agent MUST generate `inition-inventory.md` directly at the workspace root us
 - [ ] `common-plan.md` được sinh với kế hoạch chi tiết cho Duplicate Candidates (chuẩn bị sẵn trong shared/ cho tính năng mới/update, không sửa code cũ) và Existing Commons (chỉ viết spec .md).
 - [ ] Chuỗi hỏi tương tác GUI modal (`AskQuestion` cho `build-env`, sau đó đến `AskQuestion` cho `common-plan`) được kích hoạt ngay khi hoàn tất init.
 - [ ] Missing common capabilities flagged with recommendation to use `coSquad add base-common`.
-- [ ] All IDs follow standard format: `CMP-*`, `W-*`, `API-*`, `FLOW-*`, `CMN-UI-*`, `CMN-API-*`, `CMN-DTO-*`.
+- [ ] All IDs follow standard format: `{surfaceCode}-{id}`, `S-*`, `C-API-*`, `FLOW-*`, `G-*`, `C-*`.
 - [ ] Output prose written in `docsProseLocale` and headings in `structureLocale` (per `config.json`).
 

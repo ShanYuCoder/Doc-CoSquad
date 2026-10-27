@@ -31,14 +31,69 @@ Instead of dynamic host inspection, CoSquad embeds **pre-compiled, synthesized e
 
 ---
 
-## 2. Docker Archaeology: Re-using Existing Docker Configurations
+## 2. Docker Archaeology: Re-using Existing Docker Configurations & Service Separation
 
-**[CRITICAL MANDATORY RULE]** Before generating any new Docker configuration, the Agent MUST thoroughly inspect the project repository (e.g., in `local/`, `dev/`, `_docker/`, `prod/`, `docker/` subdirectories):
-1. **Never invent Dockerfiles from scratch** if the codebase already contains an existing `Dockerfile` defining language versions, system dependencies, and PECL extensions (GD, Redis, Swoole, BCMath, Sockets, etc.).
-2. **Re-use or adapt existing Dockerfiles:**
-   - Either point `build.context` directly to the existing project docker folder (e.g., `context: ${PROJECT_WORKSPACE}/backend/_docker/php`).
-   - Or adapt the existing Dockerfile into `docker/php/Dockerfile`: strip out Nginx/Supervisor/DB layers and retain ONLY the application runtime (e.g., PHP-FPM or Swoole).
-3. **Preserve exact extensions & settings:** Match `php.ini`, `fpm-pool.conf` / `www.conf`, and required compilation flags from the project's golden sample.
+> [!CRITICAL]
+> **FIVE STRICT INVARIANTS FOR DOCKER ARCHAEOLOGY & SERVICE TOPOLOGY:**
+> 1. **ZERO VERSION DRIFT (REFERENCE EXTRACTION):** Never invent arbitrary images from scratch when legacy configurations exist across any environment (`local/`, `dev/`, `stg/`, `prod/`, `_docker/`).
+> 2. **FRESH DEDICATED DOCKERFILES (REFERENCE ONLY — ZERO REUSE / ZERO PATH-POINTING):**
+>    - Even when existing Dockerfiles exist or the member explicitly requests to "follow old docker" (`lấy theo docker cũ`), the legacy Docker code is **STRICTLY A TECHNICAL REFERENCE** (to extract exact runtime versions, base OS, system packages, and compiled extensions).
+>    - The Agent **STRICTLY MUST NOT** point `build.dockerfile` to legacy paths (e.g., `dockerfile: local/octane/Dockerfile` or `dockerfile: ../source-code/Dockerfile`), and **MUST NOT** copy or symlink old Dockerfiles as-is.
+>    - The Agent **MUST write brand-new, clean, dedicated Dockerfiles** inside `<workspace>/docker/<service>/Dockerfile` for each custom service that needs building (e.g. `docker/php/Dockerfile`, `docker/octane/Dockerfile`, `docker/api/Dockerfile`).
+> 3. **DECOMPOSE ALL-IN-ONE MONOLITHS (INFRASTRUCTURE DECOMPOSITION):** Decompose infrastructure concerns (Nginx reverse proxy, MySQL, Redis) out of application containers. Delegate Nginx to Central Gateway and DBs to dedicated/shared services. Reusing a legacy Dockerfile directly poses severe risks because legacy setups frequently bundle all services into a single image, violating separation of concerns.
+> 4. **ANTI-CONSOLIDATION & EVIDENCE-BASED SERVICE SEPARATION (PHP/Node/Python/Go):**
+>    - **Never Merge Distinct Application Services:** If a codebase defines separate services across its environments (e.g. PHP `octane` on Swoole :8000 and PHP `php` on FPM :9000; or Node `frontend` and Node `mock-server`; or Python `api` and Python `worker`), the Agent **MUST PRESERVE THEM AS SEPARATE CONTAINERS**. Merging distinct services just because they share a runtime or language is STRICTLY FORBIDDEN.
+>    - **Zero Fabrication (No Arbitrary Over-Splitting):** Do NOT invent phantom `worker` or `scheduler` containers if the codebase already manages them via `supervisord` inside the application container or does not define them.
+> 5. **100% FAITHFUL PRESERVATION OF LEGACY SERVICES:**
+>    - The newly generated `docker/docker-compose.yml` **MUST FAITHFULLY MAINTAIN EVERY SINGLE APPLICATION SERVICE** discovered across the repository's environment directories.
+>    - Preserving service boundaries is a zero-tolerance requirement.
+
+**[CRITICAL MANDATORY RULE] The 3-Tier Priority & Cross-Verification Pipeline ("Vigilance Against Legacy Deceit"):**
+To reliably handle any codebase (whether with existing multi-environment Docker configurations, or zero-Docker / missing-env repositories), the Agent MUST execute this strict 3-tier sequence:
+
+> [!CAUTION]
+> **VIGILANCE AGAINST LEGACY DECEIT ("Phòng Ngừa Bẫy Legacy"):**
+> Never assume `.env.example` or legacy compose files are complete or truthful!
+> - In real-world repositories with legacy Docker setups, `.env.example` frequently omits critical runtime parameters required by active code.
+> - In many repositories, `.env.example` is incomplete, outdated, or stripped of essential variables — tracing `.env.example` blindly guarantees immediate container crash at runtime ("trace theo là tèo").
+> - Legacy teams frequently leave behind technical debt, outdated environment templates, and uncommitted variables. The Agent MUST maintain extreme vigilance and cross-verify every clue with active source code!
+
+1. **Tier 1 (Docker Clues & Architectural Target Analysis):**
+   - Inspect `local/`, `dev/`, `stg/`, `prod/`, `_docker/`, and root `Dockerfile*` / `docker-compose*.yml`.
+   - Analyze target architecture: execution runtimes, exact language/OS versions, system dependencies, PECL extensions, and distinct service boundaries (e.g. `octane` on Swoole :8000 and `php` on FPM :9000).
+   - Decompose all-in-one monoliths (strip Nginx, MySQL) and avoid fabricating phantom workers if `supervisord` already handles background processes.
+2. **Tier 2 (Environment Manifests & Initial Templates):**
+   - Inspect `.env.example`, `.env.dist`, `.env.local.example`, `composer.json`, `package.json`, `pyproject.toml`, `go.mod`.
+   - Gather initial environment keys, default listening ports, and third-party dependencies.
+   - *Vigilance Check:* Treat Tier 2 as an unverified draft, NEVER as ground truth. Tracing `.env.example` blindly without Tier 3 verification guarantees runtime failure.
+3. **Tier 3 (Deep Source Code Cross-Verification — "Phòng Ngừa Bẫy Legacy"):**
+   - Active source code is the ultimate source of truth. The Agent MUST grep and cross-reconcile all runtime environment lookups across all languages (`env()`, `config()`, `process.env.*`, `os.environ.get()`, `os.Getenv()`, `@Value`).
+   - **Universal Backing Infrastructure Taxonomy Matrix:** Dissect framework configurations (`config/*.php`, settings modules) to distinguish internal application constants (pagination, enums, roles) from backing service drivers:
+     - *Relational Databases:* MySQL, PostgreSQL, MariaDB, MS SQL Server, Oracle (`DB_HOST`, `DATABASE_URL`).
+     - *NoSQL & Document / Columnar Stores:* MongoDB, Cassandra, ClickHouse, DynamoDB (`MONGODB_URI`, `CLICKHOUSE_HOST`).
+     - *In-Memory Caches & Key-Value Stores:* Redis, Memcached, KeyDB, Dragonfly, Valkey (`CACHE_STORE`, `REDIS_HOST`, `MEMCACHED_HOST`).
+     - *Message Brokers & Event Streaming:* RabbitMQ (AMQP), Apache Kafka, NATS, Apache Pulsar, ActiveMQ, Beanstalkd, AWS SQS (`RABBITMQ_HOST`, `KAFKA_BROKERS`, `NATS_URL`, `QUEUE_CONNECTION`).
+     - *Full-Text & Vector Search Engines:* Elasticsearch, OpenSearch, Apache Solr, Meilisearch, Typesense, Algolia, Qdrant (`ELASTICSEARCH_HOSTS`, `OPENSEARCH_HOST`, `SOLR_URL`, `MEILISEARCH_HOST`, `TYPESENSE_HOST`, `SCOUT_DRIVER`).
+     - *Realtime, WebSockets & IoT Protocols:* Socket.io, EMQX / Mosquitto (MQTT), Centrifugo, Laravel Reverb, Pusher, native ws (`WS_PORT`, `MQTT_BROKER_URL`, `CENTRIFUGO_API_KEY`, `REVERB_APP_KEY`).
+     - *Object Storage & Cloud Mock:* AWS S3, MinIO, Google Cloud Storage, Azure Blob (`AWS_ENDPOINT`, `AWS_BUCKET`, `S3_ENDPOINT`).
+     - *Email & Notification Sandboxes:* SMTP, Sendgrid, Mailgun, AWS SES (`MAIL_MAILER`, `MAIL_HOST` -> locally simulated by Mailpit).
+   - **Scan for Client SDKs:** `Elasticsearch\Client`, `Solarium\Client`, `Meilisearch\Client`, `PhpAmqpLib\Connection\AMQPStreamConnection`, `Kafka\Producer`, `MongoDB\Client`, `amqplib`, `kafkajs`, `celery`, `pika`, `nats`, `socket.io-client`.
+   - **Auto-Reconcile & Synthesize Missing Parameters:** Automatically append any parameters discovered in code but missing from `.env.example` directly into `docker/.env` and `docker/.env.example` with valid local dev defaults (e.g. `DB_HOST=mysql`, `REDIS_HOST=redis`, `RABBITMQ_HOST=rabbitmq`, `ELASTICSEARCH_HOSTS=http://elasticsearch:9200`, `MAIL_HOST=mailpit`).
+4. **Preserve exact extensions & settings:** Match `php.ini`, `fpm-pool.conf`, and required compilation flags from the project's golden sample.
+5. **Member Clarification Gate (`AskQuestion`) for Ambiguous Ancillary / 3rd-Party Services:**
+   - If the codebase bundles ancillary services (e.g., RabbitMQ, Elasticsearch, Solr, Meilisearch, Kafka, custom background daemons, mock servers) and the Agent cannot definitively categorize them from existing configs:
+   - The Agent **MUST NOT guess or assume silently**.
+   - **Interactive Chat/GUI Modal (NEVER in an MD file):** The Agent **MUST trigger `AskQuestion` directly on the chat UI one question at a time**.
+   - **Recommendation First:** The Agent MUST analyze the codebase context and place the best technical option first, prefixed with `(Recommended)` and a brief rationale (e.g. recommend Gateway for MySQL/Redis; recommend Dedicated Container for RabbitMQ/Elasticsearch/Solr).
+   - **Custom Write-In Support:** Members can select an option or use the default write-in field to provide a custom solution (e.g., skip service, connect to remote staging).
+   - Core options presented: (1) `(Recommended) Dedicated Container in compose`, (2) `Delegate to Central Gateway`, (3) `Bundle inside Application Container via supervisord/entrypoint`.
+5. **Step 2: Mandatory Service Architecture & Separation Confirmation Gate (`AskQuestion`):**
+   - Merely outputting a table in chat is insufficient; the Agent **STRICTLY MUST NOT silently start generating files**.
+   - The Agent **MUST trigger `AskQuestion`** on the chat UI to ask the member to confirm whether discovered services (e.g. `octane`, `php`, `supervisord`, `workers`) should be separated or consolidated:
+     - **Option 1 (Recommended based on analysis):** `"(Recommended) Separate Containers — Maintain distinct containers for each service (e.g. 'octane' on :8000 and 'php' on :9000 with supervisord)"`
+     - **Option 2:** `"Consolidate into Single Container — Merge services into one shared container running under supervisord"`
+     - **Write-in:** Member can enter custom groupings or omit services.
+   - Only after receiving user confirmation may the Agent proceed to file generation.
 
 ### 2.1. Port Resolution Strategy (Across BE, FE, and All Stacks)
 
@@ -126,7 +181,6 @@ GATEWAY_CERTS_DIR=~/.gateway/certs
 ###############################################################################
 BACKEND_HOST=myproject-api.local.com
 FRONTEND_HOST=myproject.local.com
-OCTANE_HOST=myproject-octane.local.com
 REVERB_HOST=myproject-reverb.local.com
 
 ###############################################################################
@@ -209,6 +263,13 @@ x-dev-ca-env: &dev-ca-env
 ```
 - Containers MUST follow the naming pattern: `${PROJECT_NAME:-dev}_${PROJECT_SLUG}_<service>` (e.g., `dev_portal_php_83`, `dev_portal_node`, `dev_portal_octane`, `dev_portal_reverb`).
 
+> [!CRITICAL] MANDATORY HOST-ALIGNED VOLUME PERMISSIONS (ZERO ROOT TAKEOVER)
+> Following proven enterprise golden standards (such as `~/docker-webbeds` and `~/docker-external`):
+> - **EVERY service mounting host source code volumes** (`frontend-node`, `octane`, `php`, `backend-worker`, Python, etc.) **MUST explicitly apply `user: "${HOST_UID:-1000}:${HOST_GID:-1000}"`** (via `<<: *dev-user`).
+> - Both `docker/.env` and `docker/.env.example` **MUST** declare `HOST_UID=1000` and `HOST_GID=1000`.
+> - **Why this is critical:** When containers run without host UID/GID mapping, any files created by the application (framework cache, logs, views, uploaded files, sockets, Vite temp caches) are created with `root:root` ownership on the host filesystem. This locks out the host user and breaks git/IDE operations.
+> - **Dockerfile Rule:** In custom Dockerfiles (e.g. PHP), system runtime directories (`/run`, `/var/log`, `/var/run/supervisor`, `/tmp`, `/tmp/composer`) MUST be prepared with open permissions (`chmod -R 777 /run /var/log /tmp`) so that non-root `HOST_UID:HOST_GID` processes can write sockets, logs, and pid files without permission errors. **STRICTLY FORBIDDEN** to execute `chown -R www-data:www-data` on mounted workspace paths.
+
 ### B. Shared Gateway Network
 All services MUST connect to the gateway's external shared network configured via variable:
 ```yaml
@@ -227,6 +288,7 @@ Every service definition in compose specifies:
 - **NO custom Dockerfile:** Do NOT create a `node/Dockerfile`. Directly use the official Node LTS image:
   ```yaml
   frontend-node:
+    <<: *dev-user
     image: ${NODE_IMAGE:-node:20-bookworm} # or node:18.19-bookworm matching project
     container_name: ${PROJECT_NAME:-dev}_${PROJECT_SLUG}_frontend_node
     working_dir: /workspace/${FRONTEND_REPO}
@@ -247,34 +309,41 @@ Every service definition in compose specifies:
     `- ${PROJECT_WORKSPACE}/${FRONTEND_REPO}:/workspace/${FRONTEND_REPO}`
   - Mounting the whole source directory already includes `node_modules`. This keeps host IDE and container 100% in sync, eliminates file lock issues, and avoids useless named volumes.
 
-### D. Package Manager & Port Binding in `frontend-dev.sh`
-The wrapper script `docker/node/frontend-dev.sh` MUST detect and support the project's actual package manager (`pnpm`, `yarn`, `npm`) and bind to the resolved port (`${FRONTEND_DEV_PORT:-3000}`):
+### D. Realtime Hosting & Command Discipline in `frontend-dev.sh`
+> [!CRITICAL] ZERO AUTO-PACKAGE INSTALLATION IN DOCKER
+> - **Docker Container Command is Strictly for Realtime Code Compiling & Hosting:**
+>   - Frontend container runs live reload / dev server hosting: `pnpm run dev -- --host 0.0.0.0 --port "$PORT"` (or `npm run dev`, `yarn dev`, `vite`, `serve`).
+> - **Package Installation is Run on the Host by the Developer:**
+>   - All package installations (`npm i`, `pnpm i`, `yarn install`, `composer install`, `pip install`) are the developer's responsibility and MUST be executed directly on their host machine.
+>   - **STRICTLY FORBIDDEN** to auto-run `npm install`, `pnpm install`, or `composer install` inside Docker container startup scripts!
+>   - If `node_modules` is not detected, `frontend-dev.sh` outputs a clear warning instructing the developer to run `pnpm install` / `npm install` on their host machine, and waits for `node_modules` to appear before launching the dev server.
+
+The wrapper script `docker/node/frontend-dev.sh` MUST follow this exact pattern:
 ```sh
 #!/bin/sh
 set -eu
-cd /workspace/${FRONTEND_REPO}
+cd "/workspace/${FRONTEND_REPO}"
 
 PORT="${FRONTEND_DEV_PORT:-3000}"
 
-# Auto-detect package manager from lockfiles
+# 1. Dependency Pre-Flight Check (Zero Auto-Install inside container)
+# Package installations (npm i, pnpm i, yarn) MUST be run by the developer outside on the host machine.
+if [ ! -d node_modules ]; then
+  echo "[WARNING] 'node_modules' directory not found in /workspace/${FRONTEND_REPO}."
+  echo "[ACTION REQUIRED] Please run 'pnpm install' (or 'npm install' / 'yarn install') on your host machine."
+  echo "[WAITING] Container is waiting for node_modules before starting dev server..."
+  while [ ! -d node_modules ]; do
+    sleep 3
+  done
+  echo "[INFO] node_modules detected. Starting realtime hosting..."
+fi
+
+# 2. Realtime Code Compiling & Dev Hosting Command
 if [ -f pnpm-lock.yaml ]; then
-  if ! command -v pnpm >/dev/null 2>&1; then
-    corepack enable
-    corepack prepare pnpm@latest --activate
-  fi
-  if [ ! -d node_modules ]; then
-    pnpm install
-  fi
   exec pnpm run dev -- --host 0.0.0.0 --port "$PORT"
 elif [ -f yarn.lock ]; then
-  if [ ! -d node_modules ]; then
-    yarn install
-  fi
   exec yarn dev --host 0.0.0.0 --port "$PORT"
 else
-  if [ ! -d node_modules ]; then
-    npm install
-  fi
   exec npm run dev -- --host 0.0.0.0 --port "$PORT"
 fi
 ```
@@ -298,9 +367,9 @@ Supplementary workers and project-specific services follow these strict rules:
      - Schedule: `command: ["php", "artisan", "schedule:work"]`
    - **Internal-Only:** These workers run background CLI tasks and do NOT receive HTTP traffic. NEVER expose them to Central Gateway or `router.txt`.
 
-3. **Project-Unique Datastores (e.g., Meilisearch):**
-   - If the codebase strictly requires a datastore NOT present in Gateway (e.g., `meilisearch`), declare it internally in project compose using the official image directly (`image: getmeili/meilisearch:v1.15.2`). **DO NOT create a custom Dockerfile!**
-   - Backend communicates internally via Docker network alias (e.g., `http://meilisearch:7700`). Do NOT expose to Central Gateway.
+3. **Project-Unique Datastores, Search Engines & Brokers:**
+   - If the codebase strictly requires a backing service NOT present in Gateway (e.g., Elasticsearch, Apache Solr, RabbitMQ, Kafka, Meilisearch, MongoDB), declare it internally in project compose using the official image directly (e.g., `rabbitmq:3-management-alpine`, `elasticsearch:8.13.0`, `solr:9`). **DO NOT create a custom Dockerfile!**
+   - Backend communicates internally via Docker network alias (e.g., `http://elasticsearch:9200`, `rabbitmq:5672`). Do NOT expose internal ports to Central Gateway.
 
 4. **Laravel Octane / Reverb (if present):**
    - If Octane is used as the primary HTTP server instead of PHP-FPM, it serves API traffic on port 8000 (`role: "node"` in `router.txt`).
@@ -310,12 +379,22 @@ Supplementary workers and project-specific services follow these strict rules:
 
 ## 6. Gateway Routing Configuration (`docker/router.txt`)
 
+> [!CRITICAL] ROUTER.TXT PURPOSE: CENTRAL GATEWAY JSON SNIPPET ONLY — NEVER A HOST FILE
+> - **The single purpose of `docker/router.txt` is a JSON snippet to paste directly into Central Gateway (`routes.json` under `projects.<slug>`)!**
+> - **STRICTLY FORBIDDEN to convert or generate `router.txt` as a host mapping file (e.g. `/etc/hosts` syntax, `127.0.0.1 domain`, or `domain -> container:port`).**
+> - When referencing enterprise projects (`~/docker-webbeds`, `~/docker-external`), **ONLY reference their Docker container conventions** (host user permission mapping `HOST_UID:HOST_GID`, volume mounting, container realtime compiling/hosting commands). **The canonical Gateway JSON schema of `router.txt` MUST BE 100% PRESERVED.**
+
 The Central Gateway (`routes.json`) ONLY needs routing for **public entry points accessible from the developer's browser**:
-- **Backend API (FastCGI):** 1 route pointing to the PHP-FPM container (`role: "web"` on port 9000, with `docroot`).
-- **Backend API (HTTP / Octane):** 1 route pointing to Octane (`role: "node"`, port 8000).
-- **Frontend Web:** 1 route pointing to the Node dev server (`role: "node"`, port matching `${FRONTEND_DEV_PORT}`, e.g. 3000, 5173, etc.).
-- **WebSocket (Reverb):** 1 route pointing to Reverb (`role: "node"`, port 6001).
-- **NEVER include internal background services** (Queue, Schedule, Meilisearch, Redis, DB) in `router.txt`!
+- **Backend API:** 1 route pointing to whichever container serves the API (`role: "node"` on port 8000 if HTTP/Octane; or `role: "web"` on port 9000 with `docroot` if PHP-FPM FastCGI).
+- **Frontend Web:** 1 route pointing to the Node dev server (`role: "node"`, port matching `${FRONTEND_DEV_PORT}`, e.g. 5173, 3000, etc.).
+- **WebSocket / Realtime:** 1 route pointing to WebSocket container (`role: "node"`, port 6001).
+- **NEVER include internal background services** (Queue workers, Schedulers, Message Brokers, Search Engines, Redis, DB) in `router.txt`!
+
+> [!CRITICAL] ROUTER HOSTNAME VS CONTAINER SEPARATION INVARIANT
+> - **The `host` field represents the external domain accessed by the browser/client applications** (e.g., `${PROJECT_SLUG}.local.com` for Frontend, `${PROJECT_SLUG}-api.local.com` for Backend API, `${PROJECT_SLUG}-reverb.local.com` for WebSocket).
+> - **STRICTLY FORBIDDEN to append container/technology suffixes (such as `-fpm`, `-octane`, `-node`, `-swoole`) to the `host` domain!**
+> - Separating Docker containers in `docker-compose.yml` is an internal compose concern. It **MUST NOT** rename or pollute the public domain names in `router.txt`.
+> - Whichever container runs the API service (e.g. `octane` or `php`), the `host` remains identically `${PROJECT_SLUG}-api.local.com`.
 
 ### Canonical `docker/router.txt` Format (Scoped by Workspace Key)
 
@@ -326,19 +405,13 @@ The snippet MUST be keyed by the workspace slug (e.g., `"portal"`), allowing dir
   "external": true,
   "sites": [
     {
-      "host": "${PROJECT_SLUG}-api.local.com",
-      "role": "web",
-      "container": "${PROJECT_NAME:-dev}_${PROJECT_SLUG}_php_83",
-      "docroot": "/var/www/${PROJECT_SLUG}_be/public"
-    },
-    {
       "host": "${PROJECT_SLUG}.local.com",
       "role": "node",
-      "container": "${PROJECT_NAME:-dev}_${PROJECT_SLUG}_node",
-      "port": 3000
+      "container": "${PROJECT_NAME:-dev}_${PROJECT_SLUG}_frontend_node",
+      "port": 5173
     },
     {
-      "host": "${PROJECT_SLUG}-octane.local.com",
+      "host": "${PROJECT_SLUG}-api.local.com",
       "role": "node",
       "container": "${PROJECT_NAME:-dev}_${PROJECT_SLUG}_octane",
       "port": 8000
@@ -346,12 +419,13 @@ The snippet MUST be keyed by the workspace slug (e.g., `"portal"`), allowing dir
     {
       "host": "${PROJECT_SLUG}-reverb.local.com",
       "role": "node",
-      "container": "${PROJECT_NAME:-dev}_${PROJECT_SLUG}_reverb",
+      "container": "${PROJECT_NAME:-dev}_${PROJECT_SLUG}_php",
       "port": 6001
     }
   ]
 }
 ```
+*(Note: If the API service is served by PHP-FPM FastCGI instead of Octane, point `container` to `${PROJECT_NAME:-dev}_${PROJECT_SLUG}_php` with `role: "web"` and `docroot: "/var/www/html/public"`, while keeping `host` as `${PROJECT_SLUG}-api.local.com`).*
 
 *Role Schema Specification:*
 - `role: "web"`: Requires `"container"` and `"docroot"`. Configures Nginx FastCGI pass to PHP-FPM container on port 9000.

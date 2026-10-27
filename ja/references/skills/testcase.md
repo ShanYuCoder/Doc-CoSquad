@@ -18,8 +18,8 @@
 ## 説明・役割 (Description)
 - `*.bundle.yaml` を読み込み、tests-docs ハブに Schema v2 準拠の `TC-*.yaml` テスト計画を作成。受入基準 AC への完全な追跡性を保証。
 ## 関連スキル (Related Skills)
-- **Preceding:** `/spec`, `/grill-bqa`.
-- **Subsequent:** `/grill-testcase` → `coSquad testcase:gen` → `/test`.
+- **Preceding:** `/spec`, `/grill`.
+- **Subsequent:** `/grill` → `coSquad testcase:gen` → `/test`.
 
 ---
 

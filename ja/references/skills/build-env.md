@@ -34,11 +34,12 @@ CoSquad は、**Linux、macOS、Windows/WSL** を使用する世界中の開発�
 ## 2. Docker 考古学: 既存 Docker 構成の再利用
 
 **[必須遵守ルール]** 新しい Docker 構成を生成する前に、Agent はプロジェクトリポジトリ（例: `local/`, `dev/`, `_docker/`, `prod/`, `docker/` サブディレクトリ）を徹底的に調査しなければなりません：
-1. **Dockerfile をゼロから捏造しない：** 言語バージョン、システム依存関係、PECL 拡張（GD, Redis, Swoole, BCMath, Sockets 等）が定義された既存の `Dockerfile` が存在する場合、それを最優先で再利用する。
-2. **既存 Dockerfile の再利用または適応：**
-   - `build.context` を既存の Docker フォルダに直接向ける（例: `context: ${PROJECT_WORKSPACE}/backend/_docker/php`）。
-   - または、既存の Dockerfile を `docker/php/Dockerfile` に適応させる：Nginx/Supervisor/DB レイヤーを排除し、純粋なアプリケーションランタイム（PHP-FPM または Swoole）のみを抽出する。
-3. **拡張機能と設定の維持：** プロジェクトのゴールデンサンプルから `php.ini`, `fpm-pool.conf` / `www.conf`, および必要なビルドフラグを同期させる。
+1. **ランタイムバージョン・拡張機能の調査（参考情報としてのみ使用）：** 既存の `Dockerfile` から言語バージョン、システムパッケージ、コンパイル済み拡張（GD, Redis, Swoole, BCMath, Sockets 等）を正確に抽出する。
+2. **専用 Dockerfile の新規作成（既存 Dockerfile の直接再利用・パス指定の厳禁）：**
+   - メンバーが「既存 Docker に従う」と指定した場合であっても、既存の Docker 構成は技術的な参考情報に留めなければなりません。
+   - `build.context` や `dockerfile` を既存リポジトリのパス（例: `local/octane/Dockerfile` や `_docker/php`）に直接向けることは**厳禁**です（既存 Dockerfile がモノリス構成になっているリスクを排除するため）。
+   - 各サービスごとに、独立かつクリーンな専用 Dockerfile を `<workspace>/docker/<service>/Dockerfile` に新規作成しなければなりません。
+3. **拡張機能と設定の同期：** プロジェクトの既存設定から `php.ini`, `fpm-pool.conf` / `www.conf`, および必要なビルド設定を同期させる。
 
 ### 2.1. ポート解決および割り当て戦略 (BE、FE および全言語リポジトリ対応)
 
@@ -208,6 +209,13 @@ x-dev-ca-env: &dev-ca-env
 ```
 - コンテナ名は命名パターンに準拠：`${PROJECT_NAME:-dev}_${PROJECT_SLUG}_<service>`（例: `dev_portal_php_83`, `dev_portal_node`, `dev_portal_octane`, `dev_portal_reverb`）。
 
+> [!CRITICAL] ホストユーザー権限（HOST_UID:HOST_GID）の同期とルート化防止
+> `~/docker-webbeds` および `~/docker-external` の実証済み標準設計に基づき：
+> - **ホストソースコードをマウントするすべてのサービス**（`frontend-node`, `octane`, `php`, `backend-worker` 等）は、**必ず `user: "${HOST_UID:-1000}:${HOST_GID:-1000}"`（アンカー `<<: *dev-user` 経由）を明示指定しなければなりません**。
+> - `docker/.env` および `docker/.env.example` の両方で `HOST_UID=1000` と `HOST_GID=1000` を宣言します。
+> - **重大な理由：** コンテナが root 権限で実行されると、アプリケーションが生成したキャッシュやログがホスト側で `root:root` 所有権となってしまい、ホストユーザーが IDE で編集・削除できなくなります。
+> - **Dockerfile 規則：** カスタム Dockerfile（例: PHP）では、`/run`, `/var/log`, `/var/run/supervisor`, `/tmp` に書き込み権限（`chmod -R 777 /run /var/log /tmp`）を付与し、非 root の `HOST_UID:HOST_GID` プロセスがソケットやログを正常に作成できるようにします。マウントパスに対する `chown -R www-data:www-data` の実行は厳禁です。
+
 ### B. 共有 Gateway ネットワーク
 すべてのサービスは環境変数を通じて Gateway の外部ネットワークに接続：
 ```yaml
@@ -226,6 +234,7 @@ Compose の各サービス定義：
 - **カスタム Dockerfile は不要：** 公式の Node LTS イメージを直接使用：
   ```yaml
   frontend-node:
+    <<: *dev-user
     image: ${NODE_IMAGE:-node:20-bookworm} # またはプロジェクトに応じた node:18.19-bookworm
     container_name: ${PROJECT_NAME:-dev}_${PROJECT_SLUG}_frontend_node
     working_dir: /workspace/${FRONTEND_REPO}
@@ -246,34 +255,41 @@ Compose の各サービス定義：
     `- ${PROJECT_WORKSPACE}/${FRONTEND_REPO}:/workspace/${FRONTEND_REPO}`
   - ソース全体のマウントに `node_modules` が含まれるため、ホスト IDE とコンテナが 100% 同期し、ファイルロックの問題を解消し、不要なボリュームの残留を防ぎます。
 
-### D. `frontend-dev.sh` によるパッケージマネージャー認識とポートバインド
-スクリプト `docker/node/frontend-dev.sh` は、プロジェクトが実際に使用しているパッケージマネージャー（`pnpm`, `yarn`, `npm`）を自動認識し、解決されたポート（`${FRONTEND_DEV_PORT:-3000}`）にバインドして起動します：
+### D. コンテナ内コマンド規律：リアルタイムホスティング・ビルド専用（自動 install 厳禁）
+> [!CRITICAL] コンテナ内でのパッケージ自動インストールは厳禁
+> - **コンテナの `command:` はリアルタイムコンパイルおよび開発サーバーのホスティング（Dev Server）専用：**
+>   - フロントエンドはライブリロード開発サーバーを実行：`pnpm run dev -- --host 0.0.0.0 --port "$PORT"`（または `npm run dev`, `yarn dev`, `vite`, `serve`）。
+> - **パッケージのインストールは開発者がホスト側で実行：**
+>   - パッケージインストール操作（`npm i`, `pnpm i`, `yarn install`, `composer install`）は開発者の責任であり、必ずホストマシン上で直接実行します。
+>   - **コンテナ起動スクリプト内で `npm install` や `pnpm install` を自動実行することは厳禁です！**
+>   - `node_modules` が検出されない場合、スクリプトはホスト側でインストールを実行するよう明確な警告を出力し、ディレクトリの出現を待機します。
+
+スクリプト `docker/node/frontend-dev.sh` は以下の正規パターンに従わなければなりません：
 ```sh
 #!/bin/sh
 set -eu
-cd /workspace/${FRONTEND_REPO}
+cd "/workspace/${FRONTEND_REPO}"
 
 PORT="${FRONTEND_DEV_PORT:-3000}"
 
-# Lockfile からパッケージマネージャーを自動認識
+# 1. 依存関係の前提チェック（コンテナ内自動インストールは行わない）
+# パッケージインストールは開発者がホストマシンで実行する
+if [ ! -d node_modules ]; then
+  echo "[WARNING] /workspace/${FRONTEND_REPO} に 'node_modules' が見つかりません。"
+  echo "[ACTION REQUIRED] ホストマシン上で 'pnpm install'（または 'npm install'）を実行してください。"
+  echo "[WAITING] node_modules が配置されるまで待機しています..."
+  while [ ! -d node_modules ]; do
+    sleep 3
+  done
+  echo "[INFO] node_modules を確認しました。リアルタイムホスティングを開始します..."
+fi
+
+# 2. リアルタイムホスティング実行コマンド
 if [ -f pnpm-lock.yaml ]; then
-  if ! command -v pnpm >/dev/null 2>&1; then
-    corepack enable
-    corepack prepare pnpm@latest --activate
-  fi
-  if [ ! -d node_modules ]; then
-    pnpm install
-  fi
   exec pnpm run dev -- --host 0.0.0.0 --port "$PORT"
 elif [ -f yarn.lock ]; then
-  if [ ! -d node_modules ]; then
-    yarn install
-  fi
   exec yarn dev --host 0.0.0.0 --port "$PORT"
 else
-  if [ ! -d node_modules ]; then
-    npm install
-  fi
   exec npm run dev -- --host 0.0.0.0 --port "$PORT"
 fi
 ```
@@ -295,9 +311,9 @@ fi
      - Schedule: `command: ["php", "artisan", "schedule:work"]`
    - **内部実行限定：** バックグラウンド CLI のみを実行し HTTP トラフィックを受け付けないため、Gateway や `router.txt` に公開してはなりません。
 
-3. **プロジェクト固有のデータストア（例: Meilisearch）：**
-   - Gateway に存在しないサービス（例: `meilisearch`）が必要な場合、公式イメージを直接 Compose に宣言（`image: getmeili/meilisearch:v1.15.2`）。**カスタム Dockerfile は不要**。
-   - バックエンドとは Docker ネットワークのエイリアス（例: `http://meilisearch:7700`）で内部通信し、Gateway には公開しません。
+3. **プロジェクト固有のデータストア・検索エンジン・メッセージブローカー（例: Elasticsearch, Solr, RabbitMQ, Kafka, MongoDB）：**
+   - Gateway に存在しないサービス（例: `rabbitmq`, `elasticsearch`, `solr` 等）が必要な場合、公式イメージを直接 Compose に宣言（例: `rabbitmq:3-management-alpine`, `elasticsearch:8.13.0`）。**カスタム Dockerfile は不要**。
+   - バックエンドとは Docker ネットワークのエイリアス（例: `http://elasticsearch:9200`, `rabbitmq:5672`）で内部通信し、Gateway には公開しません。
 
 4. **Laravel Octane / Reverb（存在する場合）：**
    - PHP-FPM の代わりに Octane を使用して HTTP API を提供する場合、ポート 8000 でリッスン（`router.txt` では `role: "node"`）。
@@ -307,12 +323,17 @@ fi
 
 ## 6. Gateway ルーティング構成 (`docker/router.txt`)
 
+> [!CRITICAL] ROUTER.TXT の唯一の目的：CENTRAL GATEWAY JSON スニペット（HOST ファイルへの変換は厳禁）
+> - **`docker/router.txt` の唯一の目的は、Central Gateway の `routes.json`（`projects.<slug>` 配下）に直接コピー＆ペーストするための JSON スニペットです。**
+> - **ホストマッピングファイル形式（`/etc/hosts` 構文、`127.0.0.1 domain`、`domain -> container:port` など）への変換や出力は厳禁です。**
+> - 既存プロジェクト（`~/docker-webbeds`、`~/docker-external`）を参照する際、**参照対象は Docker コンテナ設計（`HOST_UID:HOST_GID` の権限設計、マウント構成、リアルタイム起動コマンド）に限定されます**。**`router.txt` の正規 Gateway JSON スキーマは 100% 保持しなければなりません。**
+
 Central Gateway (`routes.json`) には、**開発者のブラウザから直接アクセスするパブリックエントリポイント**のみを定義します：
 - **バックエンド API (FastCGI)：** PHP-FPM コンテナに向けた 1 つのルート（`role: "web"`, ポート 9000, `docroot` 必須）。
 - **バックエンド API (HTTP / Octane)：** Octane に向けた 1 つのルート（`role: "node"`, ポート 8000）。
 - **フロントエンド Web：** Node 開発サーバーに向けた 1 つのルート（`role: "node"`, ポートは `${FRONTEND_DEV_PORT}` と一致、例: 3000, 5173 等）。
 - **WebSocket (Reverb)：** Reverb に向けた 1 つのルート（`role: "node"`, ポート 6001）。
-- **内部補助サービス**（Queue, Schedule, Meilisearch, Redis, DB）を `router.txt` に含めることは厳禁！
+- **内部補助サービス**（Queue, Schedule, Message Broker, Search Engine, Redis, DB）を `router.txt` に含めることは厳禁！
 
 ### ワークスペース Key 付きの正規 `docker/router.txt` フォーマット
 

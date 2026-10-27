@@ -27,7 +27,7 @@ CoSquad 不仅支持**工作区脚手架物化**（通过 `coSquad init` / `harn
 ```bash
 agy plugin install https://github.com/ShanYuCoder/CoSquad
 ```
-Antigravity 将自动载入所有核心技能（`/help-plan`, `/spec`, `/update-spec`, `/grill`, `/trace` 等）并提供提示词补全。
+Antigravity 将自动载入所有核心技能（`/help-plan`, `/spec`, `/spec`, `/grill`, `/trace` 等）并提供提示词补全。
 
 ### Claude Code
 添加 CoSquad 市场源并安装：

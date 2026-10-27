@@ -9,7 +9,7 @@
 
 ## 入力 (Input)
 - Legacy codebase directory: `source-legacy/` (**STRICTLY READ-ONLY**).
-- Legacy functional inventory extracted via `/extract-legacy`.
+- Legacy functional inventory extracted via `/legacy`.
 
 ## 出力 (Output)
 - Target codebase directory: `source-code/`.

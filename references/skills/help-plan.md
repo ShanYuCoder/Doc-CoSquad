@@ -20,10 +20,10 @@ Its sole purpose is to:
    - **Archaeology / Code Scanners:**
      - Maintain projects (`source-code/`): Dispatches **`/trace`** (`/trace /spec`, `/trace /user-flow`, `/trace /api-spec`).
      - Rebase projects (`source-legacy/`): Dispatches **`/legacy`** (`/legacy /spec`, `/legacy /user-flow`, `/legacy /api-spec`).
-   - **Screen Specifications:** Dispatches **`/spec`** (new screens) or **`/update-spec`** (updates).
-   - **Architecture & User Flows:** Dispatches **`/user-flow`**, **`/db-erd`**, **`/architecture`**, **`/background-logic`**.
-   - **API Contracts:** Dispatches **`/api-spec`**, **`/api-update`**, **`/openapi`**.
-   - **SSOT Grilling & Review:** Dispatches **`/grill-bqa`**, **`/grill-dev`**, **`/grill-api-spec`**, **`/grill-docs`**.
+   - **Screen Specifications:** Dispatches **`/spec`** (new screens) or **`/spec`** (updates).
+   - **Architecture & User Flows:** Dispatches **`/user-flow`**, **`/db-erd`**, **`/architecture`**, **`/spec`**.
+   - **API Contracts:** Dispatches **`/api-spec`**, **`/api-spec`**, **`/api-spec`**.
+   - **SSOT Grilling & Review:** Dispatches **`/grill`**, **`/grill`**, **`/grill`**, **`/grill`**.
    - **Mechanical Quality Gates:** Runs `coSquad audit spec`, `coSquad split`, `coSquad audit flow`, `coSquad audit api`, `coSquad api:check`.
 
 ## Trigger / Usage

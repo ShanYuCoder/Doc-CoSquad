@@ -14,7 +14,7 @@
 flowchart TD
   subgraph IN["前提条件インプット"]
     D["Design: grill-prototype 合格"]
-    B["Backend: /audit-api · 01 承認完了"]
+    B["Backend: /api · 01 承認完了"]
     T["Test: cases:gate strict\n統合前 E2E グリーン合格"]
   end
 
@@ -27,7 +27,7 @@ flowchart TD
 
   subgraph OUT["検証・確定"]
     E2E["test:e2e 統合後スコープ実行"]
-    GT["/grill-test"]
+    GT["/grill"]
     AUD["audit e2e · fe-be · scenario"]
     SHIP["→ リリース / UAT 受入"]
   end
@@ -37,7 +37,7 @@ flowchart TD
   T --> WIRE
   WIRE --> E2E --> GT --> AUD --> SHIP
 
-  US["/update-spec · /api-update"]
+  US["/spec · /api-spec"]
   WIRE -.->|契約の乖離・不整合| US
 
   classDef in fill:#D1FAE5,stroke:#059669,color:#064E3B
@@ -57,7 +57,7 @@ flowchart TD
 
 | レイヤー | 統合前 (Pre-Wire) 状態 | 統合時の責務 (Wire) | 統合後の検証 (Post-Wire) |
 |---|---|---|---|
-| **Portal UI フロントエンド** | プロトタイプモック、HANDOFF に `#wire-only` 記載 | `/wire` 実行 — 実サービスへの接続、モック撤去 | スコープ付き `test:e2e` · `/grill-test` |
+| **Portal UI フロントエンド** | プロトタイプモック、HANDOFF に `#wire-only` 記載 | `/wire` 実行 — 実サービスへの接続、モック撤去 | スコープ付き `test:e2e` · `/grill` |
 | **API 契約** | `01` 仕様 + API レビュー、Design に `apiRef` | モデル・DTO 整合、CORS および環境変数設定 | リーフバンドルに対する `audit fe-be` |
 | **画面横断フロー `SC-*`** | TC 統合前のモックデータ | 業務ジャーニーに沿って画面ごとに実 API を接続 | `audit scenario` + CI での E2E 順次実行 |
 
@@ -70,7 +70,7 @@ flowchart TD
 | ロール | 参照すべき SSOT | 編集元にしてはならないファイル |
 |---|---|---|
 | フロントエンド開発 | `ir/design.yaml`, HANDOFF, `#wire-only` / `#update:*` | 自動生成された `ir/generated/*.md` |
-| フロントエンド開発 | DTO マッピング時の `01` / OpenAPI プレビュー | フロントエンド側での `01` の直接改ざん（必ず `/api-update` を経由） |
+| フロントエンド開発 | DTO マッピング時の `01` / OpenAPI プレビュー | フロントエンド側での `01` の直接改ざん（必ず `/api-spec` を経由） |
 | QA | `TC-*.md` の統合後シナリオ | 統合作業セッション中での YAML テスト計画の変更 |
 | リード | [gates § マイルストーン 9](./gates.md#close-one-function) | 「手動確認で動いたから」という理由での自動監査スキップ |
 
@@ -82,8 +82,8 @@ flowchart TD
 
 | マイルストーン | 最低限必要な要件 |
 |---|---|
-| **Design 設計** | `/grill-prototype` で SSOT のギャップ（文言、状態、モック境界）がゼロであること — [design.md](./design.md) |
-| **Backend バックエンド** | API が検証環境 (Staging/Dev) にデプロイされ、`/audit-api` を通過し、`01` 契約が承認されていること |
+| **Design 設計** | `/grill` で SSOT のギャップ（文言、状態、モック境界）がゼロであること — [design.md](./design.md) |
+| **Backend バックエンド** | API が検証環境 (Staging/Dev) にデプロイされ、`/api` を通過し、`01` 契約が承認されていること |
 | **テスト計画** | 対象の `W-*` に対して `cases:gate --strict` が合格していること |
 | **テスト自動化** | 統合前のスコープ内 E2E テストが**グリーン通過**しているか、ギャップが記録されていること — [test.md](./test.md#test-e2e-lane) |
 | **タグ整理** | HANDOFF 内で `#wire-only` / `#manual-composable` が明記されていること |
@@ -114,9 +114,9 @@ tests-docs 上で同一の `TC-*.yaml` を再利用します —— テスト計
 | 3 | 本番モックの撤去（単体テストのフォールバック用のみ保持） | フロントエンド | HANDOFF の仕様に準拠 |
 | 4 | 認証・認可・RBAC・ルートメタデータの復元 | フロントエンド | ガードをバイパスした画面の納品禁止 |
 | 5 | スコープ内の統合後 E2E テスト実行 | 開発 + QA | `test:e2e`、不足分に `/test` |
-| 6 | 自動化コードの実装レビュー | 開発 + QA | `/grill-test` |
-| 7 | 統合収束監査 | 開発 + QA | `/grill-wire` または監査コマンド：`audit e2e`, `audit fe-be`, `audit scenario` |
-| 8 | UAT および関係者レビュー | PM / PO | 受入レビュー。新要件発生時はクローズ**前**に `/update-spec` を実行 |
+| 6 | 自動化コードの実装レビュー | 開発 + QA | `/grill` |
+| 7 | 統合収束監査 | 開発 + QA | `/grill wire` または監査コマンド：`audit e2e`, `audit fe-be`, `audit scenario` |
+| 8 | UAT および関係者レビュー | PM / PO | 受入レビュー。新要件発生時はクローズ**前**に `/spec` を実行 |
 
 ---
 
@@ -133,8 +133,8 @@ coSquad audit scenario <SC.yaml> --tests-docs "$COSQUAD_TESTS_DOC"   # シナリ
 | 監査で検出されたギャップ | 是正アクション |
 |---|---|
 | `missingInPlaywright` / Page Object 欠落 | `/test` を実行して補完 |
-| テスト計画とバンドル仕様の乖離 | `/grill-testcase` または `/update-spec` で再同期 |
-| `apiRef` ↔ `01` の契約不整合 | `/api-update` を実行して API を再レビュー |
+| テスト計画とバンドル仕様の乖離 | `/grill` または `/spec` で再同期 |
+| `apiRef` ↔ `01` の契約不整合 | `/api-spec` を実行して API を再レビュー |
 | チーム合意の上での保留項目 | チーム規約に基づき `qa/` に起票 |
 
 ---
@@ -159,9 +159,9 @@ coSquad audit scenario <SC.yaml> --tests-docs "$COSQUAD_TESTS_DOC"   # シナリ
 
 | 発生トリガー | 是正アクション |
 |---|---|
-| バックエンド契約のエラー | `/api-update` → バックエンド再デプロイ → 再連携 |
-| UX または仕様の不整合 | `/update-spec` → Split 分解 → 必要に応じて統合前テストを再実行 |
-| E2E カバレッジの不足 | `/test` → `/grill-test` （`audit e2e` のバイパスは禁止） |
-| シナリオフローの画面不足 | `TC` の追加または `QA-*` の起票 → `audit scenario` で検証 |
+| バックエンド契約のエラー | `/api-spec` → バックエンド再デプロイ → 再連携 |
+| UX または仕様の不整合 | `/spec` → Split 分解 → 必要に応じて統合前テストを再実行 |
+| E2E カバレッジの不足 | `/test` → `/grill` （`audit e2e` のバイパスは禁止） |
+| シナリオフローの画面不足 | `TC` の追加または `Q-*`（旧 `QA-*`）の起票 → `audit scenario` で検証 |
 
 **1 セッション = 1 コマンド** —— `/wire` の単一セッション内で全システム回帰テストとバックエンド `/api` コード生成を同時に実行してはなりません。

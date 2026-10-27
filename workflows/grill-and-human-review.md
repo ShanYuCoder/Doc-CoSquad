@@ -2,7 +2,7 @@
 
 **Scope (SSOT):** Team members **reviewing, grilling, and finalizing decisions**; AI does not replace the Product Owner; **qualitative reasoning** (grilling / deep logic) vs **quantitative validation** (deterministic audit scripts reporting `gaps[]` / `confirms[]`).
 
-**Not covered here:** Audit CLI flags → [references/cli-and-commands.md](../references/cli-and-commands.md#audit--harness-pr-workflow) · QA tag taxonomies → [artifacts/dsl.md](../artifacts/dsl.md).
+**Not covered here:** Audit CLI flags → [references/cli-and-commands.md](../references/cli-and-commands.md#audit--harness-pr-workflow) · QA tag taxonomies → [artifacts/index.md](../artifacts/index.md).
 
 **Lane Context:** [design.md](./design.md) · [backend.md](./backend.md) · [test.md](./test.md) · [wire.md](./wire.md) · Gate milestones: [gates.md](./gates.md#close-one-function).
 
@@ -16,18 +16,18 @@ AI **standardizes** YAML/IR; human members **review** Markdown and visual protot
 
 | Toolchain (Product) | Team Responsibility (Human Process) |
 |----------------------|-----------------------------------|
-| Skills `/spec`, `/update-spec`, `/testcase`, `coSquad audit *`, `cases:gate`, `testcase:gen` | Running skills when appropriate; reading gap JSON outputs; grilling domain business rules |
+| Skills `/spec`, `/spec`, `/testcase`, `coSquad audit *`, `cases:gate`, `testcase:gen` | Running skills when appropriate; reading gap JSON outputs; grilling domain business rules |
 | AskQuestion + `qa` | Selecting Recommended / Other / **Log as Tech Debt** · Team workflows: [qa-team.md](./qa-team.md) |
-| `/update-spec` + re-auditing within skills | Synchronizing `TC-*.yaml` following change requests; executing manual E2E (team policy) |
+| `/spec` + re-auditing within skills | Synchronizing `TC-*.yaml` following change requests; executing manual E2E (team policy) |
 
 **Out of scope for product:** CI/CD deployments, sprint management, tracking who skipped grilling, forcing full BQA on rapid exploratory sketches.
 
 | Scenario | Primary Accountability |
 |----------|------------------------|
 | Skipping grilling/audits when skill directs them | Engineer + Tech Lead |
-| `/update-spec` executed without syncing TCs / traceability | Author of change request + QA |
-| Superficial Playwright test matrices | Test author + reviewer in `/grill-test` |
-| Skipping `/grill-wire` after real API integration | FE Dev + QA — leaks `FEBE_*` / plan gaps |
+| `/spec` executed without syncing TCs / traceability | Author of change request + QA |
+| Superficial Playwright test matrices | Test author + reviewer in `/grill` |
+| Skipping `/grill wire` after real API integration | FE Dev + QA — leaks `FEBE_*` / plan gaps |
 | UAT fails but merged because "audit passed" | PM / Lead — automated audits never replace human acceptance |
 | Defects escaping to production due to bypassed steps | Engineering process — toolchain does not guarantee zero bugs |
 
@@ -97,7 +97,7 @@ sequenceDiagram
         Agent->>Bundle: refine zone per turn
     end
 
-    Member->>Agent: /grill-bqa · /grill-dev · /grill-docs
+    Member->>Agent: /grill · /grill · /grill
     Agent->>Script: re-run audit
     Agent->>Member: grill by zone, finalize design
 ```
@@ -117,9 +117,9 @@ Following `/spec` or `/legacy /spec` — matches [design cycle](./design.md#desi
 ```mermaid
 flowchart TD
   IN["Entry\n/legacy /spec or /spec"]
-  BQA["/grill-bqa\nStep A fact-lock\nStep B AskQuestion"]
-  DEV["/grill-dev\nbundle.gen + 01 action"]
-  DOCS["/grill-docs\noptional reconcile"]
+  BQA["/grill\nStep A fact-lock\nStep B AskQuestion"]
+  DEV["/grill\nbundle.gen + 01 action"]
+  DOCS["/grill\noptional reconcile"]
   DRY["coSquad gen:dry\nir/design.yaml"]
   PROTO["/prototype"]
   IN --> BQA
@@ -130,28 +130,28 @@ flowchart TD
   DRY --> PROTO
 ```
 
-Following `PROTO` in [design.md](./design.md#design-cycle): execute `coSquad gen` + resolve `#needs-component` within `/prototype` session, followed by **`/grill-prototype`** (UI checklist) prior to handing off to testing.
+Following `PROTO` in [design.md](./design.md#design-cycle): execute `coSquad gen` + resolve `#needs-component` within `/prototype` session, followed by **`/grill`** (UI checklist) prior to handing off to testing.
 
-**Pending questions:** **Never** store unresolved questions in `openQuestions` on bundle/YAML. Prompt via AskQuestion → record finalized field, or log to `qa/<SHORT>_NNNN.yaml` and resolve with `/qa-resolve` (tagged `#tech-debt:QA-*` — [artifacts/dsl.md](../artifacts/dsl.md)).
+**Pending questions:** **Never** store unresolved questions in `openQuestions` on bundle/YAML. Prompt via AskQuestion → record finalized field, or log to `qa/<id>.yaml` (or `qa/<SHORT>_NNNN.yaml`) and resolve with `/qa` (tagged `#tech-debt:Q-*` — [artifacts/index.md](../artifacts/index.md)).
 
 ### Agent Context Loading Policy
 
 | Phase | Files to Load | What Not to Load / Forbidden Actions |
 |-------|---------------|-------------------------------------|
-| `/grill-bqa` | Entire `ir/design.yaml` (layout/copy) + `ir/spec.yaml` prose | Hand-editing `ir/*`; inventing fields |
-| `/grill-dev` | `ir/design.yaml` + sibling `api/<seq>/01` | `bundle.spec.api`; using `ir/spec.yaml` for codegen |
-| `/grill-docs` | Bundle + IR reconciliation (BQA ↔ Dev) | Re-running legacy archaeology from scratch |
+| `/grill` | Entire `ir/design.yaml` (layout/copy) + `ir/spec.yaml` prose | Hand-editing `ir/*`; inventing fields |
+| `/grill` | `ir/design.yaml` + sibling `api/<seq>/01` | `bundle.spec.api`; using `ir/spec.yaml` for codegen |
+| `/grill` | Bundle + IR reconciliation (BQA ↔ Dev) | Re-running legacy archaeology from scratch |
 
-Skill references: [references/skills/grill-bqa](../references/skills/grill-bqa.md), [grill-dev](../references/skills/grill-dev.md), [grill-docs](../references/skills/grill-docs.md), [qa-resolve](../references/skills/qa-resolve.md).
+Skill references: [/grill](../references/skills/grill.md), [/qa](../references/skills/qa.md).
 
 ### `grillStatus` Tracking (on Bundle)
 
 | Field | Set By |
 |-------|--------|
-| `bqaFacts` / `bqaOpen` | `/grill-bqa` |
-| `dev` | `/grill-dev` once `codegen.profile` + entity/module + `01` `action` are defined — `coSquad split` **fails** if incomplete |
+| `bqaFacts` / `bqaOpen` | `/grill` |
+| `dev` | `/grill` once `codegen.profile` + entity/module + `01` `action` are defined — `coSquad split` **fails** if incomplete |
 
-Deltas following pilot runs: `/update-spec` → re-audit spec → re-grill if necessary — [gates.md](./gates.md).
+Deltas following pilot runs: `/spec` → re-audit spec → re-grill if necessary — [gates.md](./gates.md).
 
 ---
 
@@ -159,19 +159,19 @@ Deltas following pilot runs: `/update-spec` → re-audit spec → re-grill if ne
 
 | Skill | Focus |
 |-------|-------|
-| `/grill-bqa` | Domain logic, validations, user stories, UX affordances |
-| `/grill-dev` | `bundle.gen`, actions, `#gen:*`, `#needs-component`, `ir/design` split |
-| `/grill-docs` | Reconciles BQA ↔ Dev conflicts — **never** replaces individual grills |
-| `/grill-prototype` | UI fidelity vs spec, mock boundaries, testIds |
-| `/grill-api-spec` | Contract YAML on docs hub |
-| `/audit-api` | BE code vs `01` contract before `/wire` |
-| `/grill-test` | Matrix alignment across spec ↔ TC ↔ Playwright — audit without blind regeneration |
-| `/grill-wire` | Post-wire audit chain: `audit e2e` + `fe-be` + `scenario`; routes gaps |
-| `/grill-testcase` | YAML plans in tests-docs — spec gaps route to `/docs-hub /update-spec` |
-| `/grill-api-spec` | Contract YAML — prior to BE codegen / wiring |
-| `/audit-api` | BE implementation vs `01` — human sign-off prior to FE wiring |
+| `/grill` | Domain logic, validations, user stories, UX affordances |
+| `/grill` | `bundle.gen`, actions, `#gen:*`, `#needs-component`, `ir/design` split |
+| `/grill` | Reconciles BQA ↔ Dev conflicts — **never** replaces individual grills |
+| `/grill` | UI fidelity vs spec, mock boundaries, testIds |
+| `/grill` | Contract YAML on docs hub |
+| `/api` | BE code vs `01` contract before `/wire` |
+| `/grill` | Matrix alignment across spec ↔ TC ↔ Playwright — audit without blind regeneration |
+| `/grill wire` | Post-wire audit chain: `audit e2e` + `fe-be` + `scenario`; routes gaps |
+| `/grill` | YAML plans in tests-docs — spec gaps route to `/ssot-docs /spec` |
+| `/grill` | Contract YAML — prior to BE codegen / wiring |
+| `/api` | BE implementation vs `01` — human sign-off prior to FE wiring |
 
-`/qa-resolve` closes `qa/*` tickets — avoids hallucinating open questions on the bundle.
+`/qa` closes `qa/*` tickets — avoids hallucinating open questions on the bundle.
 
 ---
 
@@ -183,24 +183,24 @@ Following [design grill chain](#design-grill-chain) and code implementation — 
 flowchart LR
   subgraph TEST["2b Tests Hub"]
     TC["/testcase"]
-    GTC["/grill-testcase"]
+    GTC["/grill"]
     GT["cases:gate"]
     TC --> GTC --> GT
   end
   subgraph AUTO["e2e-root"]
     GEN["testcase:gen"]
     T["/test"]
-    GTE["/grill-test"]
+    GTE["/grill"]
     GEN --> T --> GTE
   end
   subgraph API["2c Backend"]
-    GAS["/grill-api-spec"]
-    AA["/audit-api"]
+    GAS["/grill"]
+    AA["/api"]
     GAS --> AA
   end
   subgraph WIRE["3 Wire"]
     W["/wire"]
-    GW["/grill-wire"]
+    GW["/grill wire"]
     W --> GW
   end
   GT --> GEN
@@ -210,10 +210,10 @@ flowchart LR
 
 | Phase | Qualitative Grill | Quantitative Audit | Human Decision Gate |
 |-------|-------------------|--------------------|---------------------|
-| Plan | `/grill-testcase` — AC/matrix facet coverage | `cases:gate`, `audit testcase --bundle` | QA: Plan covers full domain logic, not just happy path |
-| Automation | `/grill-test` — PO/testIds fidelity | `audit e2e` | Dev + QA: Spec matches TC; no raw brittle locators |
-| Contract | `/grill-api-spec` | `audit api`, `audit fe-be` | BE + Dev: Real fields and HTTP status codes |
-| Wire | HANDOFF `#wire-only` validation | `/grill-wire` full chain | Never ship bypassed auth or mock data |
+| Plan | `/grill` — AC/matrix facet coverage | `cases:gate`, `audit testcase --bundle` | QA: Plan covers full domain logic, not just happy path |
+| Automation | `/grill` — PO/testIds fidelity | `audit e2e` | Dev + QA: Spec matches TC; no raw brittle locators |
+| Contract | `/grill` | `audit api`, `audit fe-be` | BE + Dev: Real fields and HTTP status codes |
+| Wire | HANDOFF `#wire-only` validation | `/grill wire` full chain | Never ship bypassed auth or mock data |
 
 Lane specifications: [test.md](./test.md) · [backend.md](./backend.md) · [wire.md](./wire.md).
 
@@ -221,14 +221,14 @@ Lane specifications: [test.md](./test.md) · [backend.md](./backend.md) · [wire
 
 ## Post-Wire Gap Remediation (Human + Agent) {#post-wire-loop}
 
-When staging, UAT, or `/grill-wire` reveals that **specs, plans, or contracts** are inaccurate — **return to docs/tests lanes**; do not patch single FE lines and close tickets prematurely:
+When staging, UAT, or `/grill wire` reveals that **specs, plans, or contracts** are inaccurate — **return to docs/tests lanes**; do not patch single FE lines and close tickets prematurely:
 
 | Discovery | Source Grill / Audit | Team Action |
 |-----------|----------------------|-------------|
-| UX / AC / Copy discrepancies | UAT, grill-test | `/update-spec` → re-audit spec → `/grill-testcase` if matrix changed |
-| `01` Contract / DTO errors | `audit fe-be`, `/audit-api` | `/api-update` → BE redeploy → `/wire` |
-| Missing post-wire test facets | `audit e2e` | Patch tests hub YAML → `cases:gate` → `testcase:gen` → `/test` → `/grill-wire` |
-| Deliberate deferral | AskQuestion **Tech Debt** | Record in `qa` with `QA-*` / `coverage_deferred` on scenario |
+| UX / AC / Copy discrepancies | UAT, grill-test | `/spec` → re-audit spec → `/grill` if matrix changed |
+| `01` Contract / DTO errors | `audit fe-be`, `/api` | `/api-spec` → BE redeploy → `/wire` |
+| Missing post-wire test facets | `audit e2e` | Patch tests hub YAML → `cases:gate` → `testcase:gen` → `/test` → `/grill wire` |
+| Deliberate deferral | AskQuestion **Tech Debt** | Record in `qa` with `Q-*` (legacy `QA-*`) / `coverage_deferred` on scenario |
 
 Agent extracts: FE `wire-audit-loop.md` · Tests `wire-test-handoff.md` · Docs `wire-spec-feedback.md`.
 
@@ -249,9 +249,9 @@ Suggested checklist prior to declaring a leaf **Ship-Ready**:
 |---|------|-----------------|
 | 1 | Spec & grilling finalized for scope | `audit spec` has no blockers; grilling rounds completed |
 | 2 | Plan & gates passed on tests-docs | `cases:gate --strict` exits 0 |
-| 3 | E2E & wire audits verified | `/grill-wire` or equivalent — [wire sign-off](./wire.md#wire-signoff) |
+| 3 | E2E & wire audits verified | `/grill wire` or equivalent — [wire sign-off](./wire.md#wire-signoff) |
 | 4 | Manual / UAT sign-off (if enabled) | AC bundle / grilled TCs — signed by **human stakeholder** |
-| 5 | Zero unspecified behaviors | All deltas routed through `/update-spec` prior to Milestone 10 |
+| 5 | Zero unspecified behaviors | All deltas routed through `/spec` prior to Milestone 10 |
 
 **Scripts pass + human has not accepted UAT** → Remain **STOPPED** at Milestone 10; never treat tool passes as a complete release guarantee.
 
@@ -266,10 +266,10 @@ Detailed constraints reside in skills (`harness/docs/skills/…`, `harness/tests
 | Page Type | `/spec` and grilling invoke `coSquad audit spec --type <pageType>` — emits `gaps[]` / `confirms[]` |
 | Confirmation Volume | Total `gaps` + `confirms` ≥ 10 → skill pauses, drafts phased plan (no unorganized Q&A) |
 | Large Screens | Decompose by **zone** — one turn per zone (prevents lost-in-the-middle degradation) |
-| Design Chain | BQA → Dev → (`/grill-docs` on conflict) → `gen:dry` — [§ Design Grilling Chain](#design-grill-chain) |
+| Design Chain | BQA → Dev → (`/grill` on conflict) → `gen:dry` — [§ Design Grilling Chain](#design-grill-chain) |
 | Unresolved Gaps | Log to `qa/*` or resolve directly on bundle — never invent data |
-| Post `/update-spec` | Skill requires **re-auditing spec** prior to safe split/merge |
-| Post-Wire Gaps | `/grill-testcase` or `/update-spec` → repeat automation + `/grill-wire` |
+| Post `/spec` | Skill requires **re-auditing spec** prior to safe split/merge |
+| Post-Wire Gaps | `/grill` or `/spec` → repeat automation + `/grill wire` |
 | Leaf Closure | 10-step sequence with human sign-off at Milestone 10 — [gates.md](./gates.md#close-one-function) |
 
 Audit and gate milestones by lane: [gates.md § When to Run](./gates.md#when-to-run) · [SSOT Chain](./gates.md#ssot-chain) · [10 Milestones Overview](./gates.md#close-leaf-overview).

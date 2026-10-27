@@ -50,7 +50,7 @@
     1. 研读真实 View + Controller + DB 源码。
     2. 100% 审计 UI 元素、API DTO、DB 查询（若缺失则提供 A/B/C 选项）。
     3. 运行 `/trace /spec` (或 `/spec`) 编写 `W-*.bundle.yaml`。
-    4. 运行 `/grill-bqa` 与 `/grill-dev` 对抗质询。
+    4. 运行 `/grill` 与 `/grill` 对抗质询。
     5. 运行 `/testcase` 生成 `TC-*.yaml`。
     6. 运行验证命令：`coSquad audit spec`、`coSquad split`、`coSquad audit testcase`。
     7. Phase Gate：发布 Phase 报告并停下等待审批，完成后方可进入下一屏。

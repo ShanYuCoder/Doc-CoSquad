@@ -12,14 +12,14 @@
 
 | 里程碑节点 | 推荐命令 / 技能 | 结果审核负责人 |
 |---|---|---|
-| 完成 `/spec`, `/update-spec` 后 | `coSquad audit spec` (`--type`) | BA / 开发质询评审员 |
-| 接口契约质询阶段 (Docs) | `/grill-api-spec` · `audit api` | 后端开发 + BA |
-| 联调前端前验证后端 API | `/audit-api` · `audit api` | 后端开发 |
+| 完成 `/spec`, `/spec` 后 | `coSquad audit spec` (`--type`) | BA / 开发质询评审员 |
+| 接口契约质询阶段 (Docs) | `/grill` · `audit api` | 后端开发 + BA |
+| 联调前端前验证后端 API | `/api` · `audit api` | 后端开发 |
 | 关闭测试用例设计前 | `cases:check`, `audit testcase` (+ `--bundle`) | 测试工程师 (QA) |
-| 测试中心发版门禁 | `cases:gate` (`--strict`, `--docs-root`) | QA + `/grill-testcase` |
+| 测试中心发版门禁 | `cases:gate` (`--strict`, `--docs-root`) | QA + `/grill` |
 | 联调前 E2E 自动化验证 | 局部运行 `test:e2e` · `audit e2e` | 前端开发 + QA |
-| **完成 `/wire` 联调后** | **`/grill-wire`** 或 `audit e2e` + `audit fe-be` + `audit scenario` | 前端开发 + QA |
-| 详细 TC 矩阵对齐 PO | 在 `/test` 绿灯后执行 `/grill-test` | QA / 前端开发 |
+| **完成 `/wire` 联调后** | **`/grill wire`** 或 `audit e2e` + `audit fe-be` + `audit scenario` | 前端开发 + QA |
+| 详细 TC 矩阵对齐 PO | 在 `/test` 绿灯后执行 `/grill` | QA / 前端开发 |
 | 遗留系统资产采纳审计 | `audit legacy` | 技术主管 (Tech Lead) |
 | **页面叶子节点合并 / UAT 验收前** | 执行 [§ 单功能节点关闭](#close-one-function) 步骤 1–10 · 人工签字确认 | 主管 / PM / QA |
 
@@ -42,22 +42,22 @@
 ### 需求变更流程 (Change Request - CR)
 
 ```text
-/update-spec → audit spec (技能内强制执行) → split
+/spec → audit spec (技能内强制执行) → split
 → 若交互或 Bundle 代码生成配置发生变动，重新运行 grill-bqa / grill-dev
 → 同步更新受影响 W-* 的 TC 用例 / 评估 Bundle 影响
 → cases:gate --strict
-→ /grill-testcase (读取门禁报告)
+→ /grill (读取门禁报告)
 → 生成代码 + 修复用例 + 人工走查
-→ 若已完成联调：在修复用例与规格后重新执行 `/grill-wire`
+→ 若已完成联调：在修复用例与规格后重新执行 `/grill wire`
 ```
 
 ### 联调后业务行为漂移
 
 ```text
 UAT 验收或预发布测试发现验收标准 (AC) 出现偏差
-→ Docs 运行 /update-spec (或 /api-update) —— 严禁仅在前端私自修改代码修补
-→ split/render 重新生成 → 若场景矩阵改变，运行 /grill-testcase
-→ 前端运行 /wire 或 /test → 执行 /grill-wire 重新收敛闭环
+→ Docs 运行 /spec (或 /api-spec) —— 严禁仅在前端私自修改代码修补
+→ split/render 重新生成 → 若场景矩阵改变，运行 /grill
+→ 前端运行 /wire 或 /test → 执行 /grill wire 重新收敛闭环
 → 人工叶子节点签字验收 (步骤 10)
 ```
 
@@ -71,10 +71,10 @@ UAT 验收或预发布测试发现验收标准 (AC) 出现偏差
 |---|---|---|
 | **A** | `audit testcase --bundle` | 验证场景 / AC / 用户操作 ↔ TC 测试用例的完全溯源 |
 | **B** | `audit fe-be` + grill-dev | 校验 `apiRef` ↔ `01-backend-spec` 接口契约一致性 |
-| **C** | `audit scenario` + `/scenario` | 校验 `FLOW` / SC 场景中 `screens[]` ↔ `cases/**` 目录的覆盖率 |
-| **D** | `/update-spec` 规则 | 审查交互设计增量 ↔ `userStories` / AC 的同步 |
+| **C** | `audit scenario` + `/testcase` | 校验 `FLOW` / SC 场景中 `screens[]` ↔ `cases/**` 目录的覆盖率 |
+| **D** | `/spec` 规则 | 审查交互设计增量 ↔ `userStories` / AC 的同步 |
 | **F** | `cases:gate`, TC schema v2 | 测试中心发布的严格门禁拦截 |
-| **G** | `/wire` + `/grill-wire` | 联调后执行 `audit e2e` + `fe-be` + `scenario`；验证测试规划 ↔ 在线真实 API |
+| **G** | `/wire` + `/grill wire` | 联调后执行 `audit e2e` + `fe-be` + `scenario`；验证测试规划 ↔ 在线真实 API |
 | **E** | *(DevOps 自动化，可选)* | CI 流水线校验：`check`, `cases:gate`, `doctor`, 局部 `audit e2e` |
 
 ```mermaid
@@ -98,7 +98,7 @@ flowchart TD
   S5 --> S7["7–8 E2E 自动化 · audit e2e"]
   S7 --> S9["9 真实联调 · grill-wire"]
   S9 --> S10["10 交付 / 人工 UAT 验收"]
-  CR["/update-spec"] -.-> S1
+  CR["/spec"] -.-> S1
   CR -.-> S3
 ```
 
@@ -110,16 +110,16 @@ flowchart TD
 
 | # | 里程碑 | 对应命令 / 技能 | 验证与评审要求 |
 |---|---|---|---|
-| 1 | 规格与质询 | `coSquad audit spec` (`--type`) · `/grill-bqa` · `/grill-dev` | 走查 `gaps[]` / confirms；各方达成业务一致 |
+| 1 | 规格与质询 | `coSquad audit spec` (`--type`) · `/grill` · `/grill` | 走查 `gaps[]` / confirms；各方达成业务一致 |
 | 2 | 中间表 (IR) 同步 | `coSquad split` · `coSquad check` | 生成测试用例或代码前，确保 Bundle ↔ `ir/*` 完全一致 |
-| 3 | 测试用例规划 | `/testcase` · `/grill-testcase` | `cases:check` · `audit testcase --bundle` 零报错 |
+| 3 | 测试用例规划 | `/testcase` · `/grill` | `cases:check` · `audit testcase --bundle` 零报错 |
 | 4 | 测试质量门禁 | `cases:gate --strict` + `COSQUAD_DOCS_ROOT` | 符合 Schema v2，具备 100% 溯源性与测试维度矩阵 |
 | 5 | 后端契约对齐 | `audit api` · `audit fe-be` | `apiRef` ↔ `01-backend-spec.yaml` 严格吻合 |
-| 6 | 跨端场景流 (若涉 SC) | `audit scenario` | `screens[]` 内各页面均有 `TC-*.yaml` 或显式 `QA-*` 挂起 |
-| 7 | E2E 自动化落地 | `testcase:gen` · `/test` · `/grill-test` | TC 矩阵 ↔ PO 验收 ↔ `*.spec.ts` 三者对齐 |
+| 6 | 跨端场景流 (若涉 SC) | `audit scenario` | `screens[]` 内各页面均有 `TC-*.yaml` 或显式 `Q-*`（旧 `QA-*`）挂起 |
+| 7 | E2E 自动化落地 | `testcase:gen` · `/test` · `/grill` | TC 矩阵 ↔ PO 验收 ↔ `*.spec.ts` 三者对齐 |
 | 8 | 规划与实现对齐 | `coSquad audit e2e` (`--e2e-root`, `--tests-docs`) | 测试规划与局部运行的 Playwright 测试套件一致 |
-| 9 | 真实接口联调 | `/wire` · 联调后局部 E2E 回归 | 运行 `/grill-wire` 或 `audit e2e` · `audit fe-be` · `audit scenario` |
-| 10 | 交付与 UAT 签署 | 按照 Bundle AC 进行人工验收与发布合并检查 | **人工**确认业务完备；发现新行为必须在步骤 10 **之前**运行 `/update-spec` |
+| 9 | 真实接口联调 | `/wire` · 联调后局部 E2E 回归 | 运行 `/grill wire` 或 `audit e2e` · `audit fe-be` · `audit scenario` |
+| 10 | 交付与 UAT 签署 | 按照 Bundle AC 进行人工验收与发布合并检查 | **人工**确认业务完备；发现新行为必须在步骤 10 **之前**运行 `/spec` |
 
 > **审计通过 ≠ 可以直接发版：** 0 阻断性缺口的 JSON 报告永远无法取代 PM/QA 的正式 UAT 签字确认。
 

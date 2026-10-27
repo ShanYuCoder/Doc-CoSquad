@@ -156,7 +156,7 @@ AI 规范化生成需求包 (Bundle) + 中间表示 (IR) + 渲染 Markdown
 | **2.1. 制定计划** | `/help-plan` | 深度分析 `inition-inventory.md`、配置与现存状态，输出步骤明确的 Action Plan 并全面审查关联 User Flow。 |
 | **2.2. 训练模版** | `build-template-code` | 自动剖析 Golden Sample（规范度最高的范例模块），生成与当前项目架构完全吻合的定制化代码生成模版。 |
 | **3. 代码考古** | `/trace` *(Maintain)*<br>`/legacy` *(Rebase)* | • `/trace`：扫描 `source-code` 代码库进行逻辑溯源与规范对齐。<br>• `/legacy`：以只读模式读取 `source-legacy`，将规格与模版提取迁移至 `source-code`。 |
-| **4. 需求规范** | `/spec`, `/grill-bqa` | 编写各画面/特性的 Leaf Bundle 规范，发起对抗性质询澄清业务逻辑。 |
+| **4. 需求规范** | `/spec`, `/grill` | 编写各画面/特性的 Leaf Bundle 规范，发起对抗性质询澄清业务逻辑。 |
 | **5. 设计与 API** | `/prototype`, `/api-spec` | 生成高保真交互式 HTML 原型，严格定义 API 契约文档 (`01-backend-spec.yaml`)。 |
 | **6. 测试保障** | `/testcase`, `testcase:gen` | 构建 `TC-*.yaml` 测试矩阵并自动生成端到端 Playwright 自动化测试套件。 |
 | **7. 联调集成** | `/wire` | 将前端与后端真实 API 连通，运行规范 ↔ 代码核验审计并完成交付闭环。 |

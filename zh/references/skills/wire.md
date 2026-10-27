@@ -20,8 +20,8 @@
 ## 描述说明 (Description)
 - Phase 3 核心联调技能。在前端代码库中将模拟 Mock/桩数据拆除，对接真实的后端服务，恢复 RBAC 鉴权机制，并执行联调后 E2E 回归。
 ## 相关技能 (Related Skills)
-- **Preceding:** Prototype passed `/grill-prototype`, Backend passed `/audit-api`, Tests passed `cases:gate --strict`.
-- **Subsequent:** Scoped E2E tests → `/grill-wire`.
+- **Preceding:** Prototype passed `/grill`, Backend passed `/api`, Tests passed `cases:gate --strict`.
+- **Subsequent:** Scoped E2E tests → `/grill wire`.
 
 ---
 

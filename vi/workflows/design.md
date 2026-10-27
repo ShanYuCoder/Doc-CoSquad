@@ -2,7 +2,7 @@
 
 **Phạm vi (SSOT):** lane **Design** (macro) — từ phân tích / spec đến prototype đã grill, sẵn sàng codegen dry-run.
 
-**Không viết ở đây:** cấu trúc bundle/IR → [artifacts/docs.md](../artifacts/docs.md) · DNA/tag → [artifacts/dsl.md](../artifacts/dsl.md).
+**Không viết ở đây:** cấu trúc bundle/IR và DNA/tag → [artifacts/index.md](../artifacts/index.md).
 
 **Thuộc macro:** [index.md](./index.md) · Phase 0 setup: [phase-0-setup.md](./phase-0-setup.md) · Grill: [grill-and-human-review.md](./grill-and-human-review.md).
 
@@ -10,7 +10,7 @@
 
 ## Design cycle (Phase 1) {#design-cycle}
 
-Gam **emerald** khớp [Workflow tổng quan](./index.md). Optional `/grill-docs` = amber trong diagram (không default).
+Gam **emerald** khớp [Workflow tổng quan](./index.md). Optional `/grill` = amber trong diagram (không default).
 
 Khởi tạo dự án & mapping surfaces: [phase-0-setup.md](./phase-0-setup.md) — **trước** khi viết spec chi tiết.
 
@@ -23,26 +23,26 @@ flowchart TD
 
   subgraph CORE["Bundle → grill → dry"]
     BUNDLE["*.bundle.yaml"]
-    SPLIT["coSquad split"]
-    BQA["/grill-bqa"]
-    DEV["/grill-dev\nbundle.gen"]
-    DRY["coSquad gen:dry\nir/design.yaml"]
+    RENDER["coSquad render"]
+    BQA["/grill"]
+    DEV["/grill\nbundle.gen"]
+    DRY["coSquad gen:dry\nfeature.bundle.yaml"]
   end
 
   subgraph OUT["Prototype → handoff"]
     PR["/prototype"]
     GEN["coSquad gen"]
-    GP["/grill-prototype"]
+    GP["/grill"]
     NEXT["Phase 2 Tests + API"]
   end
 
-  GW["/grill-docs\noptional"]
-  US["/update-spec"]
+  GW["/grill\noptional"]
+  US["/spec"]
   QA["AskQuestion → qa"]
 
   LEG --> BUNDLE
   SPEC --> BUNDLE
-  BUNDLE --> SPLIT --> BQA --> DEV --> DRY --> PR --> GEN --> GP --> NEXT
+  BUNDLE --> RENDER --> BQA --> DEV --> DRY --> PR --> GEN --> GP --> NEXT
   %% PR = /prototype session (gen:dry đầu session, gen, implement Mo*). GP = checklist UI sau code prototype.
   DEV -.->|optional| GW --> DRY
   BQA -.->|gap| US
@@ -59,7 +59,7 @@ flowchart TD
   classDef qa fill:#FDE68A,stroke:#D97706,color:#92400E
 
   class LEG,SPEC entry
-  class BUNDLE,SPLIT,BQA,DEV,DRY core
+  class BUNDLE,RENDER,BQA,DEV,DRY core
   class PR,GEN,GP,NEXT out
   class GW opt
   class US gap
@@ -86,13 +86,13 @@ flowchart TD
 
 Component **tái sử dụng** hoặc shell/widget chuẩn (không domain-only) phải **promote** `.coSquad/registries/design.registry.json` (`planned` → `implemented`, `aliasIndex`, `registry` pass), rồi grill spec lại với `#widget:` / `#shell:` thay `#needs-*`. Domain-only / `#wire-only` giữ trong feature — không promote.
 
-Tiêu chí promote, map hashtag và review PR: [artifacts/dsl.md — Registry & promote](../artifacts/dsl.md#registry--promote).
+Tiêu chí promote, map hashtag và review PR: [SSOT § Registries](../artifacts/index.md#4-cosquadregistries--shared-component--capability-registries-workspace-ssot).
 
 ---
 
 ## Điều kiện (repo code FE)
 
-- **Standard base:** FE đã `coSquad registry:sync` (init hoặc sau đổi UI/composables) — `/spec` map `#ui:`, `#shell:`, `#composable:` từ `.coSquad/registries/design.registry.json` tại Workspace SSOT ([dsl.md](../artifacts/dsl.md#registry--script-sau-init-repo-code)).
+- **Standard base:** FE đã `coSquad registry:sync` (init hoặc sau đổi UI/composables) — `/spec` map `#ui:`, `#shell:`, `#composable:` từ `.coSquad/registries/design.registry.json` tại Workspace SSOT ([SSOT § Registries](../artifacts/index.md#4-cosquadregistries--shared-component--capability-registries-workspace-ssot)).
 - **Trước `gen:dry`:** `grillStatus.dev: done` + `coSquad split` / `check` không lỗi trên bundle leaf.
 
 ## Bước trong lane
@@ -100,23 +100,23 @@ Tiêu chí promote, map hashtag và review PR: [artifacts/dsl.md — Registry & 
 | Thứ tự | Việc | Vai trò | Skill / gate (ví dụ) |
 |--------|------|---------|----------------------|
 | 0b | ERD / ownership (khi entity hoặc bảng mới) | Lead / Dev data | `/db-erd` → `common/db-erd.md` — xem [architecture-data.md](./architecture-data.md) |
-| 1 | Phân tích phạm vi, module, luồng & **Module API** | Lead / BA | `/overview`, `/module` (chốt `W-*`), `/user-flow` |
+| 1 | Phân tích phạm vi, module, luồng & **Module API** | Lead / BA | `/spec`, `/module` (chốt `W-*`), `/user-flow` |
 | 2 | Spec bundle + IR (gồm **bind/db** & **link apiBindings**) | BA / Dev | `/spec`, `/legacy /spec`, đọc ERD LCA, tái sử dụng `#reuse-api`, `split` + `render` |
-| 3 | Grill nghiệp vụ / kỹ thuật / hòa giải | BA + Dev | `/grill-bqa`, `/grill-dev`, `/grill-docs` (optional) — sau mỗi patch bundle: **split lại** |
+| 3 | Grill nghiệp vụ / kỹ thuật / hòa giải | BA + Dev | `/grill`, `/grill`, `/grill` (optional) — sau mỗi patch bundle: **split lại** |
 | 4 | Chốt codegen readiness (docs hub) | Dev | `coSquad gen:dry` trên `ir/design.yaml` (FE repo, `COSQUAD_DOCS_ROOT`) |
 | 5 | Prototype UI (mock API) + promote registry Mo* tái dùng | Dev FE | `coSquad gen` → `/prototype` → `coSquad registry` validate |
-| 6 | Grill prototype (checklist UI) | Dev FE / BA | `/grill-prototype` **sau** bước 5 — layout, copy VI, mock boundary, testIds (không Playwright) |
+| 6 | Grill prototype (checklist UI) | Dev FE / BA | `/grill` **sau** bước 5 — layout, copy VI, mock boundary, testIds (không Playwright) |
 
 ### Module API Catalog Pre-Allocation & Centralized Reference Binding
 
 Để chống conflict git giữa các Member phát triển các màn hình song song (ví dụ: màn Detail và màn Edit cùng dùng chung API chi tiết):
 
 1. **PM / Leader Pre-Allocation**:
-   - Khi chạy `/module` cho `CMP-*`, Leader có thể quy hoạch trước danh mục API chung tại thư mục `common/yaml/`.
+   - Khi chạy `/module`, Leader có thể quy hoạch trước danh mục API chung tại thư mục `common/yaml/`.
 2. **BE Lead Contract-First Pre-Design**:
-   - Tách toàn bộ API dùng chung khỏi thư mục feature `CMP-*/api/`. Lưu tập trung tại thư mục LCA cấp module `common/yaml/<slug>/` hoặc `surfaces/common/yaml/`.
+   - Tách toàn bộ API dùng chung khỏi thư mục feature `<module>/api/`. Lưu tập trung tại thư mục LCA cấp module `surfaces/<surface>/<module>/common/yaml/` hoặc `surfaces/<surface>/common/yaml/` hoặc `surfaces/common/yaml/`.
 3. **FE Member Reference Binding**:
-   - Trong Leaf Spec (`W-*.bundle.yaml`), FE Member **chỉ tái sử dụng** bằng `#reuse-api` + `reuseFrom`. Thư mục Feature `CMP-*` chỉ chứa UI Spec và Private API (nếu có). Thao tác này giúp PR của các Member làm song song **100% sạch conflict**.
+   - Trong Leaf Spec (`S-*.bundle.yaml` / `feature.bundle.yaml`), FE Member **chỉ tái sử dụng** bằng `#reuse-api` + `reuseFrom`. Thư mục Feature module chỉ chứa UI Spec và Private API (nếu có). Thao tác này giúp PR của các Member làm song song **100% sạch conflict**.
 
 Song song (không chặn emerald): sau grill round 1 có thể bắt đầu `/testcase` trên tests-docs hub ([gates.md](./gates.md)).
 
@@ -126,7 +126,7 @@ Song song (không chặn emerald): sau grill round 1 có thể bắt đầu `/te
 |------|----------|-----|
 | ERD tổng (Phase 0) | `<LCA>/common/db-erd.md` | `/db-erd` trước leaf mới |
 | Chi tiết màn (Phase 1) | `spec.entities`, `design.sections[].db`, `spec.ui.list` columns | `/spec` — [bundle-authoring § Data](../../templates/shared/bundle-authoring.md#data-model--phase-0-erd-vs-screen-detail) |
-| Contract BE | `api/.../01-backend-spec.yaml` | `/api-spec`, `/grill-dev` |
+| Contract BE | `api/.../01-backend-spec.yaml` | `/api-spec`, `/grill` |
 
 `/spec` **không** tạo `db-erd.md`; **bắt buộc đọc** ERD đã có khi khai báo `db.schema` / `db.field`. Cột list/detail/form: `key` + `meaning` + (nếu persisted) `db` hoặc `#derived-data`.
 
@@ -134,7 +134,7 @@ Song song (không chặn emerald): sau grill round 1 có thể bắt đầu `/te
 
 - Input thô (bullet, ảnh, legacy) + ERD LCA → `*.bundle.yaml` (user stories, screen access, **entities + db binding**, dictionary, validation, action flows, state matrix).
 - `coSquad split` + `coSquad render` → `ir/generated/spec.md` (mục lục, overview, metrics, non-goals) cho review BA — không viết `.md` tay.
-- Câu treo: `qa/*.yaml` → `/qa-resolve`.
+- Câu treo: `qa/*.yaml` → `/qa`.
 - **Sign-off (tùy team):** rubric 6 mục [design-leaf-signoff.md](./design-leaf-signoff.md) — voluntary, không engine gate grill order.
 
 ### Grill trong Design

@@ -16,16 +16,16 @@ AI は YAML や中間データ (IR) の**標準化**を担い、人間は Markdo
 
 | ツールチェーンの役割 (製品機能) | チームの役割 (人間のプロセス) |
 |---|---|
-| スキル `/spec`, `/update-spec`, `/testcase`, `coSquad audit *`, `cases:gate`, `testcase:gen` の提供 | 適切なフェーズでスキルを実行し、JSON ギャップ出力を精読して業務仕様を深く質疑する |
+| スキル `/spec`, `/spec`, `/testcase`, `coSquad audit *`, `cases:gate`, `testcase:gen` の提供 | 適切なフェーズでスキルを実行し、JSON ギャップ出力を精読して業務仕様を深く質疑する |
 | AskQuestion 選択ダイアログと `qa` 課題管理 | 「推奨案 / 別案 / **技術的負債として記録**」の意思決定 · チーム運用：[qa-team.md](./qa-team.md) |
-| `/update-spec` とスキル内の自動再監査 | 要件変更時に `TC-*.yaml` を再同期し、探索的 E2E ウォークスルーを実施する |
+| `/spec` とスキル内の自動再監査 | 要件変更時に `TC-*.yaml` を再同期し、探索的 E2E ウォークスルーを実施する |
 
 | 典型的なプロセスの破綻シナリオ | 主たる説明責任者 |
 |---|---|
 | スキルが求めている監査や質疑応答をスキップした | 担当エンジニア ＋ テックリード |
-| `/update-spec` 実行後にテストケースや追跡性の同期を怠った | 変更の発行者 ＋ QA |
-| Playwright のテストマトリクスが形骸化し、正常系のみになっている | テスト作成者 ＋ `/grill-test` レビュー担当 |
-| 実 API 連携後に `/grill-wire` の実行を怠った | フロントエンド ＋ QA（`FEBE_*` の契約不整合が流出） |
+| `/spec` 実行後にテストケースや追跡性の同期を怠った | 変更の発行者 ＋ QA |
+| Playwright のテストマトリクスが形骸化し、正常系のみになっている | テスト作成者 ＋ `/grill` レビュー担当 |
+| 実 API 連携後に `/grill wire` の実行を怠った | フロントエンド ＋ QA（`FEBE_*` の契約不整合が流出） |
 | UAT で問題が出たが「自動監査が通っているから」と強行マージした | PM / リード —— 自動監査は人間の受入判定の代替にはならない |
 | スキップされた手順が原因で本番バグが発生した | 開発プロセス全体の課題 —— ツールは自動でバグをゼロにはできない |
 
@@ -93,7 +93,7 @@ sequenceDiagram
         Agent->>Bundle: 1 ターンにつき 1 ゾーンを洗練
     end
 
-    Member->>Agent: /grill-bqa · /grill-dev · /grill-docs
+    Member->>Agent: /grill · /grill · /grill
     Agent->>Script: 監査を再実行
     Agent->>Member: ゾーン別にレビューを実施し設計を確定
 ```
@@ -109,9 +109,9 @@ sequenceDiagram
 ```mermaid
 flowchart TD
   IN["着手\n/legacy /spec または /spec"]
-  BQA["/grill-bqa\nStep A 業務事実の固定\nStep B AskQuestion 質疑"]
-  DEV["/grill-dev\nbundle.gen + 01 action 検証"]
-  DOCS["/grill-docs\n任意の調停"]
+  BQA["/grill\nStep A 業務事実の固定\nStep B AskQuestion 質疑"]
+  DEV["/grill\nbundle.gen + 01 action 検証"]
+  DOCS["/grill\n任意の調停"]
   DRY["coSquad gen:dry\nir/design.yaml ドライラン"]
   PROTO["/prototype 画面生成"]
   IN --> BQA
@@ -122,7 +122,7 @@ flowchart TD
   DRY --> PROTO
 ```
 
-**未決事項の扱い：** バンドルや YAML の `openQuestions` に未解決の質問を残してはなりません。AskQuestion でその場で確定させるか、即答できない場合は `qa/<SHORT>_NNNN.yaml` に起票し、`/qa-resolve` で追跡します。
+**未決事項の扱い：** バンドルや YAML の `openQuestions` に未解決の質問を残してはなりません。AskQuestion でその場で確定させるか、即答できない場合は `qa/<SHORT>_NNNN.yaml` に起票し、`/qa` で追跡します。
 
 ---
 
@@ -130,15 +130,15 @@ flowchart TD
 
 | スキル | 主なレビュー観点 |
 |---|---|
-| `/grill-bqa` | ドメインロジック、バリデーション、ユーザーストーリー、UX アフォーダンス |
-| `/grill-dev` | `bundle.gen`、操作イベント、`#gen:*`、`#needs-component`、IR 分割整合 |
-| `/grill-docs` | BQA のビジネス要件と Dev の技術的要件の衝突を調停 |
-| `/grill-prototype` | UI の再現度、モック境界、`data-testid` の付与状況 |
-| `/grill-api-spec` | ドキュメントハブ上の API YAML 契約の妥当性 |
-| `/audit-api` | 統合前にバックエンド実装コードと `01` 契約の一致を検証 |
-| `/grill-test` | Spec ↔ TC ↔ Playwright の観点マトリクスの一致確認 |
-| `/grill-wire` | 統合後の監査チェーン：`audit e2e` + `fe-be` + `scenario` |
-| `/grill-testcase` | tests-docs の YAML 計画の検証（仕様漏れを Docs にフィードバック） |
+| `/grill` | ドメインロジック、バリデーション、ユーザーストーリー、UX アフォーダンス |
+| `/grill` | `bundle.gen`、操作イベント、`#gen:*`、`#needs-component`、IR 分割整合 |
+| `/grill` | BQA のビジネス要件と Dev の技術的要件の衝突を調停 |
+| `/grill` | UI の再現度、モック境界、`data-testid` の付与状況 |
+| `/grill` | ドキュメントハブ上の API YAML 契約の妥当性 |
+| `/api` | 統合前にバックエンド実装コードと `01` 契約の一致を検証 |
+| `/grill` | Spec ↔ TC ↔ Playwright の観点マトリクスの一致確認 |
+| `/grill wire` | 統合後の監査チェーン：`audit e2e` + `fe-be` + `scenario` |
+| `/grill` | tests-docs の YAML 計画の検証（仕様漏れを Docs にフィードバック） |
 
 ---
 
@@ -148,24 +148,24 @@ flowchart TD
 flowchart LR
   subgraph TEST["2b テスト計画ハブ"]
     TC["/testcase"]
-    GTC["/grill-testcase"]
+    GTC["/grill"]
     GT["cases:gate"]
     TC --> GTC --> GT
   end
   subgraph AUTO["e2e-root 自動化"]
     GEN["testcase:gen"]
     T["/test"]
-    GTE["/grill-test"]
+    GTE["/grill"]
     GEN --> T --> GTE
   end
   subgraph API["2c バックエンド"]
-    GAS["/grill-api-spec"]
-    AA["/audit-api"]
+    GAS["/grill"]
+    AA["/api"]
     GAS --> AA
   end
   subgraph WIRE["3 統合連携"]
     W["/wire"]
-    GW["/grill-wire"]
+    GW["/grill wire"]
     W --> GW
   end
   GT --> GEN
@@ -175,10 +175,10 @@ flowchart LR
 
 | フェーズ | 定性レビュー (Grill) | 定量監査 (Audit) | 人間の意思決定ゲート |
 |---|---|---|---|
-| **計画** | `/grill-testcase` — AC とマトリクス網羅率 | `cases:gate`, `audit testcase --bundle` | QA：正常系だけでなく全業務例外が網羅されているか |
-| **自動化** | `/grill-test` — PO 構造と testId の堅牢性 | `audit e2e` | Dev + QA：脆弱なセレクタがなく仕様通りか |
-| **契約** | `/grill-api-spec` | `audit api`, `audit fe-be` | BE + Dev：正確なフィールド型と HTTP ステータス |
-| **統合** | HANDOFF の `#wire-only` 検証 | `/grill-wire` フルチェーン | 認証バイパスやモックの残存を絶対にリリースしない |
+| **計画** | `/grill` — AC とマトリクス網羅率 | `cases:gate`, `audit testcase --bundle` | QA：正常系だけでなく全業務例外が網羅されているか |
+| **自動化** | `/grill` — PO 構造と testId の堅牢性 | `audit e2e` | Dev + QA：脆弱なセレクタがなく仕様通りか |
+| **契約** | `/grill` | `audit api`, `audit fe-be` | BE + Dev：正確なフィールド型と HTTP ステータス |
+| **統合** | HANDOFF の `#wire-only` 検証 | `/grill wire` フルチェーン | 認証バイパスやモックの残存を絶対にリリースしない |
 
 ---
 

@@ -38,11 +38,11 @@ CoSquad 组织了三大底层处理引擎：**文档引擎 (Docs Engine)**、**�
 | `coSquad split` | 将 `.bundle.yaml` 拆分为 `ir/design.yaml`, `ir/spec.yaml`, `ir/generated/spec.md`。 |
 | `coSquad split_all` | 递归扫描并拆分工作区内所有的 Bundle YAML 文件。 |
 | `coSquad render` | 将 UI 设计规范从 YAML 重新渲染为 Markdown（数据字典与状态矩阵）。 |
-| `coSquad dev` | 启动本地 VitePress 文档中心服务（默认端口 **5173**）与测试文档中心（端口 **5174**）。 |
+| `coSquad dev` | 启动本地 VitePress 文档中心服务（默认端口 **5173**）。提供统一 SSOT 架构（overview, architecture, surfaces, cases, scenarios）。 |
 | `coSquad build` | 执行 `vitepress build` 编译静态文档站点。 |
 | `coSquad publish` | 发布文档资产并生成 `CATALOG.md`。 |
 | `coSquad openapi_gen` | 从 `01-backend-spec.yaml` 自动生成或更新 OpenAPI 片段。 |
-| `coSquad openapi_render` | 将各 OpenAPI YAML 片段整合汇总到 `docs/openapi/api.yaml`。 |
+| `coSquad openapi_render` | 将各 OpenAPI YAML 片段整合汇总到 `docs/api-spec/api.yaml`。 |
 | `coSquad openapi_build_ui`| 为文档中心构建静态 Swagger UI 在线交互界面。 |
 | `coSquad api:check` | 在生成后端代码前校验 `01-backend-spec.yaml` 的合法性。 |
 

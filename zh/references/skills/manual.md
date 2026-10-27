@@ -28,7 +28,7 @@ When invoked with `/manual <FLOW-ID>` (e.g., `/manual FLOW-ADM-TENANT-SETUP`):
 ## 3. Structural Requirements
 - Output the generated manual to `surfaces/<surface>/user-manuals/<module>/<FLOW-ID>.md`.
 - **Evidence Linking (Stateless Pathing):** Do NOT search for zip files. Read `.coSquad/config.json` to get `evidence.base_url`. Calculate the image URL mathematically using the deterministic formula:
-  `imageUrl = ${base_url}/surfaces/${surface}/${moduleId}/${screenId}.png`
+  `imageUrl = ${base_url}/spec/${surface}/${moduleId}/${screenId}.png`
 - Embed the computed image into the manual: `![Screen Evidence](${imageUrl})`
 
 ## 4. Behavioral Constraints (PURE END-USER PERSONA)

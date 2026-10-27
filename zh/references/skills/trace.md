@@ -20,7 +20,7 @@
 - 针对已有存量项目，自动反向扫描分析代码库中的既有逻辑、未文档化规则与接口，提炼生成标准 CoSquad 规范文件。
 ## 相关技能 (Related Skills)
 - **Preceding:** `/init` (Repository discovery).
-- **Combined with:** `/spec` or `/update-spec` to draft/update specs grounded in existing code.
+- **Combined with:** `/spec` or `/spec` to draft/update specs grounded in existing code.
 - **Workflow Orchestration:** `/help-plan` (Phase 1 baseline archaeology).
 
 ## 注意事项 (Important Notes)

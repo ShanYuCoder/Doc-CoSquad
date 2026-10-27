@@ -27,7 +27,7 @@ flowchart TD
 
   %% Branch 3: Rebase
   CHOICE -->|3. Rebase<br/>(System modernization)| RB_LEGACY["Place legacy code in source-legacy/<br/>(STRICTLY READ-ONLY)"]
-  RB_LEGACY --> RB_EXTRACT["Run /extract-legacy<br/>(Extract legacy modules & surfaces)"]
+  RB_LEGACY --> RB_EXTRACT["Run /legacy (Scan Mode)<br/>(Extract legacy modules & surfaces)"]
   RB_EXTRACT --> RB_NEW["Initialize new target code repos<br/>under source-code/"]
   RB_NEW --> RB_INIT["Run /init<br/>(Configure new project)"]
   RB_INIT --> RB_NEXT["Enter Design Phase:<br/>Use /legacy for feature recovery"]
@@ -93,8 +93,8 @@ Applies when performing an architectural overhaul (e.g., migrating from Monolith
 - **Step 2: Isolate Legacy Codebase**
   - Place old source repositories into `source-legacy/`.
   - **Inviolable Rule:** `source-legacy/` is **STRICTLY READ-ONLY**. Never modify or copy-paste raw code from this directory into new codebases.
-- **Step 3: Global Legacy Extraction with `/extract-legacy`**
-  - Run the **`/extract-legacy`** skill in the AI Agent:
+- **Step 3: Global Legacy Extraction with `/legacy` (Scan Mode)**
+  - Run the **`/legacy`** skill (or `/legacy scan`) in the AI Agent:
     - Deep scans legacy source trees to extract module maps, screen catalogs, API rosters, and common rules (`CMN-*`).
     - Emits functional catalogs into `surfaces/` and `architecture/`.
 - **Step 4: Initialize New Codebase**
@@ -223,18 +223,18 @@ coSquad build-template-code --yes --force
 #### Step 3: Feature Development with Custom Templates
 From this point onward, new feature development runs smoothly:
 1. Author specifications with `/spec` (inheriting `CMN-*`).
-2. Critique domain and UI flows with `/grill-bqa`, `/prototype`.
+2. Critique domain and UI flows with `/grill`, `/prototype`.
 3. Running `coSquad gen` generates code strictly following project custom templates without manual refactoring.
 
 ---
 
-## 6. Local SSOT Documentation Server (`pnpm docs:dev`)
+## 6. Local SSOT Documentation Server (`pnpm docs:build`)
 
-Phase 0 setup is now complete! You can run the documentation server to browse the interactive web portal of the Workspace SSOT:
+Phase 0 setup is now complete! You can run the unified build & realtime hosting documentation server to browse the interactive web portal of the Workspace SSOT:
 
 ```bash
-pnpm docs:dev
-# or: coSquad dev
+pnpm docs:build
+# or: coSquad build
 ```
 
 This launches the VitePress dev server at `http://localhost:3173` (auto-allocating to 3174, 3175... when running multiple workspaces in parallel):

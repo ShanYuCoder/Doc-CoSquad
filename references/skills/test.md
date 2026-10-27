@@ -9,8 +9,8 @@ disable-model-invocation: true
 **Owner:** ssot-docs hub (`--type=fe`)
 
 ```bash
-coSquad testcase:gen:dry --docs-root=/path/to/docs-hub -- --id TC-…
-coSquad testcase:gen --docs-root=/path/to/docs-hub -- --id TC-…
+coSquad testcase:gen:dry --docs-root=/path/to/ssot-docs -- --id TC-…
+coSquad testcase:gen --docs-root=/path/to/ssot-docs -- --id TC-…
 ```
 
 Use `COSQUAD_DOCS_ROOT` (or `--docs-root`) when the ssot-docs hub is not local.
@@ -21,7 +21,7 @@ graph or ask the member to hand-edit MCP configuration.
 When generating Playwright E2E code, the Agent MUST enforce the stateless evidence path convention:
 1. Do NOT use `toHaveScreenshot` directly.
 2. MUST import and use `expectSmartVisualMatch` from `visual-helpers.ts`.
-3. MUST pass the exact `surface`, `moduleId`, and `screenId` (e.g. `expectSmartVisualMatch(page, 'admin', 'CMP-ADM-AUTH-01', 'W-ADM-AUTH-01')`) so the helper can mathematically compute the screenshot path as `evidence/surfaces/<surface>/<module-id>/<screen-id>.png`.
+3. MUST pass the exact `surface`, `moduleId`, and `screenId` (e.g. `expectSmartVisualMatch(page, 'admin', 'ADM-01', 'S-ADM-01-01')`) so the helper can mathematically compute the screenshot path as `evidence/spec/<surface>/<module-id>/<screen-id>.png`.
 
 ### Playwright Configuration Interlock
 - **[MANDATORY]** The Agent MUST ensure that the FE project's `playwright.config.ts` includes `snapshotPathTemplate: '{arg}'`. Without this, Playwright will incorrectly nest screenshots inside `<test-name>-snapshots/` folders. (See `harness/tests/templates/playwright.config.example.ts` for reference).

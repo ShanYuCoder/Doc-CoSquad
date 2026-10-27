@@ -2,7 +2,7 @@
 
 **Scope (SSOT):** Macro **Wire** (Phase **3**) — replacing production mocks/stubs with real backend APIs, restoring authentication/RBAC, executing post-wire E2E test runs, and running convergence audits prior to Shipping.
 
-**Not covered here:** Detailed 4-layer Portal architecture in FE repos → [artifacts/code.md](../artifacts/code.md) · Slash skill reference → [references/skills/wire.md](../references/skills/wire.md).
+**Not covered here:** Detailed 4-layer Portal architecture in FE repos → [artifacts/index.md](../artifacts/index.md) · Slash skill reference → [references/skills/wire.md](../references/skills/wire.md).
 
 **Part of Macro Workflows:** [index.md#full-cycle](./index.md#full-cycle) · Prerequisite Lanes: [design.md](./design.md) · [backend.md](./backend.md) · [test.md](./test.md).
 
@@ -14,7 +14,7 @@
 flowchart TD
   subgraph IN["Prerequisites"]
     D["Design: grill-prototype passed"]
-    B["Backend: /audit-api · 01 approved"]
+    B["Backend: /api · 01 approved"]
     T["Test: cases:gate strict\npre-wire E2E green"]
   end
 
@@ -27,7 +27,7 @@ flowchart TD
 
   subgraph OUT["Verify"]
     E2E["test:e2e post-wire scoped"]
-    GT["/grill-test"]
+    GT["/grill"]
     AUD["audit e2e · fe-be · scenario"]
     SHIP["→ Ship / UAT"]
   end
@@ -37,7 +37,7 @@ flowchart TD
   T --> WIRE
   WIRE --> E2E --> GT --> AUD --> SHIP
 
-  US["/update-spec · /api-update"]
+  US["/spec · /api-spec"]
   WIRE -.->|contract drift| US
 
   classDef in fill:#D1FAE5,stroke:#059669,color:#064E3B
@@ -57,7 +57,7 @@ flowchart TD
 
 | Layer | Pre-Wire State | Wire Responsibilities | Post-Wire Verification |
 |-------|----------------|-----------------------|------------------------|
-| **Portal UI** | Prototype mocks, `#wire-only` on design/HANDOFF | `/wire` — wire real services, dismantle mocks | `test:e2e` scoped · `/grill-test` |
+| **Portal UI** | Prototype mocks, `#wire-only` on design/HANDOFF | `/wire` — wire real services, dismantle mocks | `test:e2e` scoped · `/grill` |
 | **Contract** | `01` + API grill; FE `apiRef` on design | Align models/DTOs; configure CORS/env | `audit fe-be` on leaf bundle |
 | **Cross-Flow `SC-*`** | TC pre-wire mocks | Wire individual screens across user journey | `audit scenario` + E2E ordered/CI env |
 
@@ -70,13 +70,13 @@ flowchart TD
 | Role | Reads | Never Uses as Source of Edits |
 |------|-------|-------------------------------|
 | FE Dev | `ir/design.yaml`, HANDOFF, `#wire-only` / `#update:*` | Generated files `ir/generated/*.md` |
-| FE Dev | `01` / OpenAPI preview when mapping DTOs | Editing `01` directly from FE repo — route via `/api-update` |
+| FE Dev | `01` / OpenAPI preview when mapping DTOs | Editing `01` directly from FE repo — route via `/api-spec` |
 | QA | `TC-*.md` post-wire scenarios | Mutating YAML plans during wire session |
 | Lead | [gates § Milestone 9](./gates.md#close-one-function) | Skipping audits claiming "manual checks passed" |
 
 **Environment setup:** `COSQUAD_DOCS_ROOT`, `COSQUAD_TESTS_DOC`, e2e-root — verified via `coSquad doctor`.
 
-Agent extracts (FE harness): [wire-phase.md](../../harness/fe/extracts/wire-phase.md) · [wire-audit-loop.md](../../harness/fe/extracts/wire-audit-loop.md) · Skill `/grill-wire` ([grill-wire.md](../references/skills/grill-wire.md)).
+Agent extracts (FE harness): [wire-phase.md](../../harness/fe/extracts/wire-phase.md) · [wire-audit-loop.md](../../harness/fe/extracts/wire-audit-loop.md) · Skill `/grill wire` ([grill.md](../references/skills/grill.md)).
 
 Tests hub feedback when wiring uncovers plan gaps: [wire-test-handoff.md](../../harness/tests/extracts/wire-test-handoff.md). Docs hub feedback: [wire-spec-feedback.md](../../harness/docs/extracts/wire-spec-feedback.md).
 
@@ -86,11 +86,11 @@ Tests hub feedback when wiring uncovers plan gaps: [wire-test-handoff.md](../../
 
 | Milestone | Minimum Requirement |
 |-----------|---------------------|
-| Design | `/grill-prototype` leaves zero SSOT gaps (copy, state, mock boundaries) — [design.md](./design.md) |
-| Backend | API deployed to staging/dev; `/audit-api` or open issues assigned; `approval` on `01` per team policy |
+| Design | `/grill` leaves zero SSOT gaps (copy, state, mock boundaries) — [design.md](./design.md) |
+| Backend | API deployed to staging/dev; `/api` or open issues assigned; `approval` on `01` per team policy |
 | Test Plan | `cases:gate --strict` passes for scoped `W-*` (when gate is enabled) |
 | Test Automation | Pre-wire scoped E2E tests are **green** or gaps documented — [test.md](./test.md#test-e2e-lane) |
-| Tags | `#wire-only` / `#manual-composable` explicitly enumerated in HANDOFF — [dsl.md § Wire Defer](../artifacts/dsl.md#vòng-đời-wire-defer) |
+| Tags | `#wire-only` / `#manual-composable` explicitly enumerated in HANDOFF — [SSOT Artifacts](../artifacts/index.md) |
 
 **If prerequisites are incomplete:** Return to prototype/test/backend lanes — **never** wire halfway while postponing spec repairs.
 
@@ -104,7 +104,7 @@ Reusing the same `TC-*.yaml` on tests-docs — shifts the **runtime environment*
 |-----------|----------|-----------|
 | API | Mocks / `setup.mocks` inside Playwright | Real Base URL, authenticated session cookies |
 | Authentication | Bypass middlewares (grill-prototype mode) | Restore guest/RBAC gates per bundle spec |
-| Lifecycle Route | `prototype` / `test` | Promote to `wire` — [code.md § Page Lifecycle](../artifacts/code.md#page-lifecycle) |
+| Lifecycle Route | `prototype` / `test` | Promote to `wire` — [SSOT § Workspace Code Repositories](../artifacts/index.md#workspace-code-repositories) |
 | Audit | `audit e2e` (optional pre-wire) | **`audit e2e` mandatory** scoped with `--screen W-*` |
 
 Test grilling deep dive: [test.md § Deep Grill](./test.md#grill-modes).
@@ -120,9 +120,9 @@ Test grilling deep dive: [test.md § Deep Grill](./test.md#grill-modes).
 | 3 | Remove production mocks; reserve mocks for test fallbacks | FE Dev | HANDOFF grill-prototype |
 | 4 | Restore auth / RBAC / route metadata | FE Dev | Prohibit shipping bypassed routes |
 | 5 | Execute scoped post-wire E2E | Dev + QA | `test:e2e`, `/test` on gaps |
-| 6 | Grill automation implementation | Dev + QA | `/grill-test` |
-| 7 | Convergence audit | Dev + QA | `/grill-wire` or audit commands: `audit e2e`, `audit fe-be`, `audit scenario` (if SC) |
-| 8 | UAT & stakeholder review | PM | Acceptance grilled; new requirements → `/update-spec` **prior** to closure |
+| 6 | Grill automation implementation | Dev + QA | `/grill` |
+| 7 | Convergence audit | Dev + QA | `/grill wire` or audit commands: `audit e2e`, `audit fe-be`, `audit scenario` (if SC) |
+| 8 | UAT & stakeholder review | PM | Acceptance grilled; new requirements → `/spec` **prior** to closure |
 
 ### Portal Architecture Order (Recommended)
 
@@ -151,8 +151,8 @@ coSquad audit scenario <SC.yaml> --tests-docs "$COSQUAD_TESTS_DOC"   # if scenar
 | Audit Gap | Corrective Action |
 |-----------|-------------------|
 | `missingInPlaywright` / Page Object | Run `/test` |
-| Plan vs bundle drift | Run `/grill-testcase` or `/update-spec` |
-| `apiRef` ↔ `01` mismatch | Run `/api-update` + re-grill API |
+| Plan vs bundle drift | Run `/grill` or `/spec` |
+| `apiRef` ↔ `01` mismatch | Run `/api-spec` + re-grill API |
 | Deliberate deferral | Route to `qa` per team tagging policy |
 
 ---
@@ -181,10 +181,10 @@ Wire sign-off: <W-*> | reviewer | date | audit e2e OK
 
 | Trigger | Action |
 |---------|--------|
-| Backend contract error | `/api-update` → BE redeploy → re-wire |
-| UX or spec discrepancy | `/update-spec` → split → re-test pre-wire if needed |
-| Incomplete E2E coverage | `/test` → `/grill-test` — never bypass `audit e2e` |
-| Scenario flow missing screens | Add `TC` or `QA-*` — verify with `audit scenario` |
+| Backend contract error | `/api-spec` → BE redeploy → re-wire |
+| UX or spec discrepancy | `/spec` → split → re-test pre-wire if needed |
+| Incomplete E2E coverage | `/test` → `/grill` — never bypass `audit e2e` |
+| Scenario flow missing screens | Add `TC` or `Q-*` (legacy `QA-*`) — verify with `audit scenario` |
 
 **Single session = Single command** — do not combine full product regression runs with backend `/api` codegen in `/wire`.
 
@@ -203,6 +203,6 @@ Wire sign-off: <W-*> | reviewer | date | audit e2e OK
 | Topic | Page |
 |-------|------|
 | Leaf closure Milestone 9 | [gates.md § Close One Function](./gates.md#close-one-function) |
-| `#wire-only` DSL rules | [artifacts/dsl.md](../artifacts/dsl.md) |
+| `#wire-only` DSL rules | [artifacts/index.md](../artifacts/index.md) |
 | Skill `/wire` | [references/skills/wire.md](../references/skills/wire.md) |
-| Page Lifecycle | [artifacts/code.md#page-lifecycle](../artifacts/code.md#page-lifecycle) |
+| Page Lifecycle | [artifacts/index.md#workspace-code-repositories](../artifacts/index.md#workspace-code-repositories) |

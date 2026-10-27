@@ -27,7 +27,7 @@ flowchart TD
 
   %% 分支 3: Rebase
   CHOICE -->|3. Rebase<br/>(遗留系统重构)| RB_LEGACY["将旧代码置于 source-legacy/<br/>(严格只读 READ-ONLY)"]
-  RB_LEGACY --> RB_EXTRACT["运行 /extract-legacy<br/>(提取遗留模块与业务流)"]
+  RB_LEGACY --> RB_EXTRACT["运行 /legacy<br/>(提取遗留模块与业务流)"]
   RB_EXTRACT --> RB_NEW["在 source-code/ 下<br/>建立全新技术栈工程"]
   RB_NEW --> RB_INIT["运行 /init<br/>(配置新工程环境)"]
   RB_INIT --> RB_NEXT["进入设计阶段:<br/>结合 /legacy 进行规则还原"]
@@ -64,7 +64,7 @@ flowchart TD
 
 ### 3. Rebase 场景（遗留重构与系统升级）
 - **防复制隔离：** 将老旧系统完整代码放置在 `source-legacy/` 目录下（**严格只读**，绝不可直接在老代码上修改，也严禁直接大段复制老代码垃圾）。
-- 运行 `/extract-legacy` 逆向挖掘老系统中的核心业务规则与实体流转逻辑。
+- 运行 `/legacy` 逆向挖掘老系统中的核心业务规则与实体流转逻辑。
 - 在 `source-code/` 下建立采用现代框架的全新代码工程。
 - 在 Phase 1 设计阶段，结合 `/legacy` 技能进行合规的业务逻辑提取与重新建模。
 ---
@@ -185,18 +185,18 @@ coSquad build-template-code --yes --force
 #### 步骤 3：使用自定义模板开发新功能
 从此开始，新功能开发流畅无阻：
 1. 使用 `/spec` 编写规范（继承 `CMN-*`）。
-2. 使用 `/grill-bqa`、`/prototype` 评审领域与交互流程。
+2. 使用 `/grill`、`/prototype` 评审领域与交互流程。
 3. 执行 `coSquad gen` 生成完全贴合项目自定义模板的代码，无需人工二次重构。
 
 ---
 
-## 6. 本地 SSOT 文档服务 (`pnpm docs:dev`)
+## 6. 本地 SSOT 文档服务 (`pnpm docs:build`)
 
-Phase 0 初始化已全部完成！您可以启动文档服务器，浏览工作区 SSOT 的交互式 Web 门户：
+Phase 0 初始化已全部完成！您可以启动集成了 OpenAPI 编译与实时托管的文档服务器，浏览工作区 SSOT 的交互式 Web 门户：
 
 ```bash
-pnpm docs:dev
-# 或者: coSquad dev
+pnpm docs:build
+# 或者: coSquad build
 ```
 
 这将在 `http://localhost:5173` 启动 VitePress 开发服务器：

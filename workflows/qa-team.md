@@ -6,10 +6,10 @@
 
 | Example Screen | Abbreviation (Suggested) | File |
 |----------------|--------------------------|------|
-| `W-HOTEL-LIST` | `HOTEL-LIST` | `qa/HOTEL-LIST_0001.yaml` |
-| `cmp-adm-ord-01-02-01-02` | `ADM-AUTH` (team chooses fixed slug) | `qa/ADM-AUTH_0001.yaml` |
+| `S-ADM-01-01` | `ADM-AUTH` | `qa/ADM-AUTH_0001.yaml` |
+| `S-ORD-01-01` | `ORD-LIST` | `qa/ORD-LIST_0001.yaml` |
 
-Legacy CoSquad workspaces still accept identifiers in `QA-<page-id>-NNNN` format — prefer short slugs for new items.
+CoSquad workspaces accept identifiers in `{abbreviated screen/module}_{index}` format.
 
 ---
 
@@ -61,7 +61,7 @@ updates:
 | `kind` | Who / When |
 |--------|------------|
 | `question` | Opening a QA item (Log Tech Debt / AskQuestion) |
-| `answer` | Finalizing a decision — accompanied by a spec patch (`/qa-resolve`) |
+| `answer` | Finalizing a decision — accompanied by a spec patch (`/qa`) |
 | `review` | Senior feedback; if `needs-change` is in the text → sets `status: open` |
 | `note` | Informational remarks without spec alterations |
 
@@ -85,10 +85,10 @@ SSOT content resides in YAML files; the index **never** copies raw log bodies.
 | Skill | Action |
 |-------|--------|
 | Open QA | Creates `qa/{CODE}_NNNN.yaml` with initial `updates[0]` of kind `question` |
-| `/qa-resolve` | Appends `answer` + patches `target` in bundle/01 + sets `status: closed` (if resolved) |
-| `/qa-review` | Appends `kind: review` — does not patch bundle directly (unless user triggers `/update-spec`) |
+| `/qa` | Appends `answer` + patches `target` in bundle/01 + sets `status: closed` (if resolved) |
+| `/qa` | Appends `kind: review` — does not patch bundle directly (unless user triggers `/spec`) |
 
-Grilling / AskQuestion integration: [grill-and-human-review.md](./grill-and-human-review.md) · `QA-*` field-level tags: [dsl.md § QA](../artifacts/dsl.md#vòng-đời-tech-debt--open-question-qa).
+Grilling / AskQuestion integration: [grill-and-human-review.md](./grill-and-human-review.md) · `Q-*` field-level tags: [SSOT Artifacts](../artifacts/index.md).
 
 ---
 
@@ -100,4 +100,4 @@ Grilling / AskQuestion integration: [grill-and-human-review.md](./grill-and-huma
 | Tracing | Sequential top-down reading | Git blame + timeline audits |
 | Index | Optional render | Central status dashboard for leads |
 
-Templates: `.coSquad/templates/qa-item.yaml` + `qa-authoring.md` (schema `cosquad-qa-item/v1`) · Extracts: `qa-inbox.md`, `qa-team.md`.
+Templates: `.coSquad/templates/qa.yaml` + `qa-authoring.md` (schema `cosquad-qa-item/v1`) · Extracts: `qa-inbox.md`, `qa-team.md`.

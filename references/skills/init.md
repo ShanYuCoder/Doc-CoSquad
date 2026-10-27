@@ -25,22 +25,64 @@ extractBundle: architecture-core
 ## 1. Initial Discovery & Execution Mode
 
 - **[MANDATORY]** At the start of `/init`, the Agent **MUST** run `coSquad repo-maps auto-scan --json` in the terminal to discover internal repositories in the workspace, and accept external repository paths provided by the user in chat.
-- **[MANDATORY]** The Agent **MUST** prompt the Member via `AskQuestion` wizard (or parse command flags) to select the scan mode:
-  - **Option 1 (Recommended):** `(Recommended) Full Deep Init (Map Repos to Surfaces in config.json + Deep Multi-Layer Scan for Frontend & Backend Architectures & Commons)`
-  - **Option 2:** `Greenfield / Mapping Only (Map Repos to Surfaces in config.json, skip code analysis)`
+- **[ZERO REPO AUTO-DETECTION]** If `coSquad repo-maps auto-scan` discovers **0 repositories** and the member provides no external paths, the workspace is classified as **Greenfield (Brand New System / Zero Source Code)**. The Agent **STRICTLY MUST NOT** attempt code scans, invent phantom repositories, or steer the user aimlessly.
+- **[MANDATORY]** The Agent **MUST** prompt the Member via `AskQuestion` wizard (or parse command flags) to select the execution mode:
+  - **Option 1 (Recommended for Existing Code):** `(Recommended) Full Deep Init (Map Repos to Surfaces in config.json + Deep Multi-Layer Scan for Frontend & Backend Architectures & Commons)`
+  - **Option 2 (For New Projects / Zero Code):** `Greenfield Staged Bootstrapping (Docs-First Architecture -> Tech Stack Proposal & Repo Scaffolding -> Load Adapters & Commons)`
 
 ---
 
-## 2. Rule: Repository Discovery & Surface Mapping
+## 2. Greenfield Staged Progressive Bootstrapping (When NO Source Code Exists)
 
-- **[MANDATORY]** Before scanning code, the Agent MUST ask the user how to group discovered/provided repositories into logical `surfaces`.
+When starting a brand new project without existing source code (or when Option 2 is selected), the Agent **MUST execute a 3-Stage Progressive Bootstrapping sequence**, leveraging existing CoSquad skills without creating redundant skills:
+
+```mermaid
+graph TD
+    S1["Stage 1: Docs-First Foundation<br/>(/spec -> /spec -> /module -> /user-flow)"] --> S2["Stage 2: Tech Stack Proposal & Repo Scaffolding<br/>(/architecture + AskQuestion -> Scaffold Repos -> config.json)"]
+    S2 --> S3["Stage 3: Load Adapters & Commons<br/>(/build-templates -> /common -> /build-env)"]
+```
+
+### 🟢 Stage 1: Docs-First Business Architecture Decomposition
+- **Objective:** Crystallize the entire product vision, interaction surfaces, and functional modules on the Docs Hub *before* creating repositories or writing code.
+- **Progressive Skill Execution:**
+  1. **`/spec`:** Author `overview/index.md` (Product Vision, Background, Scope In/Out) and operational areas (`overview/operational-areas/<slug>.md`).
+  2. **`/spec`:** Define user and client interaction channels (`surfaces/<surface>/index.md`, e.g. `admin`, `portal`, `mobile`, `api`) with channel characteristics and user roles.
+  3. **`/module`:** Decompose business modules (`{surfaceCode}-{id}`) under each surface (`surfaces/<surface>/<module>/index.md`).
+  4. **`/user-flow` & `/spec`:** Map end-to-end user journeys (`architecture/03-user-flows/`) and draft initial screen / API specifications.
+- **Milestone:** The business architecture and domain boundaries are fully documented and verified via VitePress.
+
+### 🟢 Stage 2: Tech Stack Proposal & Surface-Driven Repo Scaffolding
+- **Objective:** Based on the surfaces and modules established in Stage 1, propose the optimal tech stacks and scaffold code repositories.
+- **Progressive Skill Execution (Leveraging `/architecture` + `/init`):**
+  1. **Tech Stack Analysis:** The Agent evaluates technical requirements for each surface defined in Stage 1:
+     - *Admin Surface:* Propose rapid dashboard frameworks (e.g. Vue/Nuxt + Tailwind / PrimeVue / Ant Design, or React/Next + shadcn/ui).
+     - *Customer / Public Surface:* Propose SEO-friendly SSR frameworks (e.g. Nuxt 3, Next.js).
+     - *Backend Core API:* Propose high-throughput, robust frameworks (e.g. Laravel 11, NestJS, FastAPI, Go Fiber).
+     - *Mobile Surface:* Propose cross-platform frameworks (e.g. Flutter, React Native).
+  2. **Interactive Confirmation Gate (`AskQuestion`):** The Agent presents the Tech Stack Proposal table on the chat UI modal with recommended frameworks first and write-in support.
+  3. **Scaffolding Repositories:**
+     - Upon confirmation, guide or execute official scaffolding scripts (e.g. `npx nuxi init <repo>`, `composer create-project laravel/laravel <repo>`, `npm create vite@latest`).
+     - Register the new repos into `.coSquad/config.json` under `projects` and map them to their logical `surfaces`.
+
+### 🟢 Stage 3: Load Tech-Specific Adapters & Commons
+- **Objective:** Once repositories and tech stacks are active in `config.json`, load the matching template adapters, common patterns, and local environment.
+- **Progressive Skill Execution (Leveraging `/build-templates`, `/common`, `/build-env`):**
+  1. **`/build-templates` (or `coSquad build-template-code` / `coSquad add`):** Scaffold technology-specific adapters in `.coSquad/adapters/<project_id>/` (e.g. Laravel adapter, Nuxt adapter).
+  2. **`/common`:** Initialize common design tokens, UI layout rules, and backend architectural patterns matching the chosen frameworks.
+  3. **`/build-env`:** Generate `docker/docker-compose.yml`, `docker/.env`, and Central Gateway routing tailored to the newly scaffolded services.
+- **[COMPLETION]** The Greenfield project is fully bootstrapped with aligned docs, active repos, loaded adapters, and a running dev environment!
+
+---
+
+## 2.1. Brownfield Repository Discovery & Surface Mapping (When Existing Repos Exist)
+
+- **[MANDATORY]** When existing codebases are present:
   - In SaaS apps, one physical repo (e.g., `admin-web`) may serve multiple logical surfaces (e.g., `admin`, `tenant`).
   - Or, multiple repos (e.g., `admin-fe`, `client-fe`, `api`) must be mapped together.
 - **[MANDATORY]** The Agent MUST present a **Draft Plan (JSON)** of the `projects` and `surfaces` blocks:
   - `projects`: Each repo's `path` (relative to workspace), `role`, `technology`.
   - `surfaces`: Logical names mapping to `frontend` and `backend` project IDs.
 - **[MANDATORY]** Once the user approves the Draft Plan, the Agent MUST update `.coSquad/config.json` directly.
-- **[GREENFIELD]** If Option 2 is selected (Greenfield), the Agent stops here and outputs a clean success message (no `inition-inventory.md` is generated, or just an empty placeholder).
 
 ---
 
@@ -152,7 +194,7 @@ During the deep scan, `/init` MUST generate a dedicated, actionable `common-plan
 > - **All Commons MUST be registered into the Workspace SSOT DSL Registry** (`.coSquad/registries/design.registry.json` for FE, `.coSquad/registries/be-capabilities.registry.json` for BE).
 > - **Existing Commons (`status: "implemented"`)**: Registered with active code path (`path`), DSL tags (`#ui: <Name>`, `#pattern: <ID>`, `#reuse-api: <ID>`), and docs spec path.
 > - **Duplicate Candidates / Planned Commons (`status: "planned"`)**: **Pre-registered in `/init` with `status: "planned"`** with planned Target Code Path in `shared/`, DSL tags (`#pattern: <ID>`, `#ui: <Name>`), and Target Docs Path.
-> - **DSL Synergy**: This enables `/spec`, `/update-spec`, and DSL code analyzers to immediately recognize and reference planned shared components (`#pattern: <ID>`, `#ui: <Name>`) without wait, preventing accidental generation of ad-hoc `#needs-component` or duplicate logic. When `/common <CMN-ID>` generates the shared code, the registry entry is automatically promoted from `planned` ➔ `implemented`.
+> - **DSL Synergy**: This enables `/spec`, `/spec`, and DSL code analyzers to immediately recognize and reference planned shared components (`#pattern: <ID>`, `#ui: <Name>`) without wait, preventing accidental generation of ad-hoc `#needs-component` or duplicate logic. When `/common <CMN-ID>` generates the shared code, the registry entry is automatically promoted from `planned` ➔ `implemented`.
 
 #### Structure & Standard Schema of `common-plan.md`
 
@@ -309,7 +351,7 @@ Each flow entry MUST include:
 - **ID & Title:** `FLOW-{SURF}-{DOMAIN}-{NN}` (Standardized ID + Descriptive Title)
 - **Tier:** A / B / C
 - **Trigger & Entry Point:** Button click, URL route, webhook event, state change
-- **Surfaces & Modules involved:** e.g., `admin` (`CMP-ADM-ORD-01`), `customer-web` (`CMP-CUS-CART-01`)
+- **Surfaces & Modules involved:** e.g., `admin` (`ADM-01`), `customer-web` (`CUS-01`)
 - **Step Sequence:** Ordered sequence connecting UI screens (`W-*`), API calls (`API-*`), and dialog actions
 - **Branches & Fallbacks:** Error handling, validation failures, role branching
 - **Code Evidence:** Specific files and methods implementing the flow
@@ -325,36 +367,88 @@ This summary MUST be included in the `inition-inventory.md` under a new section 
 
 ---
 
-## 8. Rule: Output Format (`inition-inventory.md`)
+## 8. Output Specification (Eliminating `inition-inventory.md`)
 
-The Agent MUST generate `inition-inventory.md` directly at the workspace root using the following structure:
+The monolithic `inition-inventory.md` file is **completely eliminated**. The live filesystem hierarchy under `surfaces/` and `.coSquad/config.json` serves as the sole Single Source of Truth (SSOT).
 
+### 8.1. Surface Hub Index (`surfaces/<surface>/index.md`)
+Conforms strictly to `_surface-index.template.md`:
 ```markdown
-# Core Inition Inventory (Architecture Scan & Common Catalog)
+---
+id: SURF-ADM
+surfaceCode: ADM
+title: "Operations Admin Portal"
+status: active
+contentLocale: en
+---
 
-> **Scan Date**: YYYY-MM-DD | **Sources Config**: `.coSquad/config.json` | **Common Analysis**: [Full Deep Scan]
+# Surface: Operations Admin Portal
 
-## 1. Surfaces
-- **Admin Portal** (`surfaces/admin`) — `[Role: Operations Admin | Channel: Web SPA]` → Repo: `admin-fe`
-- **Customer Web** (`surfaces/customer-web`) — `[Role: End-Customer | Channel: Web SSR]` → Repo: `customer-fe`
-- **Core Backend API** (`projects/backend-api`) — `[Role: Central API | Channel: REST API]` → Repo: `backend-api`
+## Goals {#goals}
+- Centralized operations management portal for administrative staff.
 
-## 2. Modules Catalog (`CMP-*`)
-- **CMP-ADM-AUTH-01**: Authentication & Identity Management → Legacy: `admin-fe/src/modules/auth/`
-- **CMP-ADM-ORD-01**: Order Processing & Fulfillment → Legacy: `admin-fe/src/modules/orders/`
+## Background {#background}
+- Target actors: System Administrators, Operations Personnel.
 
-## 3. Screens & API Function Inventory (`W-*`, `API-*`)
-### Admin Portal (`surfaces/admin/CMP-ADM-AUTH-01`)
-- **W-ADM-AUTH-01**: Admin Login Screen → `admin-fe/src/pages/Login.tsx`
-- **API-ADM-AUTH-01**: Admin Login & Token Endpoint → `backend-api/src/controllers/AuthController.ts:login`
+## Scope {#scope}
+**In scope:**
+- Authentication, user management, order processing, and catalogs.
 
-## 4. User Flows (`FLOW-*`)
-### A — Cross-surface (org catalog) → `architecture/03-user-flows/`
-- **FLOW-CUS-CHECKOUT-01**: Multi-channel Order & Checkout Flow — Surfaces: `customer-web`, `admin-portal` — CMPs: `CMP-CUS-CART-01`, `CMP-ADM-ORD-01` — Tier: **A**
+**Out of scope:**
+- Public storefront (managed under customer-web surface).
 
-### B — Module User Flows (Step 1 Ownership) → `surfaces/<surface>/<module>/user-flows/`
-- **FLOW-ADM-DELETE-01**: Entity Safe Delete & Cascade Confirmation Flow — Module: `admin/orders` — Tier: **B**
-- **FLOW-ADM-AUTH-RESET-01**: Password Reset with OTP Flow — Module: `admin/auth` — Tier: **B**
+## Modules
+| Module | Summary | Notes |
+| --- | --- | --- |
+| `ADM-01` | Authentication & RBAC | Login, token lifecycle, role assignments |
+| `ADM-02` | Order Processing & Settlement | Order lifecycle and dispatch |
+```
+
+### 8.2. Module Hub Index (`surfaces/<surface>/<module>/index.md`)
+Conforms strictly to `_module-index.template.md`:
+```markdown
+---
+id: ADM-02
+title: "Order Management & Fulfillment"
+status: active
+contentLocale: en
+---
+
+# Module: Order Management & Fulfillment
+
+## Goals {#goals}
+- Manage order approval workflows, delivery tracking, and settlement auditing.
+
+## Scope {#scope}
+**In scope:**
+- Order listing, order creation/editing, order details.
+
+**Out of scope:**
+- Payment gateway processing (delegated to external provider).
+
+## Features overview {#features-overview}
+| Function | Screen / Access flow | Route |
+|---|---|---|
+| `order-list` | [Order List Screen] · Navigated from Menu Sidebar | `/admin/orders` |
+| `order-form` | [Order Create & Edit Form] · Click [Create New] | `/admin/orders/create` |
+| `order-detail` | [Order Detail Screen] · Click row in list | `/admin/orders/:id` |
+```
+
+### 8.3. Screen Feature Leaf Scaffolding (`feature.bundle.yaml`)
+Each function listed in `## Features overview` is scaffolded with a leaf folder:
+`surfaces/<surface>/<module>/<feature-slug>/feature.bundle.yaml`
+```yaml
+page-id: W-ADM-ORD-01
+title: "Order List Screen"
+summary: "Order list management for operations admin"
+codegen:
+  profile: list
+design:
+  shell:
+    tag: AdminShell
+spec:
+  status: draft
+```
 
 ## 5. Common Catalog & Reconciliation
 ### 5.1 Native Project Commons (Code-First Priority — Spec Only & DSL Registry Implemented)
@@ -373,7 +467,7 @@ The Agent MUST generate `inition-inventory.md` directly at the workspace root us
   - *Safety Boundary*: Provisioning only. Existing evidence files remain untouched.
 
 ### 5.3 Whole Page Duplication Warnings
-- **W-ADM-USR-01 (Create User)** & **W-ADM-USR-02 (Edit User)**: 90% identical → *Recommendation: Consolidate into single Polymorphic Spec `CMP-ADM-USR-FORM`*
+- **S-ADM-USR-01 (Create User)** & **S-ADM-USR-02 (Edit User)**: 90% identical → *Recommendation: Consolidate into single Polymorphic Spec `S-ADM-USR-FORM`*
 
 ### 5.4 Common Recommendations & Gaps
 > Standard enterprise capabilities not found in the codebase.
@@ -413,6 +507,6 @@ The Agent MUST generate `inition-inventory.md` directly at the workspace root us
 - [ ] `common-plan.md` generated with detailed plan; ALL commons (both existing with `status: implemented` and planned duplicate candidates with `status: planned`) registered into DSL registries (`design.registry.json` / `be-capabilities.registry.json`).
 - [ ] Interactive GUI Question onboarding chain (`AskQuestion` for `build-env`, followed by `AskQuestion` for `common-plan`) executed upon completing init.
 - [ ] Missing common capabilities flagged with recommendation to use `coSquad add base-common`.
-- [ ] All IDs follow standard format: `CMP-*`, `W-*`, `API-*`, `FLOW-*`, `CMN-UI-*`, `CMN-API-*`, `CMN-DTO-*`.
+- [ ] All IDs follow standard format: `{surfaceCode}-{id}`, `S-*`, `C-API-*`, `FLOW-*`, `G-*`, `C-*`.
 - [ ] Output prose written in `docsProseLocale` and headings in `structureLocale` (per `config.json`).
 

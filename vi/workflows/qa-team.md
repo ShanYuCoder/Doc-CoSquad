@@ -6,10 +6,10 @@
 
 | Ví dụ màn | Rút gọn (gợi ý) | File |
 |-----------|-----------------|------|
-| `W-HOTEL-LIST` | `HOTEL-LIST` | `qa/HOTEL-LIST_0001.yaml` |
-| `cmp-adm-ord-01-02-01-02` | `ADM-AUTH` (team chọn slug cố định) | `qa/ADM-AUTH_0001.yaml` |
+| `S-ADM-01-01` | `ADM-AUTH` | `qa/ADM-AUTH_0001.yaml` |
+| `S-ORD-01-01` | `ORD-LIST` | `qa/ORD-LIST_0001.yaml` |
 
-Legacy CoSquad vẫn chấp nhận id dạng `QA-<page-id>-NNNN` nếu team đã dùng — ưu tiên slug ngắn cho file mới.
+CoSquad chấp nhận id dạng `{màn/module rút gọn}_{index}`.
 
 ---
 
@@ -61,7 +61,7 @@ updates:
 | `kind` | Ai / khi |
 |--------|----------|
 | `question` | Mở QA (Log Tech Debt / AskQuestion) |
-| `answer` | Chốt quyết định — kèm patch spec (`/qa-resolve`) |
+| `answer` | Chốt quyết định — kèm patch spec (`/qa`) |
 | `review` | Senior góp ý; nếu `needs-change` trong text → `status: open` lại |
 | `note` | Ghi chú, không đổi spec |
 
@@ -85,10 +85,10 @@ SSOT nội dung = file YAML; index **không** copy full log.
 | Skill | Việc |
 |-------|------|
 | Mở QA | Tạo `qa/{CODE}_NNNN.yaml` + `updates[0]` kind `question` |
-| `/qa-resolve` | Append `answer` + patch `target` trên bundle/01 + `status: closed` (nếu chốt) |
-| `/qa-review` | Append `kind: review` — không patch bundle (trừ khi user chạy `/update-spec`) |
+| `/qa` | Append `answer` + patch `target` trên bundle/01 + `status: closed` (nếu chốt) |
+| `/qa` | Append `kind: review` — không patch bundle (trừ khi user chạy `/spec`) |
 
-Grill / AskQuestion: [grill-and-human-review.md](./grill-and-human-review.md) · tag `QA-*` trên field: [dsl.md § QA](../artifacts/dsl.md#vòng-đời-tech-debt--open-question-qa).
+Grill / AskQuestion: [grill-and-human-review.md](./grill-and-human-review.md) · tag `Q-*` trên field: [SSOT Artifacts](../artifacts/index.md).
 
 ---
 
@@ -100,4 +100,4 @@ Grill / AskQuestion: [grill-and-human-review.md](./grill-and-human-review.md) ·
 | Trace | Đọc file từ trên xuống | Git blame + timeline |
 | Index | Tùy chọn render | Bảng trạng thái cho lead |
 
-Template: `.coSquad/templates/qa-item.yaml` + `qa-authoring.md` (schema `cosquad-qa-item/v1`) · extract: `qa-inbox.md`, `qa-team.md`.
+Template: `.coSquad/templates/qa.yaml` + `qa-authoring.md` (schema `cosquad-qa-item/v1`) · extract: `qa-inbox.md`, `qa-team.md`.

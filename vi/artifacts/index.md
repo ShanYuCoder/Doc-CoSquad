@@ -1,6 +1,6 @@
 # Cấu trúc Workspace & Tài nguyên SSOT
 
-Khi chạy lệnh `coSquad setup [workspace]` và khởi chạy `pnpm docs:dev` (hoặc `coSquad dev`), CoSquad sinh ra bộ khung cấu trúc **SSOT (Single Source of Truth)** chuẩn mực.
+Khi chạy lệnh `coSquad setup [workspace]` và khởi chạy `pnpm docs:build` (hoặc `coSquad build`), CoSquad sinh ra bộ khung cấu trúc **SSOT (Single Source of Truth)** chuẩn mực.
 
 Giao diện web VitePress sẽ đọc trực tiếp các thư mục và file Markdown này trên máy local để toàn bộ team (BA, Dev, QA, Lead) cùng tra cứu và làm việc trên một nguồn thông tin duy nhất.
 
@@ -20,10 +20,10 @@ my-workspace/
 │   ├── common/             # UI Patterns, model-data, rules dùng chung hệ thống (1 cấp phẳng .md)
 │   └── <surface-name>/     # Từng bề mặt nghiệp vụ cụ thể (admin, portal, mobile,...)
 │       ├── common/         # (Tùy chọn) Dùng chung trong surface (tự động ẩn nếu rỗng)
-│       └── <module-name>/  # Module nghiệp vụ (CMP-*)
+│       └── <module-name>/  # Module nghiệp vụ ({surfaceCode}-{id}, e.g. ADM-01)
 │           ├── common/     # (Tùy chọn, tự động ẩn nếu rỗng)
 │           ├── user-flows/ # Các User Flows có Step 1 bắt đầu tại module này (tự động ẩn nếu rỗng)
-│           └── <feature>/  # Màn hình/tính năng (phẳng 1 cấp, chứa bundle.yaml & spec.md)
+│           └── <feature>/  # Tính năng (S-*, J-*, H-* phẳng 1 cấp, chứa bundle.yaml & spec.md)
 ├── .coSquad/registries/   # Danh mục Design Tokens, UI Components và Capabilities trong Workspace SSOT
 ├── qa/                     # Hòm thư giải quyết thắc mắc nghiệp vụ giữa các thành viên
 ├── source-code/            # Mã nguồn chính đang hoạt động & phát triển (Submodules)
@@ -71,7 +71,7 @@ my-workspace/
 - **Người phụ trách chính:** Solution Architect, Technical Lead.
 
 ### 3. `surfaces/` — Phân vùng Bề mặt, Tính năng & Cấu trúc Phẳng
-- **Nội dung:** Quản lý toàn bộ cấu trúc giao diện người dùng và nghiệp vụ tương tác, chia thành các bề mặt cụ thể (`admin`, `portal`, `mobile`,...) cùng các module nghiệp vụ (`CMP-*`) và tính năng/màn hình phẳng 1 cấp (`<feature-slug>/`).
+- **Nội dung:** Quản lý toàn bộ cấu trúc giao diện người dùng và nghiệp vụ tương tác, chia thành các bề mặt cụ thể (`admin`, `portal`, `mobile`,...) cùng các module nghiệp vụ (`{surfaceCode}-{id}`) và tính năng/màn hình phẳng 1 cấp (`<feature-slug>/`).
 - **Cấu trúc `common/` tinh gọn (1 cấp phẳng .md):**
   - Tại `surfaces/common/`: Chứa các quy tắc dùng chung cho **toàn bộ hệ thống** dưới dạng các file `.md` phẳng (không lồng thư mục con `patterns/`, `yaml/`, `code/`, `data-model/`). Bao gồm: UI Patterns, `model-data.md`, `model-derived-data.md`, `api-health.md`, `ui-empty-state.md`.
   - Tại `surfaces/<surface>/common/` hoặc `<module>/common/`: (Tùy chọn) Chứa quy tắc dùng chung cho riêng surface hoặc module đó. **Tự động ẩn khỏi sidebar VitePress nếu thư mục rỗng**.
@@ -97,7 +97,7 @@ my-workspace/
 - **Nội dung:** Chứa file `qa/index.md` tổng hợp các câu hỏi mở (*Open Questions*).
 - **Vai trò:**
   - Nơi QA hoặc Dev ghi nhận các điểm mơ hồ về mặt nghiệp vụ khi đọc spec.
-  - BA hoặc PO phản hồi và chốt phương án trực tiếp tại đây với skill `/qa-resolve`.
+  - BA hoặc PO phản hồi và chốt phương án trực tiếp tại đây với skill `/qa`.
   - Đảm bảo mọi thắc mắc đều có lời giải đáp và được lưu vết rõ ràng trước khi đóng tính năng.
 
 ---
@@ -108,3 +108,124 @@ my-workspace/
 | :--- | :--- | :--- |
 | **`source-code/`** | **Read / Write** | Chứa các repository mã nguồn chính đang chạy (FE, BE, Microservices). Đây là nơi toàn bộ code mới sinh ra và các thay đổi được commit. |
 | **`source-legacy/`** | **Strictly READ-ONLY** | Chứa mã nguồn cũ để phục vụ việc khảo cổ nghiệp vụ trong kịch bản Rebase. **Tuyệt đối cấm sửa đổi hoặc copy code thô** từ thư mục này. |
+
+---
+
+## Quy ước Đặt ID Chuẩn cho Artifacts trong Hệ Thống (ID Naming Conventions & Taxonomy)
+
+Nhằm đảm bảo sự ngắn gọn, tiện dụng, giúp các thành viên trong team (BA, Dev, QA, PO) dễ dàng trao đổi, đối chất và truy vết chéo (*traceability*) mà không bị rườm rà dài dòng, CoSquad áp dụng quy chuẩn đánh ID thống nhất cho toàn bộ artifacts:
+
+### 1. Phân cấp Surface (Kênh / Cổng ứng dụng)
+- **Quy tắc:** Không cần đánh ID số. Sử dụng **Tên Surface** + **Mã viết tắt (`surfaceCode`)** (từ 1 đến 4 chữ cái in hoa).
+- **Ví dụ:**
+  - `admin` $\rightarrow$ `ADM` (hoặc `AD`)
+  - `tenant` $\rightarrow$ `TA`
+  - `line` $\rightarrow$ `L`
+  - `customer` $\rightarrow$ `CUS`
+  - `merchant` $\rightarrow$ `MER`
+
+### 2. Phân hệ Nghiệp vụ / Module
+- **Cấu trúc:** `{surfaceCode}-{id}`
+- **Quy tắc:** Mỗi module trong từng Surface được đánh số thứ tự gồm **2 chữ số**, tăng dần bắt đầu từ `01`.
+- **Ví dụ:**
+  - `ADM-01` (Module Xác thực & Quản trị tài khoản)
+  - `ADM-02` (Module Quản lý Đơn hàng)
+  - `TA-01`, `TA-02` (Các module thuộc Surface Tenant)
+
+### 3. Tính năng / Feature trực thuộc Module
+Trong mỗi module, các tính năng được phân biệt bằng **tiền tố 1 chữ cái**, và **chuỗi số tăng dần là thống nhất (Unified Sequence) bắt đầu từ 01**:
+- **`S-*` (Screen - Màn hình giao diện):** `S-{surfaceCode}-{idModule}-{idFeature}`
+  - Ví dụ: `S-ADM-01-01` (Màn hình Danh sách Đơn hàng), `S-ADM-01-02` (Màn hình Tạo & Chỉnh sửa Đơn hàng).
+- **`J-*` (Job - Tiến trình xử lý tự động / Background Worker / Console Cron):** `J-{surfaceCode}-{idModule}-{idFeature}`
+  - Ví dụ: `J-ADM-01-03` (Job đồng bộ trạng thái đơn hàng định kỳ).
+- **`H-*` (Hook - Tích hợp webhook / Outbound 3rd-party API Hook):** `H-{surfaceCode}-{idModule}-{idFeature}`
+  - Ví dụ: `H-ADM-01-04` (Webhook nhận thông báo thanh toán từ cổng thanh toán bên thứ ba).
+- **Quy tắc Tăng số Không Trùng lặp (Unified Sequence Principle):**
+  - Số thứ tự tính năng `{idFeature}` tăng liên tục từ `01` cho tất cả các loại feature trong cùng một module.
+  - *Ví dụ:* Nếu module `ADM-01` đã có màn hình `S-ADM-01-01` và `S-ADM-01-02`, thì Job tiếp theo **không được** đánh là `J-ADM-01-01` mà bắt buộc phải tăng lên `J-ADM-01-03`, Hook tiếp theo là `H-ADM-01-04`.
+- **API Nội bộ (Internal APIs):**
+  - Khai báo theo HTTP Method + Route trong `01-backend-spec.yaml` (ví dụ `GET /admin/orders`), có thể dùng tiền tố `API` hoặc không cần đánh ID riêng nếu là API nội bộ phục vụ trực tiếp màn hình đó.
+
+### 4. Thông điệp, Cảnh báo & Popup Xác nhận (Messages & Alerts)
+- **Quy tắc:** Các text label thông thường của form item (nhãn trường, placeholder, tiêu đề cột) **không cần đánh ID**.
+- **Bắt buộc đánh ID:** Đối với tất cả **Alert thông báo** (thành công, cảnh báo), **Message lỗi** (validate form, lỗi xử lý process, lỗi hệ thống), và **Modal Popup confirm / dialog thông báo**:
+  - **Cấu trúc:** `Msg-{surfaceCode}-{idModule}-{idScreen}-{idMsg}` (mỗi chỉ số gồm 2 chữ số).
+  - **Ví dụ:**
+    - `Msg-ADM-01-01-01`: "Vui lòng nhập ngày bắt đầu trước ngày kết thúc" (Lỗi validate form lọc của màn hình S-ADM-01-01).
+    - `Msg-ADM-01-01-02`: "Bạn có chắc chắn muốn hủy đơn hàng này không?" (Confirm popup hủy đơn).
+    - `Msg-ADM-01-01-03`: "Hủy đơn hàng thành công" (Toast thông báo kết quả).
+
+### 5. Chức năng Xuất / Tải File (Export & Download Files)
+- **Cấu trúc:** `F-{surfaceCode}-{idModule}-{idFile}` (mỗi chỉ số gồm 2 chữ số).
+- **Ý nghĩa:** Định danh các chức năng xuất dữ liệu báo cáo (Excel, CSV, PDF) hoặc template download import dữ liệu.
+- **Ví dụ:**
+  - `F-ADM-01-01`: File Excel báo cáo doanh thu theo kỳ.
+  - `F-ADM-01-02`: File mẫu CSV import danh sách đơn hàng đối soát.
+
+### 6. Luồng Người Dùng (User Flows)
+- **Cấu trúc:** `flow-{surfaceCode}-{idModule}-{id}` (chữ thường hoặc không phân biệt hoa thường, 2 chữ số mỗi phần).
+- **Quy tắc Phân định:** Áp dụng nguyên tắc **Step 1 Ownership** — bước đầu tiên của luồng bắt đầu tại module nào thì file luồng lưu trữ tại `surfaces/<surface>/<module>/user-flows/flow-{surface}-{module}-{id}.md`.
+- **Ví dụ:**
+  - `flow-adm-01-01`: Luồng đăng nhập và cấp lại mật khẩu quản trị viên.
+  - `flow-ta-02-01`: Luồng thanh toán và xuất hóa đơn điện tử cho tenant.
+
+### 7. Tài nguyên Dùng Chung Qua 3 Tầng Kiến Trúc (Common Resources: `G-*` và `C-*`)
+Nhằm phân định rõ ràng giữa linh kiện/logic dùng chung với tính năng nghiệp vụ độc lập, CoSquad quy định tiền tố cho 3 tầng Common:
+
+#### 7.1. Tầng 1 — Global Common (`surfaces/common/`): Tiền tố `G-` (Global)
+Áp dụng cho toàn bộ các surface trong hệ thống:
+- **API dùng chung toàn hệ thống:** `G-API-{id}` (ví dụ: `G-API-01`, `G-API-02`) — API health check, xác thực token hệ thống.
+- **UI dùng chung (Modal, Bảng, Dialog quy thành Screen cho tiện):** `G-S-{id}` (ví dụ: `G-S-01`, `G-S-02`) — Modal confirm xác nhận chung, modal confirm xóa bản ghi, layout báo lỗi hệ thống.
+- **Message dùng chung cho tất cả surface:** `G-Msg-{id}` (ví dụ: `G-Msg-01`, `G-Msg-02`) — Cảnh báo bảo trì hệ thống, thông báo hết phiên đăng nhập.
+- **Helper, Status, Error Code, Enum dùng chung:** `G-{id}` (ví dụ: `G-01`, `G-02`) — Danh mục mã lỗi HTTP chuẩn, hàm format tiền tệ, timezone converter.
+- *(Lưu ý: Tầng Global Common không có Hook, Job hay Feature riêng lẻ).*
+
+#### 7.2. Tầng 2 — Surface Common (`surfaces/<surface>/common/`): Tiền tố `C-` (Common)
+Dùng chung nội bộ trong một Surface nhất định:
+- **API dùng chung Surface:** `C-API-{surfaceCode}-{id}` (ví dụ: `C-API-ADM-01`, `C-API-ADM-02`) — API lấy danh mục menu của admin, API hồ sơ cá nhân surface.
+- **UI dùng chung Surface (Modal, Bảng quy thành Screen):** `C-S-{surfaceCode}-{id}` (ví dụ: `C-S-ADM-01`, `C-S-ADM-02`) — Khung bộ lọc đa năng cho admin, drawer xem log hoạt động admin.
+- **Message dùng chung Surface:** `C-Msg-{surfaceCode}-{id}` (ví dụ: `C-Msg-ADM-01`, `C-Msg-ADM-02`) — Thông báo từ chối quyền truy cập cấp surface.
+- **Helper, Status, Error Code của Surface:** `C-{surfaceCode}-{id}` (ví dụ: `C-ADM-01`, `C-ADM-02`) — Hàm phân quyền vai trò admin, danh mục màu sắc trạng thái admin.
+
+#### 7.3. Tầng 3 — Module Common (`surfaces/<surface>/<module>/common/`): Tiền tố `C-` (Module Common)
+Dùng chung nội bộ trong một Module nhất định:
+- **API dùng chung Module:** `C-API-{surfaceCode}-{idModule}-{id}` (ví dụ: `C-API-ADM-01-01`, `C-API-ADM-01-02`) — API tính toán nhanh tiền đơn hàng trong module đơn hàng.
+- **UI dùng chung Module (Modal, Bảng quy thành Screen):** `C-S-{surfaceCode}-{idModule}-{id}` (ví dụ: `C-S-ADM-01-01`, `C-S-ADM-01-02`) — Modal lịch sử trạng thái đơn hàng, modal chọn sản phẩm kèm theo.
+- **Message dùng chung Module:** `C-Msg-{surfaceCode}-{idModule}-{id}` (ví dụ: `C-Msg-ADM-01-01`, `C-Msg-ADM-01-02`) — Thông báo yêu cầu nhập lý do hủy đơn.
+- **Helper, Status, Error Code của Module:** `C-{surfaceCode}-{idModule}-{id}` (ví dụ: `C-ADM-01-01`, `C-ADM-01-02`) — Hàm kiểm tra điều kiện chuyển trạng thái đơn hàng.
+
+### 8. Tài nguyên Kiểm thử (QA & Test Artifacts)
+- **`TC-*` (Test Case):** `TC-{surfaceCode}-{idModule}-{idTC}`
+  - Ví dụ: `TC-ADM-01-01` (Kiểm thử phân trang danh sách đơn hàng), `TC-ADM-01-02` (Kiểm thử validate form tạo mới).
+- **`SC-*` (Scenario - Kịch bản luồng kiểm thử tích hợp / E2E):** `SC-{surfaceCode}-{idModule}-{idSC}`
+  - Ví dụ: `SC-ADM-01-01` (Kịch bản duyệt đơn hàng và tự động kích hoạt Job giao vận).
+
+---
+
+### Bảng Tổng Hợp Mã Định Danh (ID Taxonomy Cheatsheet)
+
+| Tiền tố / Mẫu ID | Phạm vi & Loại Artifact | Ví dụ minh họa | Ý nghĩa |
+| :--- | :--- | :--- | :--- |
+| `{SURF}` | Surface (Kênh / Cổng) | `ADM`, `TA`, `L`, `CUS` | Viết tắt Surface (Admin, Tenant, Line, Customer) |
+| `{SURF}-{NN}` | Module nghiệp vụ | `ADM-01`, `TA-02` | Module thứ 01 của Surface Admin |
+| `S-{SURF}-{NN}-{MM}` | Màn hình giao diện (Screen) | `S-ADM-01-01` | Màn hình thứ 01 thuộc module ADM-01 |
+| `J-{SURF}-{NN}-{MM}` | Job xử lý tự động / Cron | `J-ADM-01-03` | Background job thứ 03 thuộc module ADM-01 |
+| `H-{SURF}-{NN}-{MM}` | API Hook / Tích hợp ngoài | `H-ADM-01-04` | Webhook tích hợp thứ 04 thuộc module ADM-01 |
+| `flow-{SURF}-{NN}-{MM}` | Luồng người dùng (User Flow) | `flow-adm-01-01` | Luồng nghiệp vụ thứ 01 bắt đầu tại module ADM-01 |
+| `Msg-{SURF}-{NN}-{MM}-{KK}` | Alert, Validate Error, Confirm Popup | `Msg-ADM-01-01-01` | Message thông báo/lỗi thứ 01 trên màn hình S-ADM-01-01 |
+| `F-{SURF}-{NN}-{MM}` | File export / Template download | `F-ADM-01-01` | Mẫu xuất file Excel/PDF thứ 01 của module ADM-01 |
+| `G-API-{NN}` | Global Common API | `G-API-01` | API dùng chung thứ 01 cho toàn hệ thống |
+| `G-S-{NN}` | Global Common UI (Modal/Table) | `G-S-01` | Màn hình/Modal dùng chung thứ 01 toàn hệ thống |
+| `G-Msg-{NN}` | Global Common Message | `G-Msg-01` | Message dùng chung thứ 01 toàn hệ thống |
+| `G-{NN}` | Global Common Helper/Status | `G-01` | Helper/Status code dùng chung thứ 01 toàn hệ thống |
+| `C-API-{SURF}-{NN}` | Surface Common API | `C-API-ADM-01` | API dùng chung thứ 01 của Surface Admin |
+| `C-S-{SURF}-{NN}` | Surface Common UI (Modal/Table) | `C-S-ADM-01` | Màn hình/Modal dùng chung thứ 01 Surface Admin |
+| `C-Msg-{SURF}-{NN}` | Surface Common Message | `C-Msg-ADM-01` | Message dùng chung thứ 01 Surface Admin |
+| `C-{SURF}-{NN}` | Surface Common Helper/Status | `C-ADM-01` | Helper/Status code thứ 01 Surface Admin |
+| `C-API-{SURF}-{NN}-{KK}` | Module Common API | `C-API-ADM-01-01` | API dùng chung thứ 01 của Module ADM-01 |
+| `C-S-{SURF}-{NN}-{KK}` | Module Common UI (Modal/Table) | `C-S-ADM-01-01` | Màn hình/Modal dùng chung thứ 01 Module ADM-01 |
+| `C-Msg-{SURF}-{NN}-{KK}` | Module Common Message | `C-Msg-ADM-01-01` | Message dùng chung thứ 01 Module ADM-01 |
+| `C-{SURF}-{NN}-{KK}` | Module Common Helper/Status | `C-ADM-01-01` | Helper/Status code thứ 01 Module ADM-01 |
+| `TC-{SURF}-{NN}-{MM}` | Test Case kiểm thử | `TC-ADM-01-01` | Ca kiểm thử thứ 01 thuộc module ADM-01 |
+| `SC-{SURF}-{NN}-{MM}` | Scenario kịch bản kiểm thử luồng | `SC-ADM-01-01` | Kịch bản luồng E2E thứ 01 thuộc module ADM-01 |
+

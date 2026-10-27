@@ -50,7 +50,7 @@
     1. 実コード（View + Controller + DB）を調査（行番号まで明記）。
     2. UI 項目、API DTO、DB クエリを 100% 監査（不足時は A/B/C を提示）。
     3. `/trace /spec` (または `/spec`) で `W-*.bundle.yaml` を作成。
-    4. `/grill-bqa` および `/grill-dev` で仕様を対抗質疑。
+    4. `/grill` および `/grill` で仕様を対抗質疑。
     5. `/testcase` で `TC-*.yaml` を生成。
     6. 検証コマンドを実行：`coSquad audit spec`, `coSquad split`, `coSquad audit testcase`。
     7. Phase Gate: フェーズレポートを提示し、承認が得られるまで待機。

@@ -27,7 +27,7 @@
 ## 描述说明 (Description)
 - 遵循国际标准 Arc42 框架，在 Phase 0 建立系统全局技术架构蓝图（含 12 个核心专业板块与数据模型）。
 ## 相关技能 (Related Skills)
-- **Paired with:** `/architecture-grill` for technical critique and validation.
+- **Paired with:** `/grill` for technical critique and validation.
 
 ---
 

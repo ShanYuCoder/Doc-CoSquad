@@ -18,16 +18,16 @@ flowchart TD
   end
 
   subgraph HUB["Tests-Docs ハブ"]
-    SC["/scenario → SC-*"]
+    SC["/testcase → SC-*"]
     TC["/testcase → TC-*.yaml"]
     REN["cases:render → TC-*.md"]
-    GTG["/grill-testcase\ncases:gate --strict"]
+    GTG["/grill\ncases:gate --strict"]
   end
 
   subgraph E2E["e2e-root (フロント/バックエンド)"]
     GEN["testcase:gen"]
     T["/test"]
-    GT["/grill-test"]
+    GT["/grill"]
   end
 
   B --> TC
@@ -51,11 +51,10 @@ flowchart TD
 
 | レイヤー | ルートディレクトリ | SSOT 実体 | VitePress ポータル |
 |---|---|---|---|
-| **Docs** | `COSQUAD_DOCS_ROOT` | `*.bundle.yaml`, `ir/*` | ポート **5173** — `spec.md`, `data-model.md`, `api.md` |
-| **Tests-docs** | `COSQUAD_TESTS_DOC` | `cases/**/TC-*.yaml`, `scenarios/**/SC-*` | ポート **5174** — `cases:render` で出力される `TC-*.md` |
-| **Automation** | `e2e-root` | `*.spec.ts`, Page Objects | 自動テストの実装・実行対象（計画用 SSOT ではない） |
+| **Docs & Tests Hub** | ワークスペースルート | `*.bundle.yaml`, `ir/*`, `cases/**`, `scenarios/**` | ポート **5173** — 統合 VitePress ドキュメントハブ |
+| **Automation** | `e2e-root` (`source-code/...`) | `*.spec.ts`, Page Objects | 自動テストの実装・実行対象（計画用 SSOT ではない） |
 
-**プロジェクト全体の網羅基準：** Docs のすべての機能リーフノードは `TC-*` に厳密なミラーパスを持ち、画面横断フローは `SC-*` + `audit scenario` で定義します。また `--strict` + `COSQUAD_DOCS_ROOT` を付与した品質ゲートにより、バンドルへの 100% の**トレーサビリティ (追跡可能性)** を担保します。
+**プロジェクト全体の網羅基準：** Docs のすべての機能リーフノードは `TC-*` に厳密なミラーパスを持ち、画面横断フローは `SC-*` + `audit scenario` で定義します。また `--strict` を付与した品質ゲートにより、バンドルへの 100% の**トレーサビリティ (追跡可能性)** を担保します。
 
 ---
 
@@ -63,8 +62,8 @@ flowchart TD
 
 | ロール | 閲覧 (レビュー / ウォークスルー) | 作成・編集責務 |
 |---|---|---|
-| BA / PO | Docs VitePress の `spec.md` (受入基準 AC, 業務シナリオ) | `TC` を直接作成せず、仕様漏れ発見時は `/update-spec` を呼び出す |
-| QA | Tests VitePress の `TC-*.md` (手順, マトリクス, 追跡) | YAML 形式で `/testcase`, `/scenario` を作成・保守 |
+| BA / PO | Docs VitePress の `spec.md` (受入基準 AC, 業務シナリオ) | `TC` を直接作成せず、仕様漏れ発見時は `/spec` を呼び出す |
+| QA | Tests VitePress の `TC-*.md` (手順, マトリクス, 追跡) | YAML 形式で `/testcase`, `/testcase` を作成・保守 |
 | フロントエンド開発 | `TC-*.md` + `ir/design.yaml` (`testIds`) | `/test` を実行。YAML 計画ファイルを直接改ざんしない |
 | リリースリード | `cases:gate --strict` の JSON 結果 | トレーサビリティやマトリクス検証をスキップしてはならない |
 
@@ -83,7 +82,7 @@ flowchart TD
   TCG["testcase:gen\nPO + *.spec.ts"]
   TEST["/test\ngap + green scoped"]
   VIT["test:e2e scoped"]
-  GT["/grill-test\ntraceability"]
+  GT["/grill\ntraceability"]
   LIFE["lifecycle → test"]
   DONE["E2E レーン完了"]
 
@@ -107,12 +106,12 @@ flowchart TD
 | セマンティック検証 (`#e2e:*`) | レイアウト崩れ防止、はみ出し検知、コンソールエラーゼロ検証 |
 | アクセシビリティ (Axe WCAG) | 致命的なアクセシビリティ違反の自動監査 |
 
-### `/grill-testcase` と `/grill-test` の違い
+### `/grill` と `/grill` の違い
 
 | スキル | 実行ルート | 責務 |
 |---|---|---|
-| **`/grill-testcase`** | **tests-docs** | YAML 計画の精査：`cases:gate --strict`、`audit testcase --bundle`、観点マトリクス検証、Docs へのギャップ差し戻し |
-| **`/grill-test`** | **e2e-root** | TC ↔ PO ↔ `*.spec.ts` の整合性および `#e2e:*` の検証（`/test` がグリーン通過後に実施） |
+| **`/grill`** | **tests-docs** | YAML 計画の精査：`cases:gate --strict`、`audit testcase --bundle`、観点マトリクス検証、Docs へのギャップ差し戻し |
+| **`/grill`** | **e2e-root** | TC ↔ PO ↔ `*.spec.ts` の整合性および `#e2e:*` の検証（`/test` がグリーン通過後に実施） |
 
 ### 統合前 (Pre-Wire) と統合後 (Post-Wire)
 
@@ -122,13 +121,13 @@ flowchart TD
 
 ## ディープ・グリル (3 つのモード) {#grill-modes}
 
-3 つのワークフローはそれぞれ**独立したセッション**で実行する必要があります。1 つのチャットで `/grill-testcase` (ドキュメント) と `/grill-test` (実装コード) を混在させてはなりません。
+3 つのワークフローはそれぞれ**独立したセッション**で実行する必要があります。1 つのチャットで `/grill` (ドキュメント) と `/grill` (実装コード) を混在させてはなりません。
 
 | モード | SSOT 計画 | ハブでのレビュー (Grill) | 自動化実装のレビュー |
 |---|---|---|---|
-| **単一画面** `W-*` | `cases/…/TC-*.yaml` (`e2e`) | `/grill-testcase` + ゲート | `/test` 通過後に `/grill-test` |
+| **単一画面** `W-*` | `cases/…/TC-*.yaml` (`e2e`) | `/grill` + ゲート | `/test` 通過後に `/grill` |
 | **画面横断シナリオフロー** `SC-*` | `scenarios/…/SC-*` + N 件の `TC` | `audit scenario` + クラスタゲート | 各 TC の個別実行 / CI での順次実行 |
-| **API Hook** | `TC` `api-e2e` | `/test-api` + `/grill-testcase` | `testcase:gen:api` (および任意の Newman) |
+| **API Hook** | `TC` `api-e2e` | `/unit` + `/grill` | `testcase:gen:api` (および任意の Newman) |
 
 ### 1 — 単一機能画面 (`W-*`) {#grill-single-screen}
 
@@ -140,23 +139,23 @@ flowchart TD
   TC["/testcase → TC-*.yaml\ngenType: e2e"]
   CHK["cases:check · audit testcase --bundle"]
   REN["cases:render → TC-*.md"]
-  GTG["/grill-testcase\ncases:gate --strict"]
+  GTG["/grill\ncases:gate --strict"]
   GEN["testcase:gen"]
   T["/test"]
-  GT["/grill-test · audit e2e"]
+  GT["/grill · audit e2e"]
 
   B --> TC --> CHK --> REN --> GTG --> GEN --> T --> GT
 ```
 
 | # | 計画検証チェック項目 | コマンド / スキル |
 |---|---|---|
-| 1 | バンドルにユーザーストーリーと AC が存在するか（推測によるテスト作成の禁止） | 停止 → `/update-spec` |
+| 1 | バンドルにユーザーストーリーと AC が存在するか（推測によるテスト作成の禁止） | 停止 → `/spec` |
 | 2 | `traceability` が `W-*`、シナリオ、`AC-*`、`btn_*` と完全一致するか | `audit testcase --bundle` |
 | 3 | 画面全体で網羅的な `testMatrix` 観点が集約されているか（正常系のみは不可） | `cases:gate --strict` |
 | 4 | QA が VitePress テストハブ上でレンダリングされた仕様を確認したか | `cases:render` |
 | 5 | `testIds.required` が Split 後の Design と一致しているか | grill-dev / DOM 確認 |
 | 6 | スコープ内のテストがすべてグリーン（合格）で通過するか | `/test` |
-| 7 | TC ↔ PO ↔ `*.spec.ts` の整合性が保たれているか | `/grill-test`, `audit e2e` |
+| 7 | TC ↔ PO ↔ `*.spec.ts` の整合性が保たれているか | `/grill`, `audit e2e` |
 
 同一フォルダ内に複数の `TC-*.yaml`（スモーク用とフルリグレッション用など）を共存させることが可能です。ゲートは `refs.screen` 単位で観点を集約します。
 
@@ -167,7 +166,7 @@ flowchart TD
 ```mermaid
 flowchart TD
   FLOW["Docs 内の FLOW-*.md"]
-  SC["/scenario → SC-*.yaml\nscreens: [W-*, …]"]
+  SC["/testcase → SC-*.yaml\nscreens: [W-*, …]"]
   TCs["各 W-* に対して /testcase\nrefs.scenario = SC-*"]
   AUD["audit scenario"]
   GTG["grill-testcase + strict ゲート"]
@@ -178,11 +177,11 @@ flowchart TD
 
 | # | シナリオ検証項目 | 注意点 |
 |---|---|---|
-| 1 | SC 作成前に Docs に `FLOW-*.md` が存在していること | 内容が不十分な場合 → Docs で `/user-flow` を実行 |
-| 2 | `SC.screens[]` にジャーニーに関与するすべての `W-*` が含まれていること | FLOW の手順と完全一致させる |
-| 3 | すべての `W-*` に対応する `TC-*.yaml` または明示的な `QA-*` 保留があること | `SC_SCREEN_NO_TC` チェックで検出 |
+| 1 | SC 作成前に Docs に `FLOW-*.md` / `flow-*.md` が存在していること | 内容が不十分な場合 → Docs で `/user-flow` を実行 |
+| 2 | `SC.screens[]` にジャーニーに関与するすべての `S-*`（旧 `W-*`）が含まれていること | FLOW の手順と完全一致させる |
+| 3 | すべての `S-*`（旧 `W-*`）に対応する `TC-*.yaml` または明示的な `Q-*`（旧 `QA-*`）保留があること | `SC_SCREEN_NO_TC` チェックで検出 |
 | 4 | 各 TC が**画面単位**でトレーサビリティおよびマトリクス検証に合格していること | 各リーフに対して `audit testcase --bundle` を実行 |
-| 5 | ウォークスルー：VitePress テストハブで SC とレンダリング済 `TC-*.md` を確認 | ポート 5174 を開く |
+| 5 | ウォークスルー：VitePress テストハブで SC とレンダリング済 `TC-*.md` を確認 | VitePress を開く |
 | 6 | 自動化の実装方針 | 画面ごとに独立した Spec を作成（50 ステップ超の巨大 TC は禁止） |
 
 ### 3 — API フック (Playwright `request` · 任意の Newman) {#grill-api-hook}
@@ -193,11 +192,11 @@ flowchart TD
 flowchart LR
   subgraph DOCS["Docs ハブ"]
     O1["01-backend-spec"]
-    GAS["/grill-api-spec"]
+    GAS["/grill"]
   end
   subgraph HUB["Tests-Docs"]
-    TA["/test-api\nTC api-e2e"]
-    GTG["/grill-testcase"]
+    TA["/unit\nTC api-e2e"]
+    GTG["/grill"]
   end
   subgraph RUN["e2e-root"]
     PG["testcase:gen:api\n*.api.spec.ts"]
@@ -212,7 +211,7 @@ flowchart LR
 | 手順 | アクション | スキル / コマンド |
 |---|---|---|
 | 1 | 契約 `01` の作成と API レビュー | [backend.md](./backend.md) |
-| 2 | `TC` の作成 — `apiSteps[]` とステータス異常系マトリクス (401/403/404/422…) | `/test-api` · `TC.example-api.yaml` |
+| 2 | `TC` の作成 — `apiSteps[]` とステータス異常系マトリクス (401/403/404/422…) | `/unit` · `TC.example-api.yaml` |
 | 3 | テスト計画のレビュー（UI TC と同一基準） | `audit testcase`, `cases:gate --strict` |
 | 4 | Playwright テストコードの生成 | `coSquad testcase:gen:api` → `tests/api-e2e/**` |
 | 5 | CI パイプラインでの実行 | `COSQUAD_API_TEST_BASE_URL` と Secret の設定 |
@@ -222,7 +221,7 @@ flowchart LR
 
 ## 着手前の前提条件 {#preconditions}
 
-- Docs のリーフノードに完全な `userStories` / `acceptanceCriteria` を備えたバンドルが存在すること（または `QA-*` で明示的に保留）。
+- Docs のリーフノードに完全な `userStories` / `acceptanceCriteria` を備えたバンドルが存在すること（または `Q-*`（旧 `QA-*`）で明示的に保留）。
 - 一括テスト計画レビューの前に、バンドルに対して `coSquad check` および split が成功していること。
 - `COSQUAD_DOCS_ROOT` および `COSQUAD_TESTS_DOC` が正しく設定されていること（`coSquad doctor` で確認）。
 - `cases/…` のディレクトリ構造が `surfaces/…` と完全に**ミラー配置**されていること。
@@ -233,15 +232,15 @@ flowchart LR
 
 | 順序 | アクション | 担当 | スキル / ゲート |
 |---|---|---|---|
-| 0 | (任意) 画面横断フローの棚卸し | QA / BA | `FLOW-*.md` 存在時に `/scenario` を実行 |
+| 0 | (任意) 画面横断フローの棚卸し | QA / BA | `FLOW-*.md` 存在時に `/testcase` を実行 |
 | 1 | Testcase YAML v2 の作成 | QA | `/testcase`, `cases:check` |
 | 2 | 人間可読なテストケースの生成 | QA / 全員 | `coSquad cases:render` → VitePress テストハブを開く |
-| 3 | テスト計画のレビュー (Grill) | QA + チーム | `/grill-testcase`, `audit testcase --bundle` |
+| 3 | テスト計画のレビュー (Grill) | QA + チーム | `/grill`, `audit testcase --bundle` |
 | 4 | テストドキュメントの品質ゲート | QA / リリース | `cases:gate --strict` + `COSQUAD_DOCS_ROOT` |
 | 5 | Playwright テストコードの生成 | Dev / QA | `testcase:gen` (`genType: e2e`) |
-| 5b | API フック計画の作成 | QA / Dev | `/test-api`, `genType: api-e2e` |
+| 5b | API フック計画の作成 | QA / Dev | `/unit`, `genType: api-e2e` |
 | 6 | 実装とグリーン通過の達成 | Dev | `/test`, スコープ付き `test:e2e` |
-| 7 | 自動化実装のレビュー | Dev + QA | `/grill-test` |
+| 7 | 自動化実装のレビュー | Dev + QA | `/grill` |
 | 8 | 計画と実装の監査 | QA | `coSquad audit e2e` |
 
 ---
@@ -257,4 +256,4 @@ flowchart LR
 | 3 | **マトリクス** | 画面全体で全観点が集約網羅されていること（正常系のみは不可） |
 | 4 | **可読性** | `TC-*.md` が VitePress で確認でき、生 YAML を開かずに QA が検証できること |
 | 5 | **仕様一致** | `spec.md` 内の受入基準 AC と `acceptanceRefs` が一致していること |
-| 6 | **保留項目** | 未カバーのギャップが `QA-*` または `coverage_deferred` に明示されていること |
+| 6 | **保留項目** | 未カバーのギャップが `Q-*`（旧 `QA-*`）または `coverage_deferred` に明示されていること |

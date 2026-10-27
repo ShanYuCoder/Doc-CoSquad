@@ -6,10 +6,10 @@
 
 | 画面の例 | 推奨略称 | 生成ファイル名 |
 |---|---|---|
-| `W-HOTEL-LIST` | `HOTEL-LIST` | `qa/HOTEL-LIST_0001.yaml` |
-| `cmp-adm-ord-01-02-01-02` | `ADM-AUTH` (チーム合意のスラッグ) | `qa/ADM-AUTH_0001.yaml` |
+| `S-ADM-01-01` | `ADM-AUTH` | `qa/ADM-AUTH_0001.yaml` |
+| `S-ORD-01-01` | `ORD-LIST` | `qa/ORD-LIST_0001.yaml` |
 
-初期の CoSquad ワークスペースで利用されていた `QA-<page-id>-NNNN` 形式も引き続き認識されますが、新規作成時は短いスラッグを推奨します。
+CoSquad ワークスペースでは `{画面またはモジュールの略称}_{4桁連番}` 形式を採用します。
 
 ---
 
@@ -61,7 +61,7 @@ updates:
 | `kind` 種別 | 担当者 / 記録タイミング |
 |---|---|
 | `question` | QA 課題の起票時（技術的負債として記録 / AskQuestion 確定時） |
-| `answer` | 意思決定の確定時 —— 仕様バンドルの更新を伴う (`/qa-resolve`) |
+| `answer` | 意思決定の確定時 —— 仕様バンドルの更新を伴う (`/qa`) |
 | `review` | シニアやリードによるレビュー指摘；本文に `needs-change` が含まれる場合は `status: open` に再設定 |
 | `note` | 仕様変更を伴わない情報補足や備考 |
 
@@ -85,8 +85,8 @@ updates:
 | スキル | アクション |
 |---|---|
 | QA 起票 | `qa/{CODE}_NNNN.yaml` を作成し、最初の `updates[0]` を `kind: question` で記録 |
-| `/qa-resolve` | `answer` を追記し、Bundle/01 の対象フィールドを更新して `status: closed` に設定 |
-| `/qa-review` | `kind: review` を追記（この段階ではバンドルは直接変更しない） |
+| `/qa` | `answer` を追記し、Bundle/01 の対象フィールドを更新して `status: closed` に設定 |
+| `/qa` | `kind: review` を追記（この段階ではバンドルは直接変更しない） |
 
 ---
 

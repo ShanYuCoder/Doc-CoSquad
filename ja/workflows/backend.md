@@ -1,6 +1,6 @@
 # 開発ワークフロー — Backend バックエンド開発レーン
 
-**SSOT 適用範囲：** **バックエンド開発レーン (Backend Lane)** ——API 契約ファイル（`01-backend-spec.yaml`）、OpenAPI 生成、API レビュー (`/grill-api-spec`)、バックエンドコード生成、単体テスト、およびフロントエンドとの契約整合性監査。
+**SSOT 適用範囲：** **バックエンド開発レーン (Backend Lane)** ——API 契約ファイル（`01-backend-spec.yaml`）、OpenAPI 生成、API レビュー (`/grill`)、バックエンドコード生成、単体テスト、およびフロントエンドとの契約整合性監査。
 
 **マクロ構成：** [index.md](./index.md) · Phase 2 実装フェーズ · 実 API 結合：[wire.md](./wire.md)。
 
@@ -23,7 +23,7 @@ flowchart TD
   end
 
   subgraph GRILL["レビュー ＆ 品質ゲート"]
-    GAS["/grill-api-spec"]
+    GAS["/grill"]
     AUD["audit api · audit fe-be\napi:check · openapi 統合"]
     APR{"レビュー ＆ 監査クリア？"}
   end
@@ -32,11 +32,11 @@ flowchart TD
     DRY["api-gen:dry (生成ドライラン)"]
     GEN["/api · api-gen (コード生成)"]
     UNIT["api-unit-gen · /unit (単体テスト)"]
-    AUDIT["/audit-api (実装整合性監査)"]
+    AUDIT["/api (実装整合性監査)"]
   end
 
   OUT["Phase 3 /wire 結合へ引渡し"]
-  US["/api-update (契約更新)"]
+  US["/api-spec (契約更新)"]
 
   PORT --> AS
   ONLY --> AS
@@ -67,7 +67,7 @@ flowchart TD
 
 1. **API 契約の策定 (`/api-spec`):**
    - `api/<seq>/01-backend-spec.yaml` にエンドポイント、HTTP メソッド、リクエスト DTO バリデーション、レスポンス構造を定義。
-2. **API 契約のレビュー (`/grill-api-spec`):**
+2. **API 契約のレビュー (`/grill`):**
    - 未処理の例外ステータス（400/409/422）、アクセス制御脆弱性（IDOR）、インデックス設計、冪等性を精査。
 3. **妥当性検証と OpenAPI ドキュメントレンダリング:**
    - `coSquad api:check` でスキーマを機械検証。
@@ -76,5 +76,5 @@ flowchart TD
    - 技術スタック（NestJS, Laravel, FastAPI, .NET）に応じた Controller、Service、DTO、ORM 雛形を一括生成。
 5. **単体テストコードの生成 (`coSquad api-unit-gen`):**
    - Pytest, PHPUnit, Vitest などの単体テスト雛形を自動作成。
-6. **整合性監査 (`/audit-api` および `coSquad audit fe-be`):**
+6. **整合性監査 (`/api` および `coSquad audit fe-be`):**
    - 実装コードが `01-backend-spec.yaml` と完全に一致していることを確定的に検証。

@@ -14,7 +14,7 @@
 flowchart TD
   subgraph IN["前置条件输入"]
     D["Design: grill-prototype 通过"]
-    B["Backend: /audit-api · 01 审核批准"]
+    B["Backend: /api · 01 审核批准"]
     T["Test: cases:gate strict\n联调前 E2E 绿灯通过"]
   end
 
@@ -27,7 +27,7 @@ flowchart TD
 
   subgraph OUT["集成验证"]
     E2E["test:e2e 联调后针对性回归"]
-    GT["/grill-test"]
+    GT["/grill"]
     AUD["audit e2e · fe-be · scenario"]
     SHIP["→ 交付 / UAT 验收"]
   end
@@ -37,7 +37,7 @@ flowchart TD
   T --> WIRE
   WIRE --> E2E --> GT --> AUD --> SHIP
 
-  US["/update-spec · /api-update"]
+  US["/spec · /api-spec"]
   WIRE -.->|契约不一致与漂移| US
 
   classDef in fill:#D1FAE5,stroke:#059669,color:#064E3B
@@ -57,7 +57,7 @@ flowchart TD
 
 | 层次 | 联调前 (Pre-Wire) 状态 | 联调集成责任 (Wire) | 联调后验证 (Post-Wire) |
 |---|---|---|---|
-| **Portal UI 前端** | 原型 Mock 数据，在 design/HANDOFF 标记 `#wire-only` | 运行 `/wire` — 对接真实服务，拆除 Mock 依赖 | 局部运行 `test:e2e` · `/grill-test` |
+| **Portal UI 前端** | 原型 Mock 数据，在 design/HANDOFF 标记 `#wire-only` | 运行 `/wire` — 对接真实服务，拆除 Mock 依赖 | 局部运行 `test:e2e` · `/grill` |
 | **API 接口契约** | `01` 规范 + API 质询；前端在 design 标记 `apiRef` | 对齐类型与 DTO 模型；配置 CORS 与环境变量 | 对叶子 Bundle 运行 `audit fe-be` |
 | **跨端场景流 `SC-*`** | TC 阶段的联调前模拟数据 | 沿用户业务旅程逐屏对接真实后端 | `audit scenario` + CI 环境串联 E2E |
 
@@ -70,7 +70,7 @@ flowchart TD
 | 角色 | 规范读取源 | 严禁作为编辑来源的项目 |
 |---|---|---|
 | 前端开发 | `ir/design.yaml`, HANDOFF, `#wire-only` / `#update:*` | 自动生成文件 `ir/generated/*.md` |
-| 前端开发 | 映射 DTO 时阅读 `01` / OpenAPI 预览 | 直接在前端代码库中强行修改 `01` —— 必须走 `/api-update` |
+| 前端开发 | 映射 DTO 时阅读 `01` / OpenAPI 预览 | 直接在前端代码库中强行修改 `01` —— 必须走 `/api-spec` |
 | QA | `TC-*.md` 联调后业务场景 | 联调会话中随意篡改 YAML 测试用例 |
 | 技术主管 | [gates § 里程碑 9](./gates.md#close-one-function) | 仅凭“人工点点没问题”跳过自动化审计 |
 
@@ -82,8 +82,8 @@ flowchart TD
 
 | 里程碑 | 最低准入要求 |
 |---|---|
-| **Design 设计** | `/grill-prototype` 零 SSOT 缺口（文案、状态、Mock 边界完全清晰）— [design.md](./design.md) |
-| **Backend 后端** | API 已部署至 Staging/Dev 环境；`/audit-api` 无阻断；`01` 契约获得正式审批 |
+| **Design 设计** | `/grill` 零 SSOT 缺口（文案、状态、Mock 边界完全清晰）— [design.md](./design.md) |
+| **Backend 后端** | API 已部署至 Staging/Dev 环境；`/api` 无阻断；`01` 契约获得正式审批 |
 | **测试计划** | 针对目标 `W-*` 的 `cases:gate --strict` 完全通过 |
 | **自动化测试** | 联调前范围内的 E2E 测试全部**绿灯通过**或已标记缺口 — [test.md](./test.md#test-e2e-lane) |
 | **标签管理** | HANDOFF 中明确枚举 `#wire-only` / `#manual-composable` 标签 |
@@ -114,9 +114,9 @@ flowchart TD
 | 3 | 移除生产代码中的 Mock；保留 Mock 仅用于单元测试降级 | 前端开发 | HANDOFF 原型交付规范 |
 | 4 | 恢复 Auth / RBAC / 路由元信息 | 前端开发 | 严禁将绕过鉴权的页面交付发版 |
 | 5 | 执行联调后范围内的 E2E 回归测试 | 开发 + QA | 运行 `test:e2e`，针对缺口执行 `/test` |
-| 6 | 质询自动化实现质量 | 开发 + QA | `/grill-test` |
-| 7 | 运行收敛审计 | 开发 + QA | `/grill-wire` 或审计命令：`audit e2e`, `audit fe-be`, `audit scenario` |
-| 8 | UAT 业务验收走查 | PM / PO | 业务验收；如产生新需求，在关闭功能**前**调用 `/update-spec` |
+| 6 | 质询自动化实现质量 | 开发 + QA | `/grill` |
+| 7 | 运行收敛审计 | 开发 + QA | `/grill wire` 或审计命令：`audit e2e`, `audit fe-be`, `audit scenario` |
+| 8 | UAT 业务验收走查 | PM / PO | 业务验收；如产生新需求，在关闭功能**前**调用 `/spec` |
 
 ---
 
@@ -133,8 +133,8 @@ coSquad audit scenario <SC.yaml> --tests-docs "$COSQUAD_TESTS_DOC"   # 若涉及
 | 审计发现的缺口 | 纠正措施 |
 |---|---|
 | `missingInPlaywright` / Page Object 缺失 | 运行 `/test` 补齐 |
-| 测试计划与 Bundle 规范发生漂移 | 运行 `/grill-testcase` 或 `/update-spec` 重新对齐 |
-| `apiRef` ↔ `01` 契约字段不一致 | 运行 `/api-update` 并重新质询 API |
+| 测试计划与 Bundle 规范发生漂移 | 运行 `/grill` 或 `/spec` 重新对齐 |
+| `apiRef` ↔ `01` 契约字段不一致 | 运行 `/api-spec` 并重新质询 API |
 | 团队知晓并有意暂缓项 | 按规范登记至 `qa/` 待办 |
 
 ---
@@ -159,9 +159,9 @@ coSquad audit scenario <SC.yaml> --tests-docs "$COSQUAD_TESTS_DOC"   # 若涉及
 
 | 触发场景 | 修复闭环路径 |
 |---|---|
-| 后端契约有误 | `/api-update` → 后端重新部署 → 重新执行联调 |
-| 交互或业务规格分歧 | `/update-spec` → Split 分解 → 必要时重新进行联调前测试 |
-| E2E 覆盖不全 | `/test` → `/grill-test` —— 严禁跳过 `audit e2e` 强行合并 |
-| 跨端业务流缺少页面 | 补充 `TC` 或记录 `QA-*` —— 通过 `audit scenario` 验证完整性 |
+| 后端契约有误 | `/api-spec` → 后端重新部署 → 重新执行联调 |
+| 交互或业务规格分歧 | `/spec` → Split 分解 → 必要时重新进行联调前测试 |
+| E2E 覆盖不全 | `/test` → `/grill` —— 严禁跳过 `audit e2e` 强行合并 |
+| 跨端业务流缺少页面 | 补充 `TC` 或记录 `Q-*`（旧 `QA-*`） —— 通过 `audit scenario` 验证完整性 |
 
 **单次会话只做一件事** —— 切勿在 `/wire` 会话中同时混合执行全系统回归测试与后端 `/api` 代码生成。

@@ -27,7 +27,7 @@
 ## 説明・役割 (Description)
 - 国際標準 Arc42 フレームワークに準拠し、Phase 0 においてシステム全体の技術アーキテクチャ設計書（12 の専門セクションおよびデータモデル）を策定。
 ## 関連スキル (Related Skills)
-- **Paired with:** `/architecture-grill` for technical critique and validation.
+- **Paired with:** `/grill` for technical critique and validation.
 
 ---
 

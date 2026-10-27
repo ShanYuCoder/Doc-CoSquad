@@ -17,7 +17,7 @@
 
 ## Description
 - SSOT **plan** kiểm thử theo function — feed `testcase:gen` và grill.
-- Path mirror docs: [artifacts/tests-docs.md](../../artifacts/tests-docs.md).
+- Path mirror docs: [artifacts/index.md](../../artifacts/index.md).
 - Hướng dẫn: [tpl-testcase-plan.md](../../../harness/tests/templates/tpl-testcase-plan.md).
 
 ## Gates
@@ -25,13 +25,13 @@
 - Release: `coSquad cases:gate --strict --docs-root $COSQUAD_DOCS_ROOT`
 
 ## Chú ý
-- Bundle thiếu story/AC → **STOP** → `/update-spec` trên docs — không bịa test.
+- Bundle thiếu story/AC → **STOP** → `/spec` trên docs — không bịa test.
 - **Không** sửa `TC-*.md` tay; **không** dùng generated MD làm SSOT.
 - YAML thuần — không JS thô trong giá trị (`"a".repeat(256)`).
 
 ## Liên quan
 - **Trước:** bundle/spec ổn trên docs (có thể song song sau design grill round 1).
-- **Sau:** `/grill-testcase` → `cases:render` → `testcase:gen` → `/test`.
+- **Sau:** `/grill` → `cases:render` → `testcase:gen` → `/test`.
 
 ---
 

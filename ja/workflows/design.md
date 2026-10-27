@@ -18,20 +18,20 @@ flowchart TD
   subgraph CORE["仕様バンドル → レビュー → ドライラン"]
     BUNDLE["*.bundle.yaml"]
     SPLIT["coSquad split"]
-    BQA["/grill-bqa (業務深掘りレビュー)"]
-    DEV["/grill-dev (技術実現性レビュー)\nbundle.gen"]
+    BQA["/grill (業務深掘りレビュー)"]
+    DEV["/grill (技術実現性レビュー)\nbundle.gen"]
     DRY["coSquad gen:dry\nir/design.yaml"]
   end
 
   subgraph OUT["プロトタイプ → 次レーン引渡し"]
     PR["/prototype (高精度プロトタイプ生成)"]
     GEN["coSquad gen"]
-    GP["/grill-prototype (画面走査チェック)"]
+    GP["/grill (画面走査チェック)"]
     NEXT["Phase 2 テスト・バックエンドへ引渡し"]
   end
 
-  GW["/grill-docs\n任意レビュー"]
-  US["/update-spec"]
+  GW["/grill\n任意レビュー"]
+  US["/spec"]
   QA["AskQuestion → qa"]
 
   LEG --> BUNDLE
@@ -66,12 +66,12 @@ flowchart TD
 | 番号 | タスク内容 | 担当役割 | スキル / ゲート例 |
 | :--- | :--- | :--- | :--- |
 | **0b** | ERD 設計（新規エンティティ・テーブル追加時） | アーキテクト / データエンジニア | `/db-erd` → `common/db-erd.md` |
-| **1** | スコープ、モジュール、業務フロー分析と API 共通定義 | リード / BA | `/overview`, `/module`（`W-*` 確定）, `/user-flow` |
+| **1** | スコープ、モジュール、業務フロー分析と API 共通定義 | リード / BA | `/spec`, `/module`（`W-*` 確定）, `/user-flow` |
 | **2** | 画面仕様バンドル策定と IR 変換（DB バインド含む） | BA / エンジニア | `/spec`, `/legacy /spec`, ERD 突合, `split` + `render` |
-| **3** | 業務的 ＆ 技術的レビュー (Grill) | BA + エンジニア | `/grill-bqa`, `/grill-dev`（バンドル更新ごとに `split` を再実行） |
+| **3** | 業務的 ＆ 技術的レビュー (Grill) | BA + エンジニア | `/grill`, `/grill`（バンドル更新ごとに `split` を再実行） |
 | **4** | コード生成準備完了の検証（Dry-run） | エンジニア | `ir/design.yaml` に対し `coSquad gen:dry` を実行 |
 | **5** | UI プロトタイプ作成（Mock API）と共通部品登録 | フロントエンド | `coSquad gen` ➔ `/prototype` ➔ レジストリ検証 |
-| **6** | プロトタイプ UI チェックリスト走査 | フロントエンド / BA | `/prototype` 完了後に `/grill-prototype` を実施 |
+| **6** | プロトタイプ UI チェックリスト走査 | フロントエンド / BA | `/prototype` 完了後に `/grill` を実施 |
 
 ---
 

@@ -27,7 +27,7 @@ flowchart TD
 
   %% Nhánh 3: Rebase
   CHOICE -->|3. Rebase<br/>(Đập đi làm lại)| RB_LEGACY["Đưa code cũ vào source-legacy/<br/>(STRICTLY READ-ONLY)"]
-  RB_LEGACY --> RB_EXTRACT["Chạy /extract-legacy<br/>(Bóc tách modules & surfaces cũ)"]
+  RB_LEGACY --> RB_EXTRACT["Chạy /legacy (Chế độ quét)<br/>(Bóc tách modules & surfaces cũ)"]
   RB_EXTRACT --> RB_NEW["Khởi tạo repo code mới<br/>đưa vào source-code/"]
   RB_NEW --> RB_INIT["Chạy /init<br/>(Cấu hình dự án mới)"]
   RB_INIT --> RB_NEXT["Sang Phase Design:<br/>Dùng kèm /legacy trích xuất tính năng"]
@@ -93,8 +93,8 @@ flowchart TD
 - **Bước 2: Cách ly mã nguồn legacy**
   - Đưa toàn bộ repository code cũ vào thư mục `source-legacy/`.
   - **Quy tắc bất biến:** `source-legacy/` là **STRICTLY READ-ONLY**. Tuyệt đối không sửa đổi và không copy-paste code thô từ thư mục này sang code mới.
-- **Bước 3: Khảo cổ tổng quan với `/extract-legacy`**
-  - Mở Agent AI và chạy skill **`/extract-legacy`**:
+- **Bước 3: Khảo cổ tổng quan với `/legacy` (Chế độ quét)**
+  - Mở Agent AI và chạy skill **`/legacy`** (hoặc `/legacy scan`):
     - Agent quét sâu cấu trúc code cũ để bóc tách sơ đồ module, danh sách màn hình, danh mục API và các rule dùng chung (`CMN-*`).
     - Kết xuất danh mục chức năng vào `surfaces/` và `architecture/`.
 - **Bước 4: Khởi tạo codebase mới**
@@ -223,18 +223,18 @@ coSquad build-template-code --yes --force
 #### Bước 3: Phát triển tính năng mới với Custom Template
 Kể từ thời điểm này, toàn bộ quy trình phát triển chức năng mới diễn ra tự động và chuẩn xác:
 1. Viết spec với `/spec` (kế thừa các mã `CMN-*`).
-2. Phản biện nghiệp vụ và giao diện với `/grill-bqa`, `/prototype`.
+2. Phản biện nghiệp vụ và giao diện với `/grill`, `/prototype`.
 3. Khi chạy lệnh sinh code (`coSquad gen`), hệ thống sẽ tự động sử dụng bộ custom template vừa được huấn luyện để sinh mã đúng 100% quy chuẩn dự án mà không cần dev phải sửa tay.
 
 ---
 
-## 6. Xem tài liệu SSOT trực tiếp trên Local (`pnpm docs:dev`)
+## 6. Xem tài liệu SSOT trực tiếp trên Local (`pnpm docs:build`)
 
 Đến đây, quá trình cài đặt và thiết lập Phase 0 đã hoàn tất! Bạn có thể khởi chạy server tài liệu để xem giao diện web trực quan của toàn bộ hệ thống SSOT:
 
 ```bash
-pnpm docs:dev
-# hoặc: coSquad dev
+pnpm docs:build
+# hoặc: coSquad build
 ```
 
 Lệnh này khởi chạy VitePress dev server tại `http://localhost:3173` (tự động phân bổ sang 3174, 3175... khi chạy song song nhiều workspace):

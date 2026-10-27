@@ -23,12 +23,12 @@
 
 ## Phase 0 trong workflow
 
-Thuộc **Architecture (Phase 0)** — sau `/overview` → `/module` → `/user-flow`, **trước** `/spec` leaf khi có entity/bảng mới.
+Thuộc **Architecture (Phase 0)** — sau `/spec` → `/module` → `/user-flow`, **trước** `/spec` leaf khi có entity/bảng mới.
 
 Chi tiết hai tầng (ERD vs `db` trên màn): [architecture-data.md](../../workflows/architecture-data.md).
 
 ## Các Skill liên quan
-- **Trước:** `/overview`, `/module`, `/user-flow`
+- **Trước:** `/spec`, `/module`, `/user-flow`
 - **Sau:** `/spec` (đọc `db-erd.md`, ghi `spec.entities` + `design.sections[].db`)
 - **BE:** `/api-spec` → `01-backend-spec.yaml` (`modules.entities`)
 
@@ -43,6 +43,6 @@ Chi tiết hai tầng (ERD vs `db` trên màn): [architecture-data.md](../../wor
 ```text
 /db-erd
 
-Surface: {admin-web} · Module: {CMP-…} · Scope: {mô tả ngắn}
+Surface: {admin-web} · Module: {ADM-01} · Scope: {mô tả ngắn}
 ```
 

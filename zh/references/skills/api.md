@@ -16,18 +16,18 @@
 - Registered routes and middleware configurations.
 
 ## 描述说明 (Description)
-- Phase 3 后端开发顶层路由命令。根据当前上下文与参数自动分流至 `/api-spec`, `/api-update`, `/grill-api-spec` 或后端代码生成。
+- Phase 3 后端开发顶层路由命令。根据当前上下文与参数自动分流至 `/api-spec`, `/api-spec`, `/grill` 或后端代码生成。
 ## 相关技能 (Related Skills)
-- **Preceding:** `/api-spec`, `/grill-api-spec`.
-- **Subsequent:** `/unit` → `/audit-api` → `/wire`.
+- **Preceding:** `/api-spec`, `/grill`.
+- **Subsequent:** `/unit` → `/api` → `/wire`.
 
 ---
 
 ## 提示词调用示例 (Example Prompt)
 
 ```text
-/api W-ADM-ORD-01
+/api S-ADM-01-01
 
-Generate and implement backend API endpoints using approved contract at surfaces/admin/CMP-ADM-ORD/01/01/api/01/01-backend-spec.yaml.
+Generate and implement backend API endpoints using approved contract at surfaces/admin/ADM-01/orders/api/01/01-backend-spec.yaml.
 ```
 
